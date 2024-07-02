@@ -2,3 +2,56 @@
 
 ## Overview
 A tool for testing a Wallet credential issuer service.
+
+## Pre-requisites
+- [Homebrew package manager](https://brew.sh)
+- [Docker](https://docs.docker.com/get-docker/)
+- [docker-compose](https://docs.docker.com/compose/install/) (version 1.9.0+)
+
+**If you don't have node, or don't have a recent enough version installed:**
+
+The project has been configured with nvm (node version manager). You can use this to install the right version of node.
+
+To install nvm, run:
+```
+brew install nvm
+```
+
+To switch to the required version of node using nvm, run:
+```
+nvm install
+nvm use
+```
+
+## Quickstart
+
+### Installation
+Install node dependencies:
+```
+npm install
+```
+
+### Configure
+Create a copy of the example environment variable file:
+```
+cp .env.example .env
+```
+
+### Linting
+Lint and format the code:
+```
+npm run format
+```
+
+### Build
+Build the assets:
+```
+npm run build
+```
+
+### Run
+#### Running the Application
+Run the application with:
+```
+npm run start
+```
