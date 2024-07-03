@@ -1,0 +1,15 @@
+services:
+  backend:
+    build: .
+    entrypoint: "npm run start"
+    ports:
+      - 3001:3001
+    volumes:
+      - ./output:/results
+  tests:
+    build: .
+    entrypoint: "npm run test"
+    ports:
+      - 3002:3002
+    volumes:
+      - ./output:/results
