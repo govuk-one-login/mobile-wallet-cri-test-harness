@@ -3,7 +3,7 @@ import "dotenv/config";
 
 function callThat() {
   // const data =  readFileSync("results/privateKey", 'utf8')
-  return true;
+  return false;
 }
 
 function callThis() {
