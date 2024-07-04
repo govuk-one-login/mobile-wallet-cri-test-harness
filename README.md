@@ -58,5 +58,5 @@ docker build -t "test-harness" .
 
 Run the image inside a container:
 ```
-docker run --rm -v ./output:/results dev
+docker run --rm -v ./output:/results test-harness
 ```

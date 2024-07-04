@@ -12,5 +12,5 @@ bash run_tests.sh &
 wait -n
 
 # Exit with status of process that exited first
-echo $?
+echo "Existing with code " $?
 exit $?

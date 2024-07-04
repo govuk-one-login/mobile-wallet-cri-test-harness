@@ -11,6 +11,8 @@ function callThis() {
 }
 
 describe("tests", () => {
+  console.log("Running tests");
+
   it("should callThis and return true", async () => {
     expect(callThis()).toBe(true);
   });
