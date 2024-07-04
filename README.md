@@ -51,7 +51,12 @@ npm run build
 
 ### Run
 #### Running the Application
-Run the application with:
+Build the Docker images:
 ```
-npm run start
+docker build -t "test-harness" .  
+```
+
+Run the image inside a container:
+```
+docker run --rm -v ./output:/results dev
 ```
