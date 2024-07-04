@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express, { Application, Request, Response } from "express";
 import { getPortNumber } from "./config";
 // import {KeyLike, generateKeyPair} from "jose";

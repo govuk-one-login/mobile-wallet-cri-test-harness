@@ -8,3 +8,7 @@ function getEnvVarValue(variableName: string): string {
 export function getPortNumber(): string {
   return getEnvVarValue("PORT");
 }
+
+export function getCredentialOffer(): string {
+  return getEnvVarValue("CREDENTIAL_OFFER_DEEP_LINK");
+}
