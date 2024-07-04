@@ -3,5 +3,7 @@ COPY . /
 RUN npm install && \
     mkdir /results
 EXPOSE 3001
-#ENTRYPOINT ["npm", "run", "test"]
-ENTRYPOINT ["bash", "my_wrapper_script.sh"]
+#ENV CRI_DOMAIN $criDomain
+#ENV WALLET_SUBJECT_ID $walletSubjectId
+#ENV CREDENTIAL_OFFER_DEEP_LINK $credentialOffer
+ENTRYPOINT ["bash", "run.sh"]

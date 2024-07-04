@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Start the first process
-bash my_first_process.sh &
+bash run_server.sh &
 
-sleep 15
+sleep 20
 
 # Start the second process
-bash my_second_process.sh &
+bash run_tests.sh &
 
 # Wait for any process to exit
 wait -n
