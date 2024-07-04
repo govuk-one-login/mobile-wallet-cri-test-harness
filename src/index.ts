@@ -8,7 +8,7 @@ const app: Application = express();
 const port = getPortNumber();
 
 app.get("/hello", async (_req: Request, res: Response) => {
-  res.status(201).send("Hello World!");
+  res.status(200).send("Hello World!");
 });
 
 const server = app
