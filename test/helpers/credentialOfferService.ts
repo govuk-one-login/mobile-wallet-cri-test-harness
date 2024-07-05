@@ -16,66 +16,66 @@ export class CredentialOfferService {
   }
 
   validate(credentialOfferDeepLink: string) {
-    let parsedUrl;
-    try {
-      parsedUrl = new URL(credentialOfferDeepLink);
-    } catch (error) {
-      console.log(error);
-      return "INVALID_DEEP_LINK";
-    }
+    const parsedDeepLink = this.parseAsUrl(credentialOfferDeepLink);
 
-    let credentialOfferParsed;
-    try {
-      const credentialOfferRaw = parsedUrl.searchParams.get("credential_offer");
-      if (credentialOfferRaw == null) {
-        return "INVALID_CREDENTIAL_OFFER";
-      }
-      credentialOfferParsed = JSON.parse(credentialOfferRaw);
-    } catch (error) {
-      console.log(error);
-      return "INVALID_CREDENTIAL_OFFER";
+    const credentialOfferRaw =
+      parsedDeepLink.searchParams.get("credential_offer");
+    if (credentialOfferRaw == null) {
+      throw new Error("MISSING_CREDENTIAL_OFFER");
     }
+    const credentialOfferParsed = this.parseAsJson(credentialOfferRaw);
 
     const credentialIssuer = credentialOfferParsed["credential_issuer"];
     if (!credentialIssuer) {
-      return "MISSING_CREDENTIAL_ISSUER";
+      throw new Error("INVALID_CREDENTIAL_ISSUER");
     }
-    try {
-      new URL(credentialIssuer);
-    } catch (error) {
-      console.log(error);
-      return "INVALID_CREDENTIAL_ISSUER";
-    }
+    this.parseAsUrl(credentialIssuer);
 
     const credentials = credentialOfferParsed["credentials"];
-    if (!credentials) {
-      return "MISSING_CREDENTIALS";
-    }
     if (
+      !credentials ||
       !Array.isArray(credentials) ||
       credentials.length < 1 ||
       !credentials[0]
     ) {
-      return "INVALID_CREDENTIALS";
+      throw new Error("INVALID_CREDENTIALS");
     }
 
     const grants = credentialOfferParsed["grants"];
     if (!grants) {
-      return "MISSING_GRANTS";
+      throw new Error("INVALID_GRANTS");
     }
 
     const grantType =
       grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"];
     if (!grants) {
-      return "MISSING_GRANT_TYPE";
+      throw new Error("INVALID_GRANT_TYPE");
     }
 
     const preAuthorizedCode = grantType["pre-authorized_code"];
     if (!preAuthorizedCode) {
-      return "MISSING_PRE-AUTHORIZED_CODE";
+      throw new Error("INVALID_PREAUTHORIZED_CODE");
     }
 
     this._preAuthorizedCode = preAuthorizedCode;
     return true;
+  }
+
+  parseAsUrl(urlString: string) {
+    try {
+      return new URL(urlString);
+    } catch (error) {
+      console.log(error);
+      throw new Error("INVALID_URL");
+    }
+  }
+
+  parseAsJson(inputString: string) {
+    try {
+      return JSON.parse(inputString);
+    } catch (error) {
+      console.log(error);
+      throw new Error("INVALID_JSON");
+    }
   }
 }
