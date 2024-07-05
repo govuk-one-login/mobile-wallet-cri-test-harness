@@ -1,4 +1,3 @@
-import "dotenv/config";
 // import {readFileSync} from "fs";
 
 function callThat() {
