@@ -36,7 +36,6 @@ Format the code:
 npm run format
 ```
 
-### Formatting & Linting
 Lint the code:
 ```
 npm run lint --fix
