@@ -29,7 +29,7 @@ Install node dependencies:
 npm install
 ```
 
-### Linting
+### Formatting & Linting
 Format the code:
 ```
 npm run format
