@@ -6,7 +6,6 @@ A tool for testing a Wallet credential issuer service.
 ## Pre-requisites
 - [Homebrew package manager](https://brew.sh)
 - [Docker](https://docs.docker.com/get-docker/)
-- [docker-compose](https://docs.docker.com/compose/install/) (version 1.9.0+)
 
 **If you don't have node, or don't have a recent enough version installed:**
 
@@ -31,10 +30,16 @@ Install node dependencies:
 npm install
 ```
 
-### Linting
-Lint and format the code:
+### Formatting & Linting
+Format the code:
 ```
 npm run format
+```
+
+### Formatting & Linting
+Lint the code:
+```
+npm run lint --fix
 ```
 
 ### Build
