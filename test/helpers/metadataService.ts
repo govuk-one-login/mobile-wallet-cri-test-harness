@@ -30,8 +30,8 @@ export class MetadataService {
     if (metadataResponse.status !== 200) {
       throw new Error("INVALID_STATUS_CODE");
     }
-    const metadata = metadataResponse.data;
 
+    const metadata = metadataResponse.data;
     if (!metadata) {
       throw new Error("INVALID_METADATA");
     }

@@ -7,7 +7,6 @@ let CREDENTIALS_ENDPOINT: string;
 let AUTHORIZATION_SERVER: string;
 
 describe("tests", () => {
-  console.log("Running tests");
   const credentialOfferDeepLink = getCredentialOffer();
   const criDomain = getCriDomain();
 
