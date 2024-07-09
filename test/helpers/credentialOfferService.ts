@@ -1,6 +1,21 @@
 import Ajv from "ajv";
 import addFormats from "ajv-formats"
 
+interface CredentialOffer {
+  credential_issuer: string;
+  credentials: string[];
+  grants: Grants;
+}
+
+interface Grants {
+  "urn:ietf:params:oauth:grant-type:pre-authorized_code": PreAuthorizedCode;
+}
+
+interface PreAuthorizedCode {
+  "pre-authorized_code": string;
+}
+
+
 export class CredentialOfferService {
   static #instance: CredentialOfferService;
   private _preAuthorizedCode!: string;
@@ -26,8 +41,7 @@ export class CredentialOfferService {
     if (credentialOfferRaw == null) {
       throw new Error("MISSING_CREDENTIAL_OFFER");
     }
-    const credentialOfferParsed = this.parseAsJson(credentialOfferRaw);
-    console.log(credentialOfferParsed)
+    const credentialOffer: CredentialOffer = this.parseAsJson(credentialOfferRaw);
 
     const ajv = new Ajv({ allErrors: true, verbose: true});
     addFormats(ajv, { formats: ['uri'] });
@@ -39,7 +53,7 @@ export class CredentialOfferService {
           "type": "string",
           "format": "uri"
         },
-        credentials: {type: "array", minItems: 1 },
+        credentials: {type: "array", items: {type: "string"}, minItems: 1 },
         grants: {
           type: "object",
           properties: {
@@ -57,61 +71,20 @@ export class CredentialOfferService {
         }
       },
       additionalProperties: false,
-      required: ["credential_issuer", "credentials", "grants"],
+      required: ["credential_issuer", "credentials", "grants"]
     }
 
-    const data = {
-      foo: 1,
-      bar: "abc",
-      grants: ""
-    }
 
     const rulesValidator = ajv.addSchema(schema).compile(schema);
-    if (rulesValidator(data)) {
+    if (rulesValidator(credentialOffer)) {
       console.log("Payload complies with the schema")
+      this._preAuthorizedCode = credentialOffer.grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"]["pre-authorized_code"];
+      return true;
     }
     else {
-      console.log("Errors"+ JSON.stringify(rulesValidator.errors))
-      console.log(rulesValidator.errors)
-
+      console.log(JSON.stringify(rulesValidator.errors))
+      throw new Error("INVALID_CREDENTIAL_OFFER")
     }
-
-
-    //
-    // const credentialIssuer = credentialOfferParsed["credential_issuer"];
-    // if (!credentialIssuer) {
-    //   throw new Error("INVALID_CREDENTIAL_ISSUER");
-    // }
-    // this.parseAsUrl(credentialIssuer);
-    //
-    // const credentials = credentialOfferParsed["credentials"];
-    // if (
-    //   !credentials ||
-    //   !Array.isArray(credentials) ||
-    //   credentials.length < 1 ||
-    //   !credentials[0]
-    // ) {
-    //   throw new Error("INVALID_CREDENTIALS");
-    // }
-    //
-    // const grants = credentialOfferParsed["grants"];
-    // if (!grants) {
-    //   throw new Error("INVALID_GRANTS");
-    // }
-    //
-    // const grantType =
-    //   grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"];
-    // if (!grants) {
-    //   throw new Error("INVALID_GRANT_TYPE");
-    // }
-    //
-    // const preAuthorizedCode = grantType["pre-authorized_code"];
-    // if (!preAuthorizedCode) {
-    //   throw new Error("INVALID_PREAUTHORIZED_CODE");
-    // }
-    //
-    // this._preAuthorizedCode = preAuthorizedCode;
-    // return true;
   }
 
   parseAsUrl(urlString: string) {
