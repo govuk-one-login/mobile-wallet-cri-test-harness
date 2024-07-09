@@ -22,7 +22,7 @@ export class CredentialOfferService {
 
     const credentialOfferRaw =
       parsedDeepLink.searchParams.get("credential_offer");
-    if (credentialOfferRaw == null) {
+    if (!credentialOfferRaw) {
       throw new Error("INVALID_CREDENTIAL_OFFER");
     }
     const credentialOffer = this.parseAsJson(credentialOfferRaw);

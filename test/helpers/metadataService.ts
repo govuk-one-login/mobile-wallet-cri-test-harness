@@ -32,6 +32,10 @@ export class MetadataService {
     }
     const metadata = metadataResponse.data;
 
+    if (!metadata) {
+      throw new Error("INVALID_METADATA");
+    }
+
     const credentialsEndpoint = metadata["credentials_endpoint"];
     if (!credentialsEndpoint) {
       throw new Error("INVALID_CREDENTIALS_ENDPOINT");
@@ -59,7 +63,10 @@ export class MetadataService {
 
     const credentialConfigurations =
       metadata["credential_configurations_supported"];
-    if (Object.keys(credentialConfigurations).length === 0) {
+    if (
+      !credentialConfigurations ||
+      Object.keys(credentialConfigurations).length === 0
+    ) {
       throw new Error("INVALID_CREDENTIAL_CONFIGURATIONS_SUPPORTED");
     }
 
