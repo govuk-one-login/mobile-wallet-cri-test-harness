@@ -1,3 +1,6 @@
+import Ajv from "ajv";
+import addFormats from "ajv-formats"
+
 export class CredentialOfferService {
   static #instance: CredentialOfferService;
   private _preAuthorizedCode!: string;
@@ -24,41 +27,91 @@ export class CredentialOfferService {
       throw new Error("MISSING_CREDENTIAL_OFFER");
     }
     const credentialOfferParsed = this.parseAsJson(credentialOfferRaw);
+    console.log(credentialOfferParsed)
 
-    const credentialIssuer = credentialOfferParsed["credential_issuer"];
-    if (!credentialIssuer) {
-      throw new Error("INVALID_CREDENTIAL_ISSUER");
+    const ajv = new Ajv({ allErrors: true, verbose: true});
+    addFormats(ajv, { formats: ['uri'] });
+
+    const schema = {
+      type: "object",
+      properties: {
+        credential_issuer: {
+          "type": "string",
+          "format": "uri"
+        },
+        credentials: {type: "array", minItems: 1 },
+        grants: {
+          type: "object",
+          properties: {
+            "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+              type: "object",
+              properties: {
+                "pre-authorized_code": {type: "string"},
+              },
+              additionalProperties: false,
+              required: ["pre-authorized_code"],
+            },
+          },
+          additionalProperties: false,
+          required: ["urn:ietf:params:oauth:grant-type:pre-authorized_code"],
+        }
+      },
+      additionalProperties: false,
+      required: ["credential_issuer", "credentials", "grants"],
     }
-    this.parseAsUrl(credentialIssuer);
 
-    const credentials = credentialOfferParsed["credentials"];
-    if (
-      !credentials ||
-      !Array.isArray(credentials) ||
-      credentials.length < 1 ||
-      !credentials[0]
-    ) {
-      throw new Error("INVALID_CREDENTIALS");
+    const data = {
+      foo: 1,
+      bar: "abc",
+      grants: ""
     }
 
-    const grants = credentialOfferParsed["grants"];
-    if (!grants) {
-      throw new Error("INVALID_GRANTS");
+    const rulesValidator = ajv.addSchema(schema).compile(schema);
+    if (rulesValidator(data)) {
+      console.log("Payload complies with the schema")
+    }
+    else {
+      console.log("Errors"+ JSON.stringify(rulesValidator.errors))
+      console.log(rulesValidator.errors)
+
     }
 
-    const grantType =
-      grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"];
-    if (!grants) {
-      throw new Error("INVALID_GRANT_TYPE");
-    }
 
-    const preAuthorizedCode = grantType["pre-authorized_code"];
-    if (!preAuthorizedCode) {
-      throw new Error("INVALID_PREAUTHORIZED_CODE");
-    }
-
-    this._preAuthorizedCode = preAuthorizedCode;
-    return true;
+    //
+    // const credentialIssuer = credentialOfferParsed["credential_issuer"];
+    // if (!credentialIssuer) {
+    //   throw new Error("INVALID_CREDENTIAL_ISSUER");
+    // }
+    // this.parseAsUrl(credentialIssuer);
+    //
+    // const credentials = credentialOfferParsed["credentials"];
+    // if (
+    //   !credentials ||
+    //   !Array.isArray(credentials) ||
+    //   credentials.length < 1 ||
+    //   !credentials[0]
+    // ) {
+    //   throw new Error("INVALID_CREDENTIALS");
+    // }
+    //
+    // const grants = credentialOfferParsed["grants"];
+    // if (!grants) {
+    //   throw new Error("INVALID_GRANTS");
+    // }
+    //
+    // const grantType =
+    //   grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"];
+    // if (!grants) {
+    //   throw new Error("INVALID_GRANT_TYPE");
+    // }
+    //
+    // const preAuthorizedCode = grantType["pre-authorized_code"];
+    // if (!preAuthorizedCode) {
+    //   throw new Error("INVALID_PREAUTHORIZED_CODE");
+    // }
+    //
+    // this._preAuthorizedCode = preAuthorizedCode;
+    // return true;
   }
 
   parseAsUrl(urlString: string) {
