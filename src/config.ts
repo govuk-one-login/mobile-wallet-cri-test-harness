@@ -12,3 +12,7 @@ export function getPortNumber(): string {
 export function getCredentialOffer(): string {
   return getEnvVarValue("CREDENTIAL_OFFER_DEEP_LINK");
 }
+
+export function getCriDomain(): string {
+  return getEnvVarValue("CRI_DOMAIN");
+}
