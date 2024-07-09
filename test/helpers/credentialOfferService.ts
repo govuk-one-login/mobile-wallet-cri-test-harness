@@ -1,3 +1,5 @@
+import { parseAsUrl } from "./parseAsUrl";
+
 export class CredentialOfferService {
   static #instance: CredentialOfferService;
   private _preAuthorizedCode!: string;
@@ -16,22 +18,21 @@ export class CredentialOfferService {
   }
 
   validate(credentialOfferDeepLink: string) {
-    const parsedDeepLink = this.parseAsUrl(credentialOfferDeepLink);
+    const parsedDeepLink = parseAsUrl(credentialOfferDeepLink);
 
     const credentialOfferRaw =
       parsedDeepLink.searchParams.get("credential_offer");
     if (credentialOfferRaw == null) {
-      throw new Error("MISSING_CREDENTIAL_OFFER");
+      throw new Error("INVALID_CREDENTIAL_OFFER");
     }
-    const credentialOfferParsed = this.parseAsJson(credentialOfferRaw);
-
-    const credentialIssuer = credentialOfferParsed["credential_issuer"];
+    const credentialOffer = this.parseAsJson(credentialOfferRaw);
+    const credentialIssuer = credentialOffer["credential_issuer"];
     if (!credentialIssuer) {
       throw new Error("INVALID_CREDENTIAL_ISSUER");
     }
-    this.parseAsUrl(credentialIssuer);
+    parseAsUrl(credentialIssuer);
 
-    const credentials = credentialOfferParsed["credentials"];
+    const credentials = credentialOffer["credentials"];
     if (
       !credentials ||
       !Array.isArray(credentials) ||
@@ -41,7 +42,7 @@ export class CredentialOfferService {
       throw new Error("INVALID_CREDENTIALS");
     }
 
-    const grants = credentialOfferParsed["grants"];
+    const grants = credentialOffer["grants"];
     if (!grants) {
       throw new Error("INVALID_GRANTS");
     }
@@ -59,15 +60,6 @@ export class CredentialOfferService {
 
     this._preAuthorizedCode = preAuthorizedCode;
     return true;
-  }
-
-  parseAsUrl(urlString: string) {
-    try {
-      return new URL(urlString);
-    } catch (error) {
-      console.log(error);
-      throw new Error("INVALID_URL");
-    }
   }
 
   parseAsJson(inputString: string) {
