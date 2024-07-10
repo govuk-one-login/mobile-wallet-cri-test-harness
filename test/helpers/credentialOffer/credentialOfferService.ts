@@ -18,7 +18,7 @@ interface PreAuthorizedCode {
 
 export class CredentialOfferService {
   static #instance: CredentialOfferService;
-  private _preAuthorizedCode!: string;
+  private _preAuthorizedCode: string | undefined = undefined;
 
   private constructor() {}
 
@@ -29,7 +29,7 @@ export class CredentialOfferService {
     return CredentialOfferService.#instance;
   }
 
-  get preAuthorizedCode(): string {
+  get preAuthorizedCode(): string | undefined {
     return this._preAuthorizedCode;
   }
 
@@ -52,7 +52,9 @@ export class CredentialOfferService {
       .compile(credentialOfferSchema);
 
     if (!rulesValidator(credentialOffer)) {
-      console.log(JSON.stringify(rulesValidator.errors));
+      console.log(
+        `Payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+      );
       throw new Error("INVALID_CREDENTIAL_OFFER");
     }
 

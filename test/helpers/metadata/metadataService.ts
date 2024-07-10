@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {metadataSchema} from "./metadataSchema";
+import { metadataSchema } from "./metadataSchema";
 
 interface Metadata {
   credentials_endpoint: string;
@@ -13,8 +13,8 @@ interface Metadata {
 export class MetadataService {
   static #instance: MetadataService;
   private METADATA_PATH: string = ".well-known/openid-credential-issuer";
-  private _getCredentialsEndpoint!: string;
-  private _getAuthorizationServersEndpoint!: string;
+  private _credentialsEndpoint: string | undefined = undefined;
+  private _authorizationServersEndpoint: string | undefined = undefined;
 
   private constructor() {}
 
@@ -25,12 +25,12 @@ export class MetadataService {
     return MetadataService.#instance;
   }
 
-  get getCredentialsEndpoint(): string {
-    return this._getCredentialsEndpoint;
+  get credentialsEndpoint(): string | undefined {
+    return this._credentialsEndpoint;
   }
 
-  get getAuthorizationServersEndpoint(): string {
-    return this._getAuthorizationServersEndpoint;
+  get authorizationServersEndpoint(): string | undefined {
+    return this._authorizationServersEndpoint;
   }
 
   async validate(criDomain: string) {
@@ -42,26 +42,50 @@ export class MetadataService {
 
     const metadata: Metadata = metadataResponse.data;
     if (!metadata) {
-      throw new Error("INVALID_METADATA");
+      throw new Error("INVALID_RESPONSE_DATA");
     }
 
     const ajv = new Ajv({ allErrors: true, verbose: false });
     addFormats(ajv, { formats: ["uri"] });
 
     const rulesValidator = ajv
-        .addSchema(metadataSchema)
-        .compile(metadataSchema);
+      .addSchema(metadataSchema)
+      .compile(metadataSchema);
 
-    if (rulesValidator(metadata)) {
-      console.log("Payload complies with the schema")
-      this._getCredentialsEndpoint = metadata.credentials_endpoint;
-      this._getAuthorizationServersEndpoint = metadata.authorization_servers[0];
+    const isValidPayload = rulesValidator(metadata);
+    if (isValidPayload) {
+      console.log("Payload complies with the schema");
+      this.setCredentialsEndpoint(metadata);
+      this.setAuthorizationServersEndpoint(metadata);
       return true;
+    } else {
+      const validationErrors = rulesValidator.errors;
+      console.log(
+        `Payload does not comply with the schema: ${JSON.stringify(validationErrors)}`,
+      );
+
+      const validationErrorsInstancePaths = validationErrors!.map(
+        (item) => item.instancePath,
+      );
+
+      if (!validationErrorsInstancePaths.includes("/credentials_endpoint")) {
+        this.setCredentialsEndpoint(metadata);
+      }
+
+      if (!validationErrorsInstancePaths.includes("/authorization_servers")) {
+        this.setAuthorizationServersEndpoint(metadata);
+      }
+
+      throw new Error("INVALID_METADATA");
     }
-    else {
-      console.log(JSON.stringify(rulesValidator.errors))
-      throw new Error("INVALID_METADATA")
-    }
+  }
+
+  private setAuthorizationServersEndpoint(metadata: Metadata) {
+    this._authorizationServersEndpoint = metadata.authorization_servers[0];
+  }
+
+  private setCredentialsEndpoint(metadata: Metadata) {
+    this._credentialsEndpoint = metadata.credentials_endpoint;
   }
 
   private async getMetadata(domain): Promise<AxiosResponse> {
@@ -69,7 +93,7 @@ export class MetadataService {
       const metadataUrl = new URL(this.METADATA_PATH, domain).toString();
       return await axios.get(metadataUrl);
     } catch (error) {
-      console.log(`Error fetching metadata: ${error}`);
+      console.log(`Error trying to fetch metadata: ${error}`);
       throw new Error("GET_METADATA_ERROR");
     }
   }

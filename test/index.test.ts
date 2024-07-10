@@ -17,4 +17,14 @@ describe("tests", () => {
     const metadataService = MetadataService.instance;
     expect(await metadataService.validate(criDomain)).toEqual(true);
   });
+
+  it("should be another test in the future", async () => {
+    const preAuthorizedCode = CredentialOfferService.instance.preAuthorizedCode;
+    console.log(preAuthorizedCode);
+    const authorizationServersEndpoint =
+      MetadataService.instance.authorizationServersEndpoint;
+    console.log(authorizationServersEndpoint);
+    const credentialEndpoint = MetadataService.instance.credentialsEndpoint;
+    console.log(credentialEndpoint);
+  });
 });
