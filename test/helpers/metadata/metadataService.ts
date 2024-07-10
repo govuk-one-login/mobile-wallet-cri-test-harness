@@ -1,5 +1,14 @@
 import axios, { AxiosResponse } from "axios";
-import { parseAsUrl } from "./parseAsUrl";
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
+import {metadataSchema} from "./metadataSchema";
+
+interface Metadata {
+  credentials_endpoint: string;
+  authorization_servers: string[];
+  credential_issuer: string;
+  credential_configurations_supported: object;
+}
 
 export class MetadataService {
   static #instance: MetadataService;
@@ -31,46 +40,28 @@ export class MetadataService {
       throw new Error("INVALID_STATUS_CODE");
     }
 
-    const metadata = metadataResponse.data;
+    const metadata: Metadata = metadataResponse.data;
     if (!metadata) {
       throw new Error("INVALID_METADATA");
     }
 
-    const credentialsEndpoint = metadata["credentials_endpoint"];
-    if (!credentialsEndpoint) {
-      throw new Error("INVALID_CREDENTIALS_ENDPOINT");
+    const ajv = new Ajv({ allErrors: true, verbose: false });
+    addFormats(ajv, { formats: ["uri"] });
+
+    const rulesValidator = ajv
+        .addSchema(metadataSchema)
+        .compile(metadataSchema);
+
+    if (rulesValidator(metadata)) {
+      console.log("Payload complies with the schema")
+      this._getCredentialsEndpoint = metadata.credentials_endpoint;
+      this._getAuthorizationServersEndpoint = metadata.authorization_servers[0];
+      return true;
     }
-
-    this._getCredentialsEndpoint = parseAsUrl(credentialsEndpoint).toString();
-
-    const authorizationServers = metadata["authorization_servers"];
-    if (
-      !authorizationServers ||
-      !Array.isArray(authorizationServers) ||
-      authorizationServers.length < 1
-    ) {
-      throw new Error("INVALID_AUTHORIZATION_SERVERS");
+    else {
+      console.log(JSON.stringify(rulesValidator.errors))
+      throw new Error("INVALID_METADATA")
     }
-    this._getAuthorizationServersEndpoint = parseAsUrl(
-      authorizationServers[0],
-    ).toString();
-
-    const credentialIssuer = metadata["credential_issuer"];
-    if (!credentialIssuer) {
-      throw new Error("INVALID_CREDENTIAL_ISSUER");
-    }
-    parseAsUrl(credentialIssuer);
-
-    const credentialConfigurations =
-      metadata["credential_configurations_supported"];
-    if (
-      !credentialConfigurations ||
-      Object.keys(credentialConfigurations).length === 0
-    ) {
-      throw new Error("INVALID_CREDENTIAL_CONFIGURATIONS_SUPPORTED");
-    }
-
-    return true;
   }
 
   private async getMetadata(domain): Promise<AxiosResponse> {
@@ -78,7 +69,7 @@ export class MetadataService {
       const metadataUrl = new URL(this.METADATA_PATH, domain).toString();
       return await axios.get(metadataUrl);
     } catch (error) {
-      console.log(error);
+      console.log(`Error fetching metadata: ${error}`);
       throw new Error("GET_METADATA_ERROR");
     }
   }
