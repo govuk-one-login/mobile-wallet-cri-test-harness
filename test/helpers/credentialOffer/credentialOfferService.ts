@@ -51,7 +51,8 @@ export class CredentialOfferService {
       .addSchema(credentialOfferSchema)
       .compile(credentialOfferSchema);
 
-    if (!rulesValidator(credentialOffer)) {
+    const isValidPayload = rulesValidator(credentialOffer);
+    if (!isValidPayload) {
       console.log(
         `Payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
       );
