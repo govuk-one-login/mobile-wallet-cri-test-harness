@@ -10,4 +10,9 @@ describe("tests", () => {
       true,
     );
   });
+
+  it("should be another test in the future", async () => {
+    const preAuthorizedCode = CredentialOfferService.instance.preAuthorizedCode;
+    console.log(preAuthorizedCode);
+  });
 });
