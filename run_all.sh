@@ -3,7 +3,7 @@
 # Start the first process
 bash run_server.sh &
 
-sleep 10
+sleep 1
 
 # Start the second process
 bash run_tests.sh &
@@ -12,5 +12,5 @@ bash run_tests.sh &
 wait -n
 
 # Exit with status of process that exited first
-echo "Existing with code " $?
+echo "Exiting with code " $?
 exit $?
