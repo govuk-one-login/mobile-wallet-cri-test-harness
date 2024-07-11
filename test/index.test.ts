@@ -3,7 +3,7 @@ import { CredentialOfferService } from "./helpers/credentialOffer/credentialOffe
 import { MetadataService } from "./helpers/metadata/metadataService";
 import { DidDocumentService } from "./helpers/didDocument/didDocumentService";
 
-describe("tests", () => {
+describe("Example CRI tests", () => {
   const credentialOfferDeepLink = getCredentialOffer();
   const criUrl = getCriUrl();
   const criDomain = getCriDomain();
@@ -33,7 +33,7 @@ describe("tests", () => {
     console.log(authorizationServersEndpoint);
     const credentialEndpoint = MetadataService.instance.credentialsEndpoint;
     console.log(credentialEndpoint);
-    const publicKeyJwk = DidDocumentService.instance.publicKeys;
-    console.log(publicKeyJwk);
+    const publicKeyJwks = DidDocumentService.instance.publicKeys;
+    console.log(publicKeyJwks);
   });
 });
