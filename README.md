@@ -6,7 +6,6 @@ A tool for testing a Wallet credential issuer service.
 ## Pre-requisites
 - [Homebrew package manager](https://brew.sh)
 - [Docker](https://docs.docker.com/get-docker/)
-- [docker-compose](https://docs.docker.com/compose/install/) (version 1.9.0+)
 
 **If you don't have node, or don't have a recent enough version installed:**
 
@@ -31,16 +30,15 @@ Install node dependencies:
 npm install
 ```
 
-### Configure
-Create a copy of the example environment variable file:
-```
-cp .env.example .env
-```
-
-### Linting
-Lint and format the code:
+### Formatting & Linting
+Format the code:
 ```
 npm run format
+```
+
+Lint the code:
+```
+npm run lint --fix
 ```
 
 ### Build
@@ -51,7 +49,12 @@ npm run build
 
 ### Run
 #### Running the Application
-Run the application with:
+Build the Docker images:
 ```
-npm run start
+docker build -t "test-harness" .  
+```
+
+Run the image inside a container:
+```
+docker run --rm -v ./output:/results test-harness
 ```
