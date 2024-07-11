@@ -68,7 +68,6 @@ export const didDocumentSchema = {
     assertionMethod: {
       type: "array",
       minItems: 1,
-      maxItems: 1,
       items: {
         type: "string",
         pattern: "^did:web:.*$",
