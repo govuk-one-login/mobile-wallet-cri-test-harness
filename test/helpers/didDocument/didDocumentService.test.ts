@@ -145,7 +145,7 @@ describe("didDocumentService", () => {
     ).rejects.toThrow("INVALID_RESPONSE_DATA");
   });
 
-  it("should throw 'INVALID_DID_DOCUMENT' error when 'verificationMethod' is not in DID document", async () => {
+  it("should throw 'INVALID_DID_DOCUMENT' error when 'verificationMethod' missing from DID document", async () => {
     const mockedResponse = {
       status: 200,
       data: {
@@ -250,7 +250,7 @@ describe("didDocumentService", () => {
     );
   });
 
-  it("should throw 'INVALID_DID_DOCUMENT' error when not all 'id' are in 'assertionMethod'", async () => {
+  it("should throw 'INVALID_DID_DOCUMENT' error when 'assertionMethod' is missing an 'id'", async () => {
     const mockedResponse = {
       status: 200,
       data: {
