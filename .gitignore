@@ -10,6 +10,9 @@ output/
 # Ignore coverage directory
 coverage/
 
+# Ignore results directory
+results/
+
 # Mac
 .DS_Store
 .idea
