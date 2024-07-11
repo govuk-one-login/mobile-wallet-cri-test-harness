@@ -34,13 +34,13 @@ export class MetadataService {
   }
 
   async validate(criDomain: string) {
-    const metadataResponse = await this.getMetadata(criDomain);
+    const response = await this.getMetadata(criDomain);
 
-    if (metadataResponse.status !== 200) {
+    if (response.status !== 200) {
       throw new Error("INVALID_STATUS_CODE");
     }
 
-    const metadata: Metadata = metadataResponse.data;
+    const metadata: Metadata = response.data;
     if (!metadata) {
       throw new Error("INVALID_RESPONSE_DATA");
     }
@@ -54,14 +54,14 @@ export class MetadataService {
 
     const isValidPayload = rulesValidator(metadata);
     if (isValidPayload) {
-      console.log("Payload complies with the schema");
+      console.log("Metadata complies with the schema");
       this.setCredentialsEndpoint(metadata);
       this.setAuthorizationServersEndpoint(metadata);
       return true;
     } else {
       const validationErrors = rulesValidator.errors;
       console.log(
-        `Payload does not comply with the schema: ${JSON.stringify(validationErrors)}`,
+        `Metadata does not comply with the schema: ${JSON.stringify(validationErrors)}`,
       );
 
       const validationErrorsInstancePaths = validationErrors!.map(

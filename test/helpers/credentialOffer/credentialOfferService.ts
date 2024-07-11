@@ -54,12 +54,12 @@ export class CredentialOfferService {
     const isValidPayload = rulesValidator(credentialOffer);
     if (!isValidPayload) {
       console.log(
-        `Payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+        `Credential offer does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
       );
       throw new Error("INVALID_CREDENTIAL_OFFER");
     }
 
-    console.log("Payload complies with the schema");
+    console.log("Credential offer complies with the schema");
     this._preAuthorizedCode =
       credentialOffer.grants[
         "urn:ietf:params:oauth:grant-type:pre-authorized_code"
