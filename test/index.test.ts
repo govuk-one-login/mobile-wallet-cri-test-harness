@@ -1,30 +1,40 @@
-import { getCredentialOffer, getCriDomain } from "../src/config";
-import { CredentialOfferService } from "./helpers/credentialOffer/credentialOfferService";
-import { MetadataService } from "./helpers/metadata/metadataService";
+import { getCriDomain, getCredentialOfferDeepLink } from "../src/config";
+import {
+  CredentialOffer,
+  parseAsJson,
+  getCredentialOffer,
+  validateCredentialOffer,
+} from "./helpers/credentialOffer/validateCredentialOffer";
+import {
+  getMetadata,
+  Metadata,
+  validateMetadata,
+} from "./helpers/metadata/validateMetadata";
 
 describe("tests", () => {
-  const credentialOfferDeepLink = getCredentialOffer();
+  const credentialOfferDeepLink = getCredentialOfferDeepLink();
   const criDomain = getCriDomain();
 
   it("should validate the credential offer", async () => {
-    const credentialOfferService = CredentialOfferService.instance;
-    expect(credentialOfferService.validate(credentialOfferDeepLink)).toEqual(
-      true,
-    );
+    const outcome = validateCredentialOffer(credentialOfferDeepLink);
+    expect(outcome).toEqual(true);
   });
 
   it("should validate the credential metadata", async () => {
-    const metadataService = MetadataService.instance;
-    expect(await metadataService.validate(criDomain)).toEqual(true);
+    expect(await validateMetadata(criDomain)).toEqual(true);
   });
 
-  it("should be another test in the future", async () => {
-    const preAuthorizedCode = CredentialOfferService.instance.preAuthorizedCode;
-    console.log(preAuthorizedCode);
-    const authorizationServersEndpoint =
-      MetadataService.instance.authorizationServersEndpoint;
-    console.log(authorizationServersEndpoint);
-    const credentialEndpoint = MetadataService.instance.credentialsEndpoint;
-    console.log(credentialEndpoint);
+  it("should be future test that needs the pre-authorized code", async () => {
+    const credentialOffer = getCredentialOffer(credentialOfferDeepLink);
+    const preAuthorizedCode = (parseAsJson(credentialOffer!) as CredentialOffer)
+      .grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"][
+      "pre-authorized_code"
+    ];
+    expect(preAuthorizedCode).toBeTruthy();
+  });
+
+  it("should be future test that needs the metadata", async () => {
+    const metadata: Metadata = (await getMetadata(criDomain)).data;
+    expect(metadata).toBeTruthy();
   });
 });
