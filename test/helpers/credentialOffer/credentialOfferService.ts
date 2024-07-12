@@ -20,7 +20,7 @@ export class CredentialOfferService {
   static #instance: CredentialOfferService;
   private _preAuthorizedCode: string | undefined = undefined;
 
-  private constructor() {}
+  public constructor() {}
 
   public static get instance(): CredentialOfferService {
     if (!CredentialOfferService.#instance) {

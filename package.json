@@ -12,7 +12,8 @@
     "lint": "eslint --ext .ts .",
     "lint:fix": "eslint --ext .ts . --fix",
     "format": "prettier --ignore-path .gitignore --write \"*/**/*.{ts,json}\"",
-    "test": "jest"
+    "test": "jest -t --testPathIgnorePatterns=[credentialOfferService.test.ts]",
+    "test:unit": "jest -t --testPathIgnorePatterns=index.test.ts"
   },
   "engines": {
     "node": ">=20.12.0",
