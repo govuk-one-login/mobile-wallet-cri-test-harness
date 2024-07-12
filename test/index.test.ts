@@ -5,8 +5,8 @@ import {
 } from "../src/config";
 import {
   CredentialOffer,
-  parseAsJson,
   getCredentialOffer,
+  parseAsJson,
   validateCredentialOffer,
 } from "./helpers/credentialOffer/validateCredentialOffer";
 import {
