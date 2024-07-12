@@ -1,18 +1,24 @@
 import { getCredentialOffer } from "../src/config";
-import { CredentialOfferService } from "./helpers/credentialOffer/credentialOfferService";
+import {
+  CredentialOffer,
+  validateCredentialOffer,
+} from "./helpers/credentialOffer/validateCredentialOffer";
 
 describe("tests", () => {
+  const credentialOfferDeepLink = getCredentialOffer();
   it("should validate the credential offer", async () => {
-    const credentialOfferService = CredentialOfferService.instance;
-    const credentialOfferDeepLink = getCredentialOffer();
-
-    expect(credentialOfferService.validate(credentialOfferDeepLink)).toEqual(
-      true,
-    );
+    const outcome = validateCredentialOffer(credentialOfferDeepLink);
+    expect(outcome).toEqual(true);
   });
 
-  it("should be another test in the future", async () => {
-    const preAuthorizedCode = CredentialOfferService.instance.preAuthorizedCode;
-    console.log(preAuthorizedCode);
+  it("should be future test that needs the pre-authorized code", async () => {
+    const credentialOffer = new URL(credentialOfferDeepLink).searchParams.get(
+      "credential_offer",
+    );
+    const preAuthorizedCode = (JSON.parse(credentialOffer!) as CredentialOffer)
+      .grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"][
+      "pre-authorized_code"
+    ];
+    expect(preAuthorizedCode).toBeTruthy();
   });
 });
