@@ -7,11 +7,11 @@ node_modules/
 # Ignore output directory
 output/
 
-# Ignore coverage directory
-coverage/
-
 # Ignore results directory
 results/
+
+# Ignore coverage directory
+coverage/
 
 # Mac
 .DS_Store
