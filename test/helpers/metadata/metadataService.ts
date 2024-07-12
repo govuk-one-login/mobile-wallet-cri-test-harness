@@ -16,7 +16,7 @@ export class MetadataService {
   private _credentialsEndpoint: string | undefined = undefined;
   private _authorizationServersEndpoint: string | undefined = undefined;
 
-  private constructor() {}
+  public constructor() {}
 
   public static get instance(): MetadataService {
     if (!MetadataService.#instance) {
@@ -68,16 +68,54 @@ export class MetadataService {
         (item) => item.instancePath,
       );
 
-      if (!validationErrorsInstancePaths.includes("/credentials_endpoint")) {
+      const validationErrorsParams = validationErrors!.map(
+        (item) => item.message,
+      );
+
+      if (
+        !this.containsCredentialsEndpointErrors(
+          validationErrorsInstancePaths,
+          validationErrorsParams,
+        )
+      ) {
         this.setCredentialsEndpoint(metadata);
       }
 
-      if (!validationErrorsInstancePaths.includes("/authorization_servers")) {
+      if (
+        !this.containsAuthorizationServersErrors(
+          validationErrorsInstancePaths,
+          validationErrorsParams,
+        )
+      ) {
         this.setAuthorizationServersEndpoint(metadata);
       }
 
       throw new Error("INVALID_METADATA");
     }
+  }
+
+  private containsAuthorizationServersErrors(
+    validationErrorsInstancePaths: string[],
+    validationErrorsParams: (string | undefined)[],
+  ) {
+    return (
+      validationErrorsInstancePaths.includes("/authorization_servers") ||
+      validationErrorsParams.find((value) =>
+        value?.includes("authorization_servers"),
+      )
+    );
+  }
+
+  private containsCredentialsEndpointErrors(
+    validationErrorsInstancePaths: string[],
+    validationErrorsParams: (string | undefined)[],
+  ) {
+    return (
+      validationErrorsInstancePaths.includes("/credentials_endpoint") ||
+      validationErrorsParams.find((value) =>
+        value?.includes("credentials_endpoint"),
+      )
+    );
   }
 
   private setAuthorizationServersEndpoint(metadata: Metadata) {
