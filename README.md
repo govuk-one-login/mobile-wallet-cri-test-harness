@@ -46,6 +46,12 @@ Build the application:
 npm run build
 ```
 
+### Test
+Run the unit tests:
+ ```
+ npm run test:unit
+ ```
+
 ### Run
 #### Running the Application
 Build the Docker images:

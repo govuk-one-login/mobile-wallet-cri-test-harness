@@ -50,6 +50,8 @@ describe("credentialOfferService", () => {
       "INVALID_CREDENTIAL_OFFER",
     );
     expect(credentialOfferService.preAuthorizedCode).toEqual(undefined);
-    expect(console.log).toHaveBeenCalledWith("Payload does not comply with the schema: [{\"instancePath\":\"\",\"schemaPath\":\"#/required\",\"keyword\":\"required\",\"params\":{\"missingProperty\":\"grants\"},\"message\":\"must have required property 'grants'\"},{\"instancePath\":\"\",\"schemaPath\":\"#/additionalProperties\",\"keyword\":\"additionalProperties\",\"params\":{\"additionalProperty\":\"missingGrants\"},\"message\":\"must NOT have additional properties\"}]")
+    expect(console.log).toHaveBeenCalledWith(
+      'Payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"grants"},"message":"must have required property \'grants\'"},{"instancePath":"","schemaPath":"#/additionalProperties","keyword":"additionalProperties","params":{"additionalProperty":"missingGrants"},"message":"must NOT have additional properties"}]',
+    );
   });
 });
