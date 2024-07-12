@@ -1,39 +1,62 @@
-import { getCredentialOffer, getCriDomain, getCriUrl } from "../src/config";
-import { CredentialOfferService } from "./helpers/credentialOffer/credentialOfferService";
-import { MetadataService } from "./helpers/metadata/metadataService";
-import { DidDocumentService } from "./helpers/didDocument/didDocumentService";
+import {
+  getCriDomain,
+  getCriUrl,
+  getCredentialOfferDeepLink,
+} from "../src/config";
+import {
+  CredentialOffer,
+  parseAsJson,
+  getCredentialOffer,
+  validateCredentialOffer,
+} from "./helpers/credentialOffer/validateCredentialOffer";
+import {
+  getMetadata,
+  Metadata,
+  validateMetadata,
+} from "./helpers/metadata/validateMetadata";
+import {
+  DidDocument,
+  getDidDocument,
+  validateDidDocument,
+} from "./helpers/didDocument/validateDidDocument";
 
-describe("Example CRI tests", () => {
-  const credentialOfferDeepLink = getCredentialOffer();
+describe("test-harness", () => {
+  const credentialOfferDeepLink = getCredentialOfferDeepLink();
   const criUrl = getCriUrl();
   const criDomain = getCriDomain();
 
   it("should validate the credential offer", async () => {
-    const credentialOfferService = CredentialOfferService.instance;
-    expect(credentialOfferService.validate(credentialOfferDeepLink)).toEqual(
-      true,
-    );
+    const outcome = validateCredentialOffer(credentialOfferDeepLink);
+    expect(outcome).toEqual(true);
   });
 
   it("should validate the credential metadata", async () => {
-    const metadataService = MetadataService.instance;
-    expect(await metadataService.validate(criUrl)).toEqual(true);
+    expect(await validateMetadata(criUrl)).toEqual(true);
   });
 
   it("should validate the DID document", async () => {
-    const didDocumentService = DidDocumentService.instance;
-    expect(await didDocumentService.validate(criUrl, criDomain)).toEqual(true);
+    expect(await validateDidDocument(criUrl, criDomain)).toEqual(true);
   });
 
-  it("should be another test in the future", async () => {
-    const preAuthorizedCode = CredentialOfferService.instance.preAuthorizedCode;
-    console.log(preAuthorizedCode);
-    const authorizationServersEndpoint =
-      MetadataService.instance.authorizationServersEndpoint;
-    console.log(authorizationServersEndpoint);
-    const credentialEndpoint = MetadataService.instance.credentialsEndpoint;
-    console.log(credentialEndpoint);
-    const publicKeyJwks = DidDocumentService.instance.publicKeys;
-    console.log(publicKeyJwks);
+  it("should be future test that needs the pre-authorized code", async () => {
+    const credentialOffer = getCredentialOffer(credentialOfferDeepLink);
+    const preAuthorizedCode = (parseAsJson(credentialOffer!) as CredentialOffer)
+      .grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"][
+      "pre-authorized_code"
+    ];
+    expect(preAuthorizedCode).toBeTruthy();
+  });
+
+  it("should be future test that needs the metadata", async () => {
+    const metadata: Metadata = (await getMetadata(criUrl)).data;
+    expect(metadata).toBeTruthy();
+  });
+
+  it("should be future test that needs the public key from the DID document", async () => {
+    const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
+    const publicKeyJwks = didDocument.verificationMethod.map(
+      (verificationMethod) => verificationMethod.publicKeyJwk,
+    );
+    expect(publicKeyJwks).toBeTruthy();
   });
 });
