@@ -16,9 +16,8 @@ interface PreAuthorizedCode {
   "pre-authorized_code": string;
 }
 
-export function validateCredentialOffer(credentialOfferDeepLink: string): true {
+export function validateCredentialOffer(credentialOfferDeepLink: string) {
   const credentialOfferString = getCredentialOffer(credentialOfferDeepLink);
-
   const credentialOffer: CredentialOffer = parseAsJson(credentialOfferString);
 
   const ajv = new Ajv({ allErrors: true, verbose: false });

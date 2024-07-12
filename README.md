@@ -48,9 +48,9 @@ npm run build
 
 ### Test
 Run the unit tests:
- ```
- npm run test:unit
- ```
+```
+npm run test:unit
+```
 
 ### Run
 #### Running the Application
