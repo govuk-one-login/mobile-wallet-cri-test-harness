@@ -16,33 +16,9 @@ interface PreAuthorizedCode {
   "pre-authorized_code": string;
 }
 
-function parseAsUrl(urlString: string) {
-  try {
-    return new URL(urlString);
-  } catch (error) {
-    console.log(`Failed to parse as URL: ${error}`);
-    throw new Error("INVALID_DEEP_LINK");
-  }
-}
-
-function parseAsJson(inputString: string) {
-  try {
-    return JSON.parse(inputString);
-  } catch (error) {
-    console.log(`Failed to parse as JSON: ${error}`);
-    throw new Error("INVALID_JSON");
-  }
-}
-
 export function validateCredentialOffer(credentialOfferDeepLink: string) {
-  const parsedDeepLink = parseAsUrl(credentialOfferDeepLink);
-
-  const credentialOfferRaw =
-    parsedDeepLink.searchParams.get("credential_offer");
-  if (credentialOfferRaw == null) {
-    throw new Error("MISSING_CREDENTIAL_OFFER");
-  }
-  const credentialOffer: CredentialOffer = parseAsJson(credentialOfferRaw);
+  const credentialOfferString = getCredentialOffer(credentialOfferDeepLink);
+  const credentialOffer: CredentialOffer = parseAsJson(credentialOfferString);
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri"] });
@@ -54,11 +30,36 @@ export function validateCredentialOffer(credentialOfferDeepLink: string) {
   const isValidPayload = rulesValidator(credentialOffer);
   if (!isValidPayload) {
     console.log(
-      `Payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+      `Credential offer does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
     );
     throw new Error("INVALID_CREDENTIAL_OFFER");
   }
 
-  console.log("Payload complies with the schema");
+  console.log("Credential offer complies with the schema");
   return true;
+}
+
+export function parseAsJson(inputString: string) {
+  try {
+    return JSON.parse(inputString);
+  } catch (error) {
+    console.log(`Failed to parse as JSON: ${JSON.stringify(error)}`);
+    throw new Error("INVALID_JSON");
+  }
+}
+
+export function getCredentialOffer(urlString: string) {
+  let url: URL;
+  try {
+    url = new URL(urlString);
+  } catch (error) {
+    console.log(`Failed to parse as URL: ${JSON.stringify(error)}`);
+    throw new Error("INVALID_DEEP_LINK");
+  }
+  const credentialOffer = url.searchParams.get("credential_offer");
+  if (credentialOffer == null) {
+    throw new Error("MISSING_CREDENTIAL_OFFER");
+  } else {
+    return credentialOffer;
+  }
 }

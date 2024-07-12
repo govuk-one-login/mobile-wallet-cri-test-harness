@@ -9,6 +9,6 @@ export function getPortNumber(): string {
   return getEnvVarValue("PORT");
 }
 
-export function getCredentialOffer(): string {
+export function getCredentialOfferDeepLink(): string {
   return getEnvVarValue("CREDENTIAL_OFFER_DEEP_LINK");
 }
