@@ -15,9 +15,6 @@ export default {
     'test/**',
     'src/**',
   ],
-  "coveragePathIgnorePatterns": [
-    "<rootDir>/test/index.test.ts"
-  ],
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
 }
