@@ -1,0 +1,79 @@
+export const didDocumentSchema = {
+  type: "object",
+  properties: {
+    "@context": {
+      type: "array",
+      minItems: 2,
+      maxItems: 2,
+      uniqueItems: true,
+      items: {
+        type: "string",
+        enum: [
+          "https://www.w3.org/ns/did/v1",
+          "https://www.w3.org/ns/security/jwk/v1",
+        ],
+      },
+    },
+    id: {
+      type: "string",
+      pattern: "^did:web:.*$",
+    },
+    verificationMethod: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            pattern: "^did:web:.*$",
+          },
+          type: {
+            type: "string",
+            enum: ["JsonWebKey2020"],
+          },
+          controller: {
+            type: "string",
+            pattern: "^did:web:.*$",
+          },
+          publicKeyJwk: {
+            type: "object",
+            properties: {
+              kty: {
+                type: "string",
+                enum: ["EC"],
+              },
+              kid: {
+                type: "string",
+              },
+              crv: {
+                type: "string",
+                enum: ["P-256"],
+              },
+              x: {
+                type: "string",
+              },
+              y: {
+                type: "string",
+              },
+            },
+            required: ["kty", "kid", "crv", "x", "y"],
+            additionalProperties: false,
+          },
+        },
+        required: ["id", "type", "controller", "publicKeyJwk"],
+        additionalProperties: false,
+      },
+    },
+    assertionMethod: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "string",
+        pattern: "^did:web:.*$",
+      },
+    },
+  },
+  required: ["@context", "id", "verificationMethod", "assertionMethod"],
+  additionalProperties: false,
+};
