@@ -20,7 +20,7 @@ import {
   validateDidDocument,
 } from "./helpers/didDocument/validateDidDocument";
 
-describe("credential-issuer-tests.test", () => {
+describe("credential-issuer-tests", () => {
   const credentialOfferDeepLink = getCredentialOfferDeepLink();
   const criUrl = getCriUrl();
   const criDomain = getCriDomain();
