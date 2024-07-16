@@ -7,7 +7,10 @@ export const metadataSchema = {
     },
     authorization_servers: {
       type: "array",
-      items: { type: "string", format: "uri" },
+      items: {
+        type: "string",
+        format: "uri",
+      },
       minItems: 1,
     },
     credential_issuer: {
