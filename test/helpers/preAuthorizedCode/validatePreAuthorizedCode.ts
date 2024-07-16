@@ -1,94 +1,82 @@
-import axios, { AxiosResponse } from "axios";
-import Ajv, { ValidateFunction } from "ajv";
+import Ajv from "ajv";
 import addFormats from "ajv-formats";
+import * as jose from "jose";
+import { headerSchema } from "./headerSchema";
+import {
+  JWK,
+  JWTPayload,
+  JWTVerifyResult,
+  ProtectedHeaderParameters,
+} from "jose";
+import { payloadSchema } from "./payloadSchema";
 
-export async function validatePreAuthorizedCode(criUrl: string, criDomain: string) {
-  const response = await getDidDocument(criUrl);
-
-  if (response.status !== 200) {
-    throw new Error("INVALID_STATUS_CODE");
-  }
-
-  const didDocument: DidDocument = response.data;
-  if (!didDocument) {
-    throw new Error("INVALID_RESPONSE_DATA");
-  }
-
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uri"] });
-
-  const rulesValidator = ajv
-    .addSchema(didDocumentSchema)
-    .compile(didDocumentSchema);
-
-  const isValidPayload = checkPayload(rulesValidator, didDocument, criDomain);
-
-  if (isValidPayload) {
-    console.log("DID document complies with the schema");
-    return true;
-  } else {
-    const message = rulesValidator.errors
-      ? JSON.stringify(rulesValidator.errors)
-      : "Invalid value found";
-    console.log(`DID document does not comply with the schema: ${message}`);
-    throw new Error("INVALID_DID_DOCUMENT");
-  }
+interface Payload extends JWTPayload {
+  credential_identifiers: string[];
 }
 
-function checkPayload(
-  rulesValidator: ValidateFunction,
-  didDocument: DidDocument,
-  criDomain: string,
+export async function validatePreAuthorizedCode(
+  preAuthorizedCode: string,
+  jwks: JWK[],
 ) {
-  if (!rulesValidator(didDocument)) {
-    return false;
+  const ajv = new Ajv({ allErrors: true, verbose: false });
+  addFormats(ajv, { formats: ["uuid"] });
+
+  const header: ProtectedHeaderParameters = validateHeader(
+    preAuthorizedCode,
+    ajv,
+  );
+
+  const jwk = jwks.find((item) => item.kid === header.kid!);
+  if (!jwk) {
+    throw new Error("JWK NOT IN DID");
+  }
+  const publicKey = await jose.importJWK(jwk, header.alg);
+
+  let verifyResult: JWTVerifyResult;
+  try {
+    verifyResult = await jose.jwtVerify(preAuthorizedCode, publicKey);
+  } catch (error) {
+    console.log(error);
+    throw new Error("SIGNATURE_VEIRIFICATION_FAILED");
   }
 
-  // When running the CRI and test harness locally, replace domain "host.docker.internal" with "localhost" to match CRI URL
-  criDomain = criDomain.replace("host.docker.internal", "localhost");
-
-  const controller = "did:web:" + criDomain;
-  if (didDocument.id !== controller) {
-    console.log(
-      `Invalid "id" value in DID document. Should be ${controller} but found ${didDocument.id}`,
-    );
-    return false;
-  }
-
-  for (const item of didDocument.verificationMethod) {
-    const id = controller + "#" + item.publicKeyJwk.kid;
-    if (item.id !== id) {
-      console.log(
-        `Invalid "id" value in "verificationMethod". Should be ${id} but found ${item.id}`,
-      );
-      return false;
-    }
-
-    if (item.controller !== controller) {
-      console.log(
-        `Invalid "controller" value in "verificationMethod". Should be ${controller} but found ${item.controller}`,
-      );
-      return false;
-    }
-
-    if (!didDocument.assertionMethod.includes(id)) {
-      console.log(
-        `"id" ${id} is missing in "assertionMethod" ${didDocument.assertionMethod}`,
-      );
-      return false;
-    }
-  }
+  const payload: Payload = <Payload>validatePayload(verifyResult, ajv);
+  console.log(payload);
 
   return true;
 }
 
-export async function getDidDocument(domain): Promise<AxiosResponse> {
-  const DID_DOCUMENT_PATH: string = ".well-known/did.json";
+function validateHeader(jwt: string, ajv: Ajv): ProtectedHeaderParameters {
+  let claims: ProtectedHeaderParameters;
   try {
-    const url = new URL(DID_DOCUMENT_PATH, domain).toString();
-    return await axios.get(url);
+    claims = jose.decodeProtectedHeader(jwt);
   } catch (error) {
-    console.log(`Error trying to fetch DID document: ${error}`);
-    throw new Error("GET_DID_DOCUMENT_ERROR");
+    console.log(error);
+    throw new Error("JWT_HEADER_DECODE_ERROR");
+  }
+
+  const rulesValidator = ajv.addSchema(headerSchema).compile(headerSchema);
+
+  if (!rulesValidator(claims)) {
+    console.log(
+      `Pre-authorized code header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+    );
+    throw new Error("INVALID_HEADER");
+  } else {
+    return claims;
+  }
+}
+
+function validatePayload(verifyResult: JWTVerifyResult, ajv: Ajv): JWTPayload {
+  const { payload } = verifyResult;
+  const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
+
+  if (!rulesValidator(payload)) {
+    console.log(
+      `Pre-authorized code payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+    );
+    throw new Error("INVALID_PAYLOAD");
+  } else {
+    return payload;
   }
 }
