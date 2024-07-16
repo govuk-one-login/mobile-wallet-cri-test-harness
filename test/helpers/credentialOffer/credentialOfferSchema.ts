@@ -7,7 +7,10 @@ export const credentialOfferSchema = {
     },
     credentials: {
       type: "array",
-      items: { type: "string" },
+      items: {
+        type: "string",
+        minLength: 1,
+      },
       minItems: 1,
     },
     grants: {
@@ -16,7 +19,10 @@ export const credentialOfferSchema = {
         "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
           type: "object",
           properties: {
-            "pre-authorized_code": { type: "string" },
+            "pre-authorized_code": {
+              type: "string",
+              minLength: 1,
+            },
           },
           additionalProperties: false,
           required: ["pre-authorized_code"],
