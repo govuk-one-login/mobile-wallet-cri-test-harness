@@ -13,6 +13,7 @@ export const headerSchema = {
       type: "string",
       enum: ["ES256"],
     },
-    additionalProperties: false,
   },
+  additionalProperties: false,
+  required: ["kid", "typ", "alg"],
 };

@@ -25,6 +25,7 @@ export const payloadSchema = {
     exp: {
       type: "number",
     },
-    additionalProperties: false,
   },
+  additionalProperties: false,
+  required: ["aud", "clientId", "iss", "credential_identifiers", "iat", "exp"],
 };
