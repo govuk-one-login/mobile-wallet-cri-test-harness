@@ -45,6 +45,7 @@ export const didDocumentSchema = {
               },
               kid: {
                 type: "string",
+                minLength: 1,
               },
               crv: {
                 type: "string",
@@ -52,9 +53,11 @@ export const didDocumentSchema = {
               },
               x: {
                 type: "string",
+                minLength: 1,
               },
               y: {
                 type: "string",
+                minLength: 1,
               },
             },
             required: ["kty", "kid", "crv", "x", "y"],
