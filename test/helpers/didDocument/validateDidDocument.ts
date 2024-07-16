@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import Ajv, { ValidateFunction } from "ajv";
 import addFormats from "ajv-formats";
 import { didDocumentSchema } from "./didDocumentSchema";
+import { JWK } from "jose";
 
 export interface DidDocument {
   "@context": string[];
@@ -14,15 +15,7 @@ interface VerificationMethod {
   id: string;
   type: string;
   controller: string;
-  publicKeyJwk: PublicKeyJwk;
-}
-
-interface PublicKeyJwk {
-  kty: string;
-  kid: string;
-  crv: string;
-  x: string;
-  y: string;
+  publicKeyJwk: JWK;
 }
 
 export async function validateDidDocument(criUrl: string, criDomain: string) {
