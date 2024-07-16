@@ -3,7 +3,7 @@ import axios, { AxiosResponse } from "axios";
 
 jest.mock("axios");
 
-describe("didDocumentService", () => {
+describe("validateDidDocument", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
