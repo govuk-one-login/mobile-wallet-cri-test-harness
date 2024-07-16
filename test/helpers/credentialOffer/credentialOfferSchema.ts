@@ -5,7 +5,11 @@ export const credentialOfferSchema = {
       type: "string",
       format: "uri",
     },
-    credentials: { type: "array", items: { type: "string" }, minItems: 1 },
+    credentials: {
+      type: "array",
+      items: { type: "string" },
+      minItems: 1,
+    },
     grants: {
       type: "object",
       properties: {
