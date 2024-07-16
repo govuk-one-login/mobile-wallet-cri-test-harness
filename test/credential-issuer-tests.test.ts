@@ -38,12 +38,18 @@ describe("credential-issuer-tests", () => {
     expect(await validateDidDocument(criUrl, criDomain)).toEqual(true);
   });
 
-  it("should be future test that needs the pre-authorized code", async () => {
+  it("should validate the pre-authorized code", async () => {
     const credentialOffer = getCredentialOffer(credentialOfferDeepLink);
     const preAuthorizedCode = (parseAsJson(credentialOffer!) as CredentialOffer)
       .grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"][
       "pre-authorized_code"
     ];
+
+    const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
+    const publicKeyJwks = didDocument.verificationMethod.map(
+        (verificationMethod) => verificationMethod.publicKeyJwk,
+    );
+
     expect(preAuthorizedCode).toBeTruthy();
   });
 
@@ -52,11 +58,4 @@ describe("credential-issuer-tests", () => {
     expect(metadata).toBeTruthy();
   });
 
-  it("should be future test that needs the public key from the DID document", async () => {
-    const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
-    const publicKeyJwks = didDocument.verificationMethod.map(
-      (verificationMethod) => verificationMethod.publicKeyJwk,
-    );
-    expect(publicKeyJwks).toBeTruthy();
-  });
 });
