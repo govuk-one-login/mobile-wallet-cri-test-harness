@@ -18,13 +18,10 @@ export async function validatePreAuthorizedCode(
   preAuthorizedCode: string,
   jwks: JWK[],
 ) {
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uuid"] });
+  const header: ProtectedHeaderParameters = validateHeader(preAuthorizedCode);
 
-  const header: ProtectedHeaderParameters = validateHeader(
-    preAuthorizedCode,
-    ajv,
-  );
+  console.log(header);
+  console.log(jwks);
 
   const jwk = jwks.find((item) => item.kid === header.kid!);
   if (!jwk) {
@@ -40,13 +37,17 @@ export async function validatePreAuthorizedCode(
     throw new Error("SIGNATURE_VEIRIFICATION_FAILED");
   }
 
-  const payload: Payload = <Payload>validatePayload(verifyResult, ajv);
+  const payload: Payload = <Payload>validatePayload(verifyResult);
   console.log(payload);
 
+  // validate that exp - iat is 5 mins
   return true;
 }
 
-function validateHeader(jwt: string, ajv: Ajv): ProtectedHeaderParameters {
+function validateHeader(jwt: string): ProtectedHeaderParameters {
+  const ajv = new Ajv({ allErrors: true, verbose: false });
+  addFormats(ajv, { formats: ["uuid"] });
+
   let claims: ProtectedHeaderParameters;
   try {
     claims = jose.decodeProtectedHeader(jwt);
@@ -67,14 +68,17 @@ function validateHeader(jwt: string, ajv: Ajv): ProtectedHeaderParameters {
   }
 }
 
-function validatePayload(verifyResult: JWTVerifyResult, ajv: Ajv): JWTPayload {
+function validatePayload(verifyResult: JWTVerifyResult): JWTPayload {
   const { payload } = verifyResult;
+  const ajv = new Ajv({ allErrors: true, verbose: false });
+  addFormats(ajv, { formats: ["uuid"] });
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
 
   if (!rulesValidator(payload)) {
     console.log(
       `Pre-authorized code payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
     );
+    console.log(rulesValidator.errors);
     throw new Error("INVALID_PAYLOAD");
   } else {
     return payload;

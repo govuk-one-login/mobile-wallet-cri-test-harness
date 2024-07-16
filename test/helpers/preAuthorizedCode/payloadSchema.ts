@@ -7,7 +7,7 @@ export const payloadSchema = {
     },
     clientId: {
       type: "string",
-      enum: ["EXAMPLE-CRI"],
+      enum: ["EXAMPLE_CRI"],
     },
     iss: {
       type: "string",
