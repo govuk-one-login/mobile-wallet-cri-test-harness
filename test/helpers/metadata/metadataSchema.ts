@@ -18,7 +18,7 @@ export const metadataSchema = {
       type: "object",
     },
   },
-  additionalProperties: false,
+  additionalProperties: true,
   required: [
     "credentials_endpoint",
     "authorization_servers",
