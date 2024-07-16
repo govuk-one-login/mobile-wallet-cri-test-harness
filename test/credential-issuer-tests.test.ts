@@ -19,6 +19,7 @@ import {
   getDidDocument,
   validateDidDocument,
 } from "./helpers/didDocument/validateDidDocument";
+import { validatePreAuthorizedCode } from "./helpers/preAuthorizedCode/validatePreAuthorizedCode";
 
 describe("credential-issuer-tests", () => {
   const credentialOfferDeepLink = getCredentialOfferDeepLink();
@@ -47,15 +48,16 @@ describe("credential-issuer-tests", () => {
 
     const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
     const publicKeyJwks = didDocument.verificationMethod.map(
-        (verificationMethod) => verificationMethod.publicKeyJwk,
+      (verificationMethod) => verificationMethod.publicKeyJwk,
     );
 
-    expect(preAuthorizedCode).toBeTruthy();
+    expect(
+      await validatePreAuthorizedCode(preAuthorizedCode, publicKeyJwks),
+    ).toEqual(true);
   });
 
   it("should be future test that needs the metadata", async () => {
     const metadata: Metadata = (await getMetadata(criUrl)).data;
     expect(metadata).toBeTruthy();
   });
-
 });
