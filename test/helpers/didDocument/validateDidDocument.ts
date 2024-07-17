@@ -104,7 +104,7 @@ export async function getDidDocument(domain): Promise<AxiosResponse> {
     const url = new URL(DID_DOCUMENT_PATH, domain).toString();
     return await axios.get(url);
   } catch (error) {
-    console.log(`Error trying to fetch DID document: ${error}`);
+    console.log(`Error trying to fetch DID document: ${JSON.stringify(error)}`);
     throw new Error("GET_DID_DOCUMENT_ERROR");
   }
 }

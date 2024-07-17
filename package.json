@@ -20,6 +20,7 @@
     "npm": ">=10.5"
   },
   "dependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
     "ajv": "^8.16.0",
     "ajv-formats": "^3.0.1",
     "axios": "^1.7.2",
