@@ -74,14 +74,13 @@ function validatePayload(verifyResult: JWTVerifyResult): void {
     throw new Error("INVALID_PAYLOAD");
   }
 
-  const tokenExpiry = new Date(payload.exp!);
+  const tokenExpiresAt = new Date(payload.exp!);
   const tokenIssuedAt = new Date(payload.iat!);
-  const tokenTtlInMinutes =
-    (tokenExpiry.getTime() - tokenIssuedAt.getTime()) / 5;
+  const expiry = (tokenExpiresAt.getTime() - tokenIssuedAt.getTime()) / 5;
 
-  if (tokenTtlInMinutes !== 5) {
+  if (expiry !== 5) {
     console.log(
-      `Invalid "exp" value in token. Should be 5 minutes seconds but found ${tokenTtlInMinutes}`,
+      `Invalid "exp" value in token. Should be 5 minutes seconds but found ${expiry}`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
