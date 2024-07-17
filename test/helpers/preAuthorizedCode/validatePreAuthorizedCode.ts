@@ -77,7 +77,6 @@ function validatePayload(verifyResult: JWTVerifyResult): void {
   const tokenExpiresAt = new Date(payload.exp!);
   const tokenIssuedAt = new Date(payload.iat!);
   const expiry = (tokenExpiresAt.getTime() - tokenIssuedAt.getTime()) / 5;
-
   if (expiry !== 5) {
     console.log(
       `Invalid "exp" value in token. Should be 5 minutes seconds but found ${expiry}`,
