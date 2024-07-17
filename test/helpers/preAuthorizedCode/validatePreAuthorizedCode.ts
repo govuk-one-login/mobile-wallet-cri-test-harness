@@ -28,7 +28,7 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
     claims = jose.decodeProtectedHeader(jwt);
   } catch (error) {
     console.log(`Error decoding header: ${error}`);
-    throw new Error("INVALID_HEADER");
+    throw new Error("HEADER_DECODING_ERROR");
   }
 
   const rulesValidator = ajv.addSchema(headerSchema).compile(headerSchema);
@@ -56,7 +56,7 @@ async function verifySignature(
   try {
     return await jose.jwtVerify(preAuthorizedCode, publicKey);
   } catch (error) {
-    console.log(`Error verifying signature: ${error}`);
+    console.log(`Error verifying signature: ${JSON.stringify(error)}`);
     throw new Error("INVALID_SIGNATURE");
   }
 }
@@ -74,9 +74,16 @@ function validatePayload(verifyResult: JWTVerifyResult): void {
     throw new Error("INVALID_PAYLOAD");
   }
 
-  const tokenExpiresAt = new Date(payload.exp!);
-  const tokenIssuedAt = new Date(payload.iat!);
-  const expiry = (tokenExpiresAt.getTime() - tokenIssuedAt.getTime()) / 5;
+  const tokenIssuedAt = new Date(payload.iat! * 1000);
+  if (tokenIssuedAt > new Date()) {
+    console.log(
+      `Invalid "iat" value in token. Should be in the past but is in the future`,
+    );
+    throw new Error("INVALID_PAYLOAD");
+  }
+
+  const tokenExpiresAt = new Date(payload.exp! * 1000);
+  const expiry = (tokenExpiresAt.getTime() - tokenIssuedAt.getTime()) / 60000;
   if (expiry !== 5) {
     console.log(
       `Invalid "exp" value in token. Should be 5 minutes seconds but found ${expiry}`,
