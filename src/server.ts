@@ -1,21 +1,35 @@
 import express, { Application, Request, Response } from "express";
-import { getPortNumber } from "./config";
-// import {KeyLike, generateKeyPair} from "jose";
-// import {writeFileSync} from "fs";
+import { getKeyId, getPortNumber } from "./config";
+import { generateKeyPair, exportJWK, JWK } from "jose";
+import { writeFileSync } from "fs";
 
 const app: Application = express();
 const port = getPortNumber();
 
-app.get("/hello", async (_req: Request, res: Response) => {
-  res.status(200).send("Hello World!");
+let publicKey;
+
+app.get("/.well-known/jwks.json", async (_req: Request, res: Response) => {
+  const keys: JWK[] = [];
+  // add 'kid' to JWK
+  publicKey.kid = getKeyId();
+  keys.push(publicKey);
+
+  res.status(200).json({ keys: keys });
 });
 
 const server = app
   .listen(port, async () => {
-    // const {publicKey, privateKey} = await generateKeyPair('PS256')
-    // writeFileSync("results/privateKey","CONTENT HERE")
-
     console.log(`Server is running on port ${port}`);
+
+    const keyPair = await generateKeyPair("ES256", {
+      extractable: true,
+    });
+
+    const privateKey = await exportJWK(keyPair.privateKey);
+    writeFileSync("test/helpers/sts/privateKey", JSON.stringify(privateKey));
+
+    publicKey = await exportJWK(keyPair.publicKey);
+    console.log("Public key:", publicKey);
   })
   .on("error", (error: Error) => {
     console.log(error, "Unable to start server");

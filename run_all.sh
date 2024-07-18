@@ -3,7 +3,7 @@
 # Start the first process
 bash run_server.sh &
 
-sleep 1
+sleep 5
 
 # Start the second process
 bash run_tests.sh &
