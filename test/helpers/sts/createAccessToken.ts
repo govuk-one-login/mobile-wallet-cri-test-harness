@@ -10,7 +10,7 @@ export interface AccessToken {
 
 const SIGNING_ALGORITHM = "ES256";
 
-export async function getAccessToken(
+export async function createAccessToken(
   walletSubjectId: string,
   preAuthorizedCode: string,
   signingKey: JWK,
@@ -31,7 +31,7 @@ export async function getAccessToken(
 
   return {
     access_token: accessToken,
-    token_type: "Bearer",
-    expires_in: 1800,
+    token_type: "bearer",
+    expires_in: 180,
   };
 }

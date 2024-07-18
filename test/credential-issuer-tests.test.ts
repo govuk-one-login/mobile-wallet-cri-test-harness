@@ -23,7 +23,7 @@ import {
 import { validatePreAuthorizedCode } from "./helpers/preAuthorizedCode/validatePreAuthorizedCode";
 import { readFileSync } from "fs";
 import { JWK } from "jose";
-import { getAccessToken } from "./helpers/sts/getAccessToken";
+import { createAccessToken } from "./helpers/sts/createAccessToken";
 
 describe("credential-issuer-tests", () => {
   const credentialOfferDeepLink = getCredentialOfferDeepLink();
@@ -61,12 +61,12 @@ describe("credential-issuer-tests", () => {
     const privateKey = JSON.parse(
       readFileSync("test/helpers/sts/privateKey", "utf8"),
     ) as JWK;
-    const accessToken = await getAccessToken(
+    const accessToken = await createAccessToken(
       walletSubjectId,
       preAuthorizedCode,
       privateKey,
     );
-    console.log(`Access token: ${accessToken}`);
+    console.log(`Access token: ${accessToken.access_token}`);
 
     expect(accessToken).toBeTruthy();
   });
