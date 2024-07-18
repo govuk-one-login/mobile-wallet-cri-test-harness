@@ -9,12 +9,11 @@ const port = getPortNumber();
 let publicKey;
 
 app.get("/.well-known/jwks.json", async (_req: Request, res: Response) => {
-  const jwks: JWK[] = [];
-  // add 'kid' to JWK
-  publicKey.kid = getKeyId();
-  jwks.push(publicKey);
+  publicKey.kid = getKeyId(); // add 'kid' to JWK
+  const response = { keys: [] as JWK[] };
+  response.keys.push(publicKey);
 
-  res.status(200).json({ keys: jwks });
+  res.status(200).json(response);
 });
 
 const server = app
