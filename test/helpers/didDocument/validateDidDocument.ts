@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import Ajv, { ValidateFunction } from "ajv";
 import addFormats from "ajv-formats";
 import { didDocumentSchema } from "./didDocumentSchema";
+import { JWK } from "jose";
 
 export interface DidDocument {
   "@context": string[];
@@ -14,15 +15,7 @@ interface VerificationMethod {
   id: string;
   type: string;
   controller: string;
-  publicKeyJwk: PublicKeyJwk;
-}
-
-interface PublicKeyJwk {
-  kty: string;
-  kid: string;
-  crv: string;
-  x: string;
-  y: string;
+  publicKeyJwk: JWK;
 }
 
 export async function validateDidDocument(criUrl: string, criDomain: string) {
@@ -111,7 +104,7 @@ export async function getDidDocument(domain): Promise<AxiosResponse> {
     const url = new URL(DID_DOCUMENT_PATH, domain).toString();
     return await axios.get(url);
   } catch (error) {
-    console.log(`Error trying to fetch DID document: ${error}`);
+    console.log(`Error trying to fetch DID document: ${JSON.stringify(error)}`);
     throw new Error("GET_DID_DOCUMENT_ERROR");
   }
 }
