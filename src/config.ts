@@ -17,6 +17,14 @@ export function getCriDomain(): string {
   return getEnvVarValue("CRI_DOMAIN");
 }
 
+export function getWalletSubjectId(): string {
+  return getEnvVarValue("WALLET_SUBJECT_ID");
+}
+
+export function getKeyId(): string {
+  return "5d76b492-d62e-46f4-a3d9-bc51e8b91ac5";
+}
+
 export function getCriUrl(): string {
   const criDomain = getCriDomain();
   if (
