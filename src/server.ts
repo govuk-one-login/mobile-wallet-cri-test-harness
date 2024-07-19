@@ -25,10 +25,16 @@ const server = app
     });
 
     const privateKey = await exportJWK(keyPair.privateKey);
-    writeFileSync("test/helpers/sts/privateKey", JSON.stringify(privateKey));
+    writeFileSync(
+      "test/helpers/credential/privateKey",
+      JSON.stringify(privateKey),
+    );
 
     publicKey = await exportJWK(keyPair.publicKey);
-    console.log("Public key:", publicKey);
+    writeFileSync(
+      "test/helpers/credential/publicKey",
+      JSON.stringify(publicKey),
+    );
   })
   .on("error", (error: Error) => {
     console.log(error, "Unable to start server");

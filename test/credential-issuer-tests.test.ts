@@ -23,7 +23,7 @@ import {
 import { validatePreAuthorizedCode } from "./helpers/preAuthorizedCode/validatePreAuthorizedCode";
 import { readFileSync } from "fs";
 import { JWK } from "jose";
-import { createAccessToken } from "./helpers/sts/createAccessToken";
+import { createCredentialRequest } from "./helpers/credential/createCredentialRequest";
 
 describe("credential-issuer-tests", () => {
   const credentialOfferDeepLink = getCredentialOfferDeepLink();
@@ -47,28 +47,32 @@ describe("credential-issuer-tests", () => {
   it("should validate the pre-authorized code", async () => {
     const preAuthorizedCode = getPreAuthorizedCode(credentialOfferDeepLink);
     const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
-    const publicKeyJwks = didDocument.verificationMethod.map(
-      (verificationMethod) => verificationMethod.publicKeyJwk,
-    );
 
     expect(
-      await validatePreAuthorizedCode(preAuthorizedCode, publicKeyJwks),
+      await validatePreAuthorizedCode(preAuthorizedCode, didDocument),
     ).toEqual(true);
   });
 
-  it("should generate an access token", async () => {
+  it("should generate the credential request", async () => {
     const preAuthorizedCode = getPreAuthorizedCode(credentialOfferDeepLink);
     const privateKey = JSON.parse(
-      readFileSync("test/helpers/sts/privateKey", "utf8"),
+      readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
-    const accessToken = await createAccessToken(
-      walletSubjectId,
+    const publicKey = JSON.parse(
+      readFileSync("test/helpers/credential/publicKey", "utf8"),
+    ) as JWK;
+
+    const { accessToken, proofJwt } = await createCredentialRequest(
       preAuthorizedCode,
+      walletSubjectId,
       privateKey,
+      publicKey,
     );
-    console.log(`Access token: ${accessToken.access_token}`);
+    console.log("Access token:", accessToken);
+    console.log("Proof JWT:", proofJwt);
 
     expect(accessToken).toBeTruthy();
+    expect(proofJwt).toBeTruthy();
   });
 
   it("should be future test that needs the metadata", async () => {

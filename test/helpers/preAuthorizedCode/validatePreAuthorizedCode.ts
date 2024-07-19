@@ -8,8 +8,11 @@ import type { JwtPayload } from "jsonwebtoken";
 
 export async function validatePreAuthorizedCode(
   preAuthorizedCode: string,
-  jwks: JWK[],
+  didDocument,
 ) {
+  const jwks: JWK[] = didDocument.verificationMethod.map(
+    (verificationMethod) => verificationMethod.publicKeyJwk,
+  );
   const header: ProtectedHeaderParameters = getHeaderClaims(preAuthorizedCode);
 
   const verifyResult = await verifySignature(jwks, header, preAuthorizedCode);
