@@ -10,7 +10,7 @@ export interface AccessToken {
 const SIGNING_ALGORITHM = "ES256";
 
 export async function createAccessToken(
-  nonce: string,
+  c_nonce: string,
   walletSubjectId: string,
   preAuthorizedCodePayload: JWTPayload,
   signingKey: JWK,
@@ -18,7 +18,7 @@ export async function createAccessToken(
   const signingKeyAsKeyLike = await importJWK(signingKey, SIGNING_ALGORITHM);
   const customClaims = {
     credential_identifiers: preAuthorizedCodePayload.credential_identifiers!,
-    c_nonce: nonce,
+    c_nonce: c_nonce,
   };
 
   const accessToken = await new SignJWT(customClaims)
