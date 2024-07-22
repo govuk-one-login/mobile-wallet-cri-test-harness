@@ -5,6 +5,7 @@ function getEnvVarValue(variableName: string): string {
   }
   return variableValue;
 }
+
 export function getPortNumber(): string {
   return getEnvVarValue("PORT");
 }
