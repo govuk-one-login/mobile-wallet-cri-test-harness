@@ -1,5 +1,4 @@
 import Ajv from "ajv";
-import addFormats from "ajv-formats";
 import * as jose from "jose";
 import { headerSchema } from "./headerSchema";
 import { JWK, JWTVerifyResult, ProtectedHeaderParameters } from "jose";
@@ -20,9 +19,6 @@ export async function validatePreAuthorizedCode(
 }
 
 function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uuid"] });
-
   let claims: ProtectedHeaderParameters;
   try {
     claims = jose.decodeProtectedHeader(jwt);
@@ -31,8 +27,8 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
     throw new Error("HEADER_DECODING_ERROR");
   }
 
+  const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(headerSchema).compile(headerSchema);
-
   if (!rulesValidator(claims)) {
     console.log(
       `Pre-authorized code header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
@@ -64,9 +60,7 @@ async function verifySignature(
 function validatePayload(verifyResult: JWTVerifyResult): void {
   const payload = verifyResult.payload as JwtPayload;
   const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uuid"] });
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
-
   if (!rulesValidator(payload)) {
     console.log(
       `Pre-authorized code payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
