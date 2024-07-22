@@ -8,17 +8,22 @@ export async function createCredentialRequest(
   walletSubjectId: string,
   privateKey: JWK,
   publicKey: JWK,
+  nonce = randomUUID(),
 ): Promise<{ accessToken: AccessToken; proofJwt: string }> {
-  const payload = decodeJwt(preAuthorizedCode);
-  const nonce = randomUUID();
+  const preAuthorizedCodePayload = decodeJwt(preAuthorizedCode);
 
   const accessToken = await createAccessToken(
     nonce,
     walletSubjectId,
-    payload,
+    preAuthorizedCodePayload,
     privateKey,
   );
-  const proofJwt = await createProofJwt(nonce, payload, privateKey, publicKey);
+  const proofJwt = await createProofJwt(
+    nonce,
+    preAuthorizedCodePayload,
+    privateKey,
+    publicKey,
+  );
 
   return { accessToken, proofJwt };
 }

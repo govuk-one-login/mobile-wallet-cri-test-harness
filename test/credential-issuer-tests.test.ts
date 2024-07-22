@@ -45,16 +45,19 @@ describe("credential-issuer-tests", () => {
   });
 
   it("should validate the pre-authorized code", async () => {
-    const preAuthorizedCode = getPreAuthorizedCode(credentialOfferDeepLink);
+    const preAuthorizedCode = extractPreAuthorizedCode(credentialOfferDeepLink);
     const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
+    const publicKeyJwks = didDocument.verificationMethod.map(
+      (verificationMethod) => verificationMethod.publicKeyJwk,
+    );
 
     expect(
-      await validatePreAuthorizedCode(preAuthorizedCode, didDocument),
+      await validatePreAuthorizedCode(preAuthorizedCode, publicKeyJwks),
     ).toEqual(true);
   });
 
   it("should generate the credential request", async () => {
-    const preAuthorizedCode = getPreAuthorizedCode(credentialOfferDeepLink);
+    const preAuthorizedCode = extractPreAuthorizedCode(credentialOfferDeepLink);
     const privateKey = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
@@ -81,7 +84,7 @@ describe("credential-issuer-tests", () => {
   });
 });
 
-function getPreAuthorizedCode(credentialOfferDeepLink: string) {
+function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
   const credentialOffer = getCredentialOffer(credentialOfferDeepLink);
   const preAuthorizedCode = (parseAsJson(credentialOffer!) as CredentialOffer)
     .grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"][

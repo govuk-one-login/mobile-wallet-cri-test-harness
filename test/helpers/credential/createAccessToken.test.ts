@@ -1,10 +1,9 @@
 import { createAccessToken } from "./createAccessToken";
 import { decodeJwt, decodeProtectedHeader } from "jose";
-import { randomUUID } from "node:crypto";
 
 describe("createAccessToken", () => {
   it("should return the access token", async () => {
-    const c_nonce = randomUUID();
+    const c_nonce = "e4cedcf6-1fb1-48f8-bf74-94cfbe9d0d86";
     const walletSubjectId = "wallet_subject_id";
     const preAuthorizedCodePayload = {
       aud: "urn:fdc:gov:uk:wallet",
@@ -42,7 +41,7 @@ describe("createAccessToken", () => {
     expect(accessTokenPayload.credential_identifiers).toEqual(
       preAuthorizedCodePayload.credential_identifiers,
     );
-    expect(accessTokenPayload.c_nonce).toBeTruthy();
+    expect(accessTokenPayload.c_nonce).toEqual(c_nonce);
     expect(accessTokenHeader.kid).toEqual(
       "5d76b492-d62e-46f4-a3d9-bc51e8b91ac5",
     );
