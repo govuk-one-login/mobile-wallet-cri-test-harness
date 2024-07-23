@@ -95,7 +95,7 @@ describe("credential-issuer-tests", () => {
     expect(response).toEqual(true);
   });
 
-  it("should return true when CRI returns 400 'invalid_credential_request' when the walletSubjectId does not match", async () => {
+  it("should return true when the CRI returns 400 'invalid_credential_request' when the access token and the credential offer wallet subject IDs do not match", async () => {
     const walletSubjectId = "not_the_same_wallet_subject_id";
 
     const response = await invalidWalletSubjectId(
@@ -108,7 +108,7 @@ describe("credential-issuer-tests", () => {
     expect(response).toEqual(true);
   });
 
-  it("should return true when CRI returns 400 'invalid_credential_request' when the access token signature is invalid", async () => {
+  it("should return true when the CRI returns 400 'invalid_credential_request' when the access token signature is invalid", async () => {
     const response = await invalidAccessTokenSignature(
       PRE_AUTHORIZED_CODE,
       WALLET_SUBJECT_ID,
@@ -119,7 +119,7 @@ describe("credential-issuer-tests", () => {
     expect(response).toEqual(true);
   });
 
-  it("should return true when CRI returns 400 'invalid_proof' when the proof JWT nonce does not match access token c_nonce", async () => {
+  it("should return true when the CRI returns 400 'invalid_proof' when the proof JWT nonce does not match the access token c_nonce", async () => {
     const response = await invalidNonce(
       PRE_AUTHORIZED_CODE,
       WALLET_SUBJECT_ID,
@@ -130,7 +130,7 @@ describe("credential-issuer-tests", () => {
     expect(response).toEqual(true);
   });
 
-  it("should return true when CRI returns 400 'invalid_proof' when the proof JWT signature is invalid", async () => {
+  it("should return true when the CRI returns 400 'invalid_proof' when the proof JWT signature is invalid", async () => {
     const response = await invalidProofSignature(
       PRE_AUTHORIZED_CODE,
       WALLET_SUBJECT_ID,
