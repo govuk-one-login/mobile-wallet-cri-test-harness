@@ -29,14 +29,12 @@ export async function validateMetadata(criDomain: string): Promise<true> {
 
   const isValidPayload = rulesValidator(metadata);
   if (isValidPayload) {
-    console.log("Metadata complies with the schema");
     return true;
   } else {
     const validationErrors = rulesValidator.errors;
     console.log(
       `Metadata does not comply with the schema: ${JSON.stringify(validationErrors)}`,
     );
-
     throw new Error("INVALID_METADATA");
   }
 }

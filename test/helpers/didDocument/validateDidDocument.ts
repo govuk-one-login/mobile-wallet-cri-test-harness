@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from "axios";
 import Ajv, { ValidateFunction } from "ajv";
-import addFormats from "ajv-formats";
 import { didDocumentSchema } from "./didDocumentSchema";
 import { JWK } from "jose";
 
@@ -31,16 +30,12 @@ export async function validateDidDocument(criUrl: string, criDomain: string) {
   }
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uri"] });
-
   const rulesValidator = ajv
     .addSchema(didDocumentSchema)
     .compile(didDocumentSchema);
 
   const isValidPayload = checkPayload(rulesValidator, didDocument, criDomain);
-
   if (isValidPayload) {
-    console.log("DID document complies with the schema");
     return true;
   } else {
     const message = rulesValidator.errors

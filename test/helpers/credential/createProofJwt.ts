@@ -1,4 +1,4 @@
-import { importJWK, SignJWT, JWK, JWTPayload } from "jose";
+import { importJWK, JWK, JWTPayload, SignJWT } from "jose";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const bs58 = require("bs58");
 
@@ -6,14 +6,10 @@ const SIGNING_ALGORITHM = "ES256";
 
 export async function createProofJwt(
   nonce: string,
+  didKey: string,
   preAuthorizedCodePayload: JWTPayload,
   privateKeyJwk: JWK,
-  publicKeyJwk: JWK,
 ): Promise<string> {
-  const publicKey = getPublicKeyFromJwk(publicKeyJwk);
-  const compressedPublicKey = compress(publicKey);
-  const didKey = createDidKey(compressedPublicKey);
-
   const signingKeyAsKeyLike = await importJWK(privateKeyJwk, SIGNING_ALGORITHM);
 
   return await new SignJWT({ nonce: nonce })
@@ -24,6 +20,19 @@ export async function createProofJwt(
     .sign(signingKeyAsKeyLike);
 }
 
+export function createDidKey(publicKeyJwk: JWK) {
+  const publicKeyBuffer = getPublicKeyFromJwk(publicKeyJwk);
+  const compressedPublicKey = compress(publicKeyBuffer);
+
+  const bytes = new Uint8Array(compressedPublicKey.length + 2);
+  bytes[0] = 0x80;
+  bytes[1] = 0x24;
+  bytes.set(compressedPublicKey, 2);
+
+  const base58EncodedKey = bs58.encode(bytes);
+  return `did:key:z${base58EncodedKey}`;
+}
+
 function getPublicKeyFromJwk(publicKeyJwk: JWK) {
   return Buffer.concat([
     Buffer.from(publicKeyJwk.x!, "base64"),
@@ -31,7 +40,7 @@ function getPublicKeyFromJwk(publicKeyJwk: JWK) {
   ]);
 }
 
-export const compress = (publicKey: Uint8Array): Uint8Array => {
+const compress = (publicKey: Uint8Array): Uint8Array => {
   const publicKeyHex = Buffer.from(publicKey).toString("hex");
   const xHex = publicKeyHex.slice(0, publicKeyHex.length / 2);
   const yHex = publicKeyHex.slice(publicKeyHex.length / 2, publicKeyHex.length);
@@ -46,14 +55,4 @@ function compressEcPoint(x: Uint8Array, y: Uint8Array) {
 
   compressedKey.set(x, 1);
   return compressedKey;
-}
-
-function createDidKey(publicKey: Uint8Array) {
-  const bytes = new Uint8Array(publicKey.length + 2);
-  bytes[0] = 0x80;
-  bytes[1] = 0x24;
-  bytes.set(publicKey, 2);
-
-  const bufAsString = bs58.encode(bytes);
-  return `did:key:z${bufAsString}`;
 }

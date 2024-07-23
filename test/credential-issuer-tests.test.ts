@@ -21,9 +21,9 @@ import {
   validateDidDocument,
 } from "./helpers/didDocument/validateDidDocument";
 import { validatePreAuthorizedCode } from "./helpers/preAuthorizedCode/validatePreAuthorizedCode";
+import { validateCredential } from "./helpers/credential/validateCredential";
 import { readFileSync } from "fs";
 import { JWK } from "jose";
-import { createCredentialRequest } from "./helpers/credential/createCredentialRequest";
 
 describe("credential-issuer-tests", () => {
   const credentialOfferDeepLink = getCredentialOfferDeepLink();
@@ -47,17 +47,18 @@ describe("credential-issuer-tests", () => {
   it("should validate the pre-authorized code", async () => {
     const preAuthorizedCode = extractPreAuthorizedCode(credentialOfferDeepLink);
     const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
-    const publicKeyJwks = didDocument.verificationMethod.map(
-      (verificationMethod) => verificationMethod.publicKeyJwk,
-    );
+    const publicKeyJwks = extractJwks(didDocument);
 
     expect(
       await validatePreAuthorizedCode(preAuthorizedCode, publicKeyJwks),
     ).toEqual(true);
   });
 
-  it("should generate the credential request", async () => {
+  it("should validate the credential", async () => {
     const preAuthorizedCode = extractPreAuthorizedCode(credentialOfferDeepLink);
+    const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
+    const didJwks = extractJwks(didDocument);
+    const metadata: Metadata = (await getMetadata(criUrl)).data;
     const privateKey = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
@@ -65,22 +66,15 @@ describe("credential-issuer-tests", () => {
       readFileSync("test/helpers/credential/publicKey", "utf8"),
     ) as JWK;
 
-    const { accessToken, proofJwt } = await createCredentialRequest(
+    const response = await validateCredential(
       preAuthorizedCode,
       walletSubjectId,
+      metadata.credentials_endpoint,
+      didJwks,
       privateKey,
       publicKey,
     );
-    console.log("Access token:", accessToken);
-    console.log("Proof JWT:", proofJwt);
-
-    expect(accessToken).toBeTruthy();
-    expect(proofJwt).toBeTruthy();
-  });
-
-  it("should be future test that needs the metadata", async () => {
-    const metadata: Metadata = (await getMetadata(criUrl)).data;
-    expect(metadata).toBeTruthy();
+    expect(response).toEqual(true);
   });
 });
 
@@ -91,4 +85,11 @@ function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
     "pre-authorized_code"
   ];
   return preAuthorizedCode;
+}
+
+function extractJwks(didDocument: DidDocument) {
+  const publicKeyJwks = didDocument.verificationMethod.map(
+    (verificationMethod) => verificationMethod.publicKeyJwk,
+  );
+  return publicKeyJwks;
 }

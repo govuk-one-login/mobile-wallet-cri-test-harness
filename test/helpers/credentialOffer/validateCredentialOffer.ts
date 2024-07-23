@@ -35,7 +35,6 @@ export function validateCredentialOffer(credentialOfferDeepLink: string) {
     throw new Error("INVALID_CREDENTIAL_OFFER");
   }
 
-  console.log("Credential offer complies with the schema");
   return true;
 }
 
