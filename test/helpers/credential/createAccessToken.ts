@@ -1,5 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { decodeJwt, importJWK, SignJWT, JWK } from "jose";
+import { importJWK, SignJWT, JWK, JWTPayload } from "jose";
 import { getKeyId } from "../../../src/config";
 
 export interface AccessToken {
@@ -11,22 +10,22 @@ export interface AccessToken {
 const SIGNING_ALGORITHM = "ES256";
 
 export async function createAccessToken(
+  c_nonce: string,
   walletSubjectId: string,
-  preAuthorizedCode: string,
+  preAuthorizedCodePayload: JWTPayload,
   signingKey: JWK,
 ): Promise<AccessToken> {
-  const payload = decodeJwt(preAuthorizedCode);
   const signingKeyAsKeyLike = await importJWK(signingKey, SIGNING_ALGORITHM);
   const customClaims = {
-    credential_identifiers: payload.credential_identifiers!,
-    c_nonce: randomUUID(),
+    credential_identifiers: preAuthorizedCodePayload.credential_identifiers!,
+    c_nonce: c_nonce,
   };
 
   const accessToken = await new SignJWT(customClaims)
     .setProtectedHeader({ alg: SIGNING_ALGORITHM, typ: "JWT", kid: getKeyId() })
     .setSubject(walletSubjectId)
-    .setIssuer(payload.aud! as string)
-    .setAudience(payload.iss!)
+    .setIssuer(preAuthorizedCodePayload.aud! as string)
+    .setAudience(preAuthorizedCodePayload.iss!)
     .sign(signingKeyAsKeyLike);
 
   return {
