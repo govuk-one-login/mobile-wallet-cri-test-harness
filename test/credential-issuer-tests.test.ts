@@ -21,10 +21,9 @@ import {
   validateDidDocument,
 } from "./helpers/didDocument/validateDidDocument";
 import { validatePreAuthorizedCode } from "./helpers/preAuthorizedCode/validatePreAuthorizedCode";
+import { validateCredential } from "./helpers/credential/validateCredential";
 import { readFileSync } from "fs";
 import { JWK } from "jose";
-import { createCredentialRequest } from "./helpers/credential/createCredentialRequest";
-import { validateCredential } from "./helpers/credential/validateCredential";
 
 describe("credential-issuer-tests", () => {
   const credentialOfferDeepLink = getCredentialOfferDeepLink();
@@ -57,27 +56,23 @@ describe("credential-issuer-tests", () => {
 
   it("should validate the credential", async () => {
     const preAuthorizedCode = extractPreAuthorizedCode(credentialOfferDeepLink);
+    const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
+    const didJwks = extractJwks(didDocument);
+    const metadata: Metadata = (await getMetadata(criUrl)).data;
     const privateKey = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
     const publicKey = JSON.parse(
       readFileSync("test/helpers/credential/publicKey", "utf8"),
     ) as JWK;
-    const { accessToken, proofJwt } = await createCredentialRequest(
-      preAuthorizedCode,
-      walletSubjectId,
-      privateKey,
-      publicKey,
-    );
-    const didDocument: DidDocument = (await getDidDocument(criUrl)).data;
-    const publicKeyJwks = extractJwks(didDocument);
-    const metadata: Metadata = (await getMetadata(criUrl)).data;
 
     const response = await validateCredential(
-      accessToken.access_token,
-      proofJwt,
+      preAuthorizedCode,
+      walletSubjectId,
       metadata.credentials_endpoint,
-      publicKeyJwks,
+      didJwks,
+      privateKey,
+      publicKey,
     );
     expect(response).toBeTruthy();
   });

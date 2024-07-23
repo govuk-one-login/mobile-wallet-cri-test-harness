@@ -11,10 +11,17 @@ import {
 import Ajv from "ajv";
 import { headerSchema } from "./headerSchema";
 import { payloadSchema } from "./payloadSchema";
+import { readFileSync } from "fs";
 import { createAccessToken } from "./createAccessToken";
 import { createDidKey, createProofJwt } from "./createProofJwt";
 import { randomUUID } from "node:crypto";
 
+const PRIVATE_KEY = JSON.parse(
+  readFileSync("test/helpers/credential/privateKey", "utf8"),
+) as JWK;
+const PUBLIC_KEY = JSON.parse(
+  readFileSync("test/helpers/credential/publicKey", "utf8"),
+) as JWK;
 const NONCE = randomUUID();
 
 export async function validateCredential(
@@ -22,8 +29,6 @@ export async function validateCredential(
   walletSubjectId: string,
   credentialsEndpoint: string,
   jwks: JWK[],
-  privateKey: JWK,
-  publicKey: JWK,
 ) {
   const preAuthorizedCodePayload = decodeJwt(preAuthorizedCode);
 
@@ -31,16 +36,16 @@ export async function validateCredential(
     NONCE,
     walletSubjectId,
     preAuthorizedCodePayload,
-    privateKey,
+    PRIVATE_KEY,
   );
 
-  const didKey = createDidKey(publicKey);
+  const didKey = createDidKey(PUBLIC_KEY);
 
   const proofJwt = await createProofJwt(
     NONCE,
     didKey,
     preAuthorizedCodePayload,
-    privateKey,
+    PRIVATE_KEY,
   );
 
   const response = await getCredential(
