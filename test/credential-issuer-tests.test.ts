@@ -74,7 +74,7 @@ describe("credential-issuer-tests", () => {
       privateKey,
       publicKey,
     );
-    expect(response).toBeTruthy();
+    expect(response).toEqual(true);
   });
 });
 
