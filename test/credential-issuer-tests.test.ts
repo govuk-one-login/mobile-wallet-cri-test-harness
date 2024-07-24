@@ -44,10 +44,6 @@ let PRIVATE_KEY_JWK;
 let PUBLIC_KEY_JWK;
 let NONCE;
 
-function makeSignatureInvalid(token: string) {
-  return token + "makeSignatureInvalid";
-}
-
 describe("credential issuer tests", () => {
   beforeAll(async () => {
     CREDENTIAL_OFFER_DEEP_LINK = getCredentialOfferDeepLink();
@@ -119,7 +115,6 @@ describe("credential issuer tests", () => {
           PRIVATE_KEY_JWK,
         )
       ).access_token;
-      console.log(accessTokenWithInvalidWalletSubjectId);
 
       const isValidErrorResponse =
         await validateCredentialErrors.invalidAccessTokenSignature(
@@ -143,7 +138,6 @@ describe("credential issuer tests", () => {
         )
       ).access_token;
       const accessTokenWithInvalidSignature = makeSignatureInvalid(accessToken);
-      console.log(accessTokenWithInvalidSignature);
 
       const isValidErrorResponse =
         await validateCredentialErrors.invalidAccessTokenSignature(
@@ -164,7 +158,6 @@ describe("credential issuer tests", () => {
         PRE_AUTHORIZED_CODE_PAYLOAD,
         PRIVATE_KEY_JWK,
       );
-      console.log(proofJwtWithMismatchingNonce);
 
       const isValidErrorResponse = await validateCredentialErrors.invalidNonce(
         PRE_AUTHORIZED_CODE_PAYLOAD,
@@ -185,7 +178,6 @@ describe("credential issuer tests", () => {
         PRIVATE_KEY_JWK,
       );
       const proofJwtWithInvalidSignature = makeSignatureInvalid(proofJwt);
-      console.log(proofJwtWithInvalidSignature);
 
       const response = await validateCredentialErrors.invalidProofSignature(
         PRE_AUTHORIZED_CODE_PAYLOAD,
@@ -214,4 +206,8 @@ function extractJwks(didDocument: DidDocument) {
     (verificationMethod) => verificationMethod.publicKeyJwk,
   );
   return publicKeyJwks;
+}
+
+function makeSignatureInvalid(token: string) {
+  return token + "makeSignatureInvalid";
 }
