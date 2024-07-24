@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from "axios";
 import {
-  decodeJwt,
   decodeProtectedHeader,
   importJWK,
   JWK,
@@ -13,31 +12,26 @@ import { headerSchema } from "./headerSchema";
 import { payloadSchema } from "./payloadSchema";
 import { createAccessToken } from "./createAccessToken";
 import { createDidKey, createProofJwt } from "./createProofJwt";
-import { randomUUID } from "node:crypto";
-
-const NONCE = randomUUID();
 
 export async function validateCredential(
-  preAuthorizedCode: string,
+  preAuthorizedCodePayload: JWTPayload,
+  nonce: string,
   walletSubjectId: string,
   credentialsEndpoint: string,
   jwks: JWK[],
   privateKey: JWK,
   publicKey: JWK,
 ) {
-  const preAuthorizedCodePayload = decodeJwt(preAuthorizedCode);
-
   const accessToken = await createAccessToken(
-    NONCE,
+    nonce,
     walletSubjectId,
     preAuthorizedCodePayload,
     privateKey,
   );
 
   const didKey = createDidKey(publicKey);
-
   const proofJwt = await createProofJwt(
-    NONCE,
+    nonce,
     didKey,
     preAuthorizedCodePayload,
     privateKey,
