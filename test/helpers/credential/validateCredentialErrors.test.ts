@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios, {AxiosError, AxiosResponse} from "axios";
 import { randomUUID } from "node:crypto";
 import * as validateCredentialErrors from "./validateCredentialErrors";
 
@@ -87,7 +87,7 @@ describe("validateCredentialErrors", () => {
       it("should throw POST_CREDENTIAL_UNEXPECTED_RESPONSE error", async () => {
         const mockedResponse = {
           status: 200,
-        } as AxiosError;
+        } as AxiosResponse;
         mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
         await expect(
@@ -188,7 +188,7 @@ describe("validateCredentialErrors", () => {
       it("should throw POST_CREDENTIAL_UNEXPECTED_RESPONSE error", async () => {
         const mockedResponse = {
           status: 200,
-        } as AxiosError;
+        } as AxiosResponse;
         mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
         await expect(
