@@ -116,7 +116,7 @@ describe("credential issuer tests", () => {
         )
       ).access_token;
 
-      const isValidErrorResponse =
+      const isCorrectErrorResponse =
         await validateCredentialErrors.invalidAccessTokenSignature(
           PRE_AUTHORIZED_CODE_PAYLOAD,
           NONCE,
@@ -125,7 +125,7 @@ describe("credential issuer tests", () => {
           PUBLIC_KEY_JWK,
           accessTokenWithInvalidWalletSubjectId,
         );
-      expect(isValidErrorResponse).toEqual(true);
+      expect(isCorrectErrorResponse).toEqual(true);
     });
 
     it("should return true when the CRI returns 400 'invalid_credential_request' when the access token signature is invalid", async () => {
@@ -139,7 +139,7 @@ describe("credential issuer tests", () => {
       ).access_token;
       const accessTokenWithInvalidSignature = makeSignatureInvalid(accessToken);
 
-      const isValidErrorResponse =
+      const isCorrectErrorResponse =
         await validateCredentialErrors.invalidAccessTokenSignature(
           PRE_AUTHORIZED_CODE_PAYLOAD,
           NONCE,
@@ -148,7 +148,7 @@ describe("credential issuer tests", () => {
           PUBLIC_KEY_JWK,
           accessTokenWithInvalidSignature,
         );
-      expect(isValidErrorResponse).toEqual(true);
+      expect(isCorrectErrorResponse).toEqual(true);
     });
 
     it("should return true when the CRI returns 400 'invalid_proof' when the proof JWT nonce does not match the access token c_nonce", async () => {
@@ -159,7 +159,7 @@ describe("credential issuer tests", () => {
         PRIVATE_KEY_JWK,
       );
 
-      const isValidErrorResponse = await validateCredentialErrors.invalidNonce(
+      const isCorrectErrorResponse = await validateCredentialErrors.invalidNonce(
         PRE_AUTHORIZED_CODE_PAYLOAD,
         NONCE,
         CREDENTIALS_ENDPOINT,
@@ -167,7 +167,7 @@ describe("credential issuer tests", () => {
         WALLET_SUBJECT_ID,
         proofJwtWithMismatchingNonce,
       );
-      expect(isValidErrorResponse).toEqual(true);
+      expect(isCorrectErrorResponse).toEqual(true);
     });
 
     it("should return true when the CRI returns 400 'invalid_proof' when the proof JWT signature is invalid", async () => {
