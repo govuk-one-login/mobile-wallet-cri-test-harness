@@ -1,5 +1,5 @@
 import { validateDidDocument } from "./validateDidDocument";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 
 jest.mock("axios");
 
@@ -61,10 +61,12 @@ describe("validateDidDocument", () => {
   });
 
   it("should throw 'GET_DID_DOCUMENT_ERROR' error when an error is thrown when trying to fetch the DID document", async () => {
-    const mockedResponse = {
+    const axiosError = new AxiosError();
+    axiosError.response = {
       status: 500,
+      data: "some_error",
     } as AxiosResponse;
-    mockedAxios.get.mockRejectedValue(mockedResponse);
+    mockedAxios.get.mockRejectedValueOnce(axiosError);
     await expect(
       validateDidDocument(
         "https://example-cri.test.gov.uk",

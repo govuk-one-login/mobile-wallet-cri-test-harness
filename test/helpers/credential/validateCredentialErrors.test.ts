@@ -1,4 +1,4 @@
-import axios, {AxiosError, AxiosResponse} from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { randomUUID } from "node:crypto";
 import * as validateCredentialErrors from "./validateCredentialErrors";
 
@@ -40,13 +40,12 @@ describe("validateCredentialErrors", () => {
 
     describe("when CRI returns 400 and 'invalid_credential_request' on invalid wallet subject ID", () => {
       it("should return true", async () => {
-        const mockedError = {
-          response: {
-            status: 400,
-            data: "invalid_credential_request",
-          },
-        } as AxiosError;
-        mockedAxios.post.mockRejectedValueOnce(mockedError);
+        const axiosError = new AxiosError();
+        axiosError.response = {
+          status: 400,
+          data: "invalid_credential_request",
+        } as AxiosResponse;
+        mockedAxios.post.mockRejectedValueOnce(axiosError);
 
         const result = await validateCredentialErrors.invalidWalletSubjectId(
           preAuthorizedCodePayload,
@@ -62,13 +61,12 @@ describe("validateCredentialErrors", () => {
 
     describe("when CRI returns unexpected error on invalid wallet subject ID", () => {
       it("should throw POST_CREDENTIAL_UNEXPECTED_ERROR error", async () => {
-        const mockedError = {
-          response: {
-            status: 500,
-            data: "unexpected_response",
-          },
-        } as AxiosError;
-        mockedAxios.post.mockRejectedValueOnce(mockedError);
+        const axiosError = new AxiosError();
+        axiosError.response = {
+          status: 500,
+          data: "unexpected_response",
+        } as AxiosResponse;
+        mockedAxios.post.mockRejectedValueOnce(axiosError);
 
         await expect(
           validateCredentialErrors.invalidWalletSubjectId(
@@ -111,13 +109,12 @@ describe("validateCredentialErrors", () => {
 
     describe("when CRI returns 400 and 'invalid_credential_request' on invalid access token signature", () => {
       it("should return true", async () => {
-        const mockedError = {
-          response: {
-            status: 400,
-            data: "invalid_credential_request",
-          },
-        } as AxiosError;
-        mockedAxios.post.mockRejectedValueOnce(mockedError);
+        const axiosError = new AxiosError();
+        axiosError.response = {
+          status: 400,
+          data: "invalid_credential_request",
+        } as AxiosResponse;
+        mockedAxios.post.mockRejectedValueOnce(axiosError);
 
         const result =
           await validateCredentialErrors.invalidAccessTokenSignature(
@@ -141,13 +138,12 @@ describe("validateCredentialErrors", () => {
 
     describe("when CRI returns 400 and 'invalid_proof' on invalid nonce", () => {
       it("should return true", async () => {
-        const mockedError = {
-          response: {
-            status: 400,
-            data: "invalid_proof",
-          },
-        } as AxiosError;
-        mockedAxios.post.mockRejectedValueOnce(mockedError);
+        const axiosError = new AxiosError();
+        axiosError.response = {
+          status: 400,
+          data: "invalid_proof",
+        } as AxiosResponse;
+        mockedAxios.post.mockRejectedValueOnce(axiosError);
 
         const result = await validateCredentialErrors.invalidNonce(
           preAuthorizedCodePayload,
@@ -163,13 +159,12 @@ describe("validateCredentialErrors", () => {
 
     describe("when CRI returns unexpected error on invalid nonce", () => {
       it("should throw POST_CREDENTIAL_UNEXPECTED_ERROR error", async () => {
-        const mockedError = {
-          response: {
-            status: 400,
-            data: "another_error",
-          },
-        } as AxiosError;
-        mockedAxios.post.mockRejectedValueOnce(mockedError);
+        const axiosError = new AxiosError();
+        axiosError.response = {
+          status: 400,
+          data: "another_error",
+        } as AxiosResponse;
+        mockedAxios.post.mockRejectedValueOnce(axiosError);
 
         await expect(
           validateCredentialErrors.invalidNonce(
@@ -213,13 +208,12 @@ describe("validateCredentialErrors", () => {
 
     describe("when CRI returns 400 and 'invalid_proof' on invalid proof JWT signature", () => {
       it("should return true", async () => {
-        const mockedError = {
-          response: {
-            status: 400,
-            data: "invalid_proof",
-          },
-        } as AxiosError;
-        mockedAxios.post.mockRejectedValueOnce(mockedError);
+        const axiosError = new AxiosError();
+        axiosError.response = {
+          status: 400,
+          data: "invalid_proof",
+        } as AxiosResponse;
+        mockedAxios.post.mockRejectedValueOnce(axiosError);
 
         const result = await validateCredentialErrors.invalidProofSignature(
           preAuthorizedCodePayload,
