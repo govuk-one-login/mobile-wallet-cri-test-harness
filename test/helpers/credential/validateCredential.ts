@@ -1,4 +1,3 @@
-import axios, { AxiosResponse } from "axios";
 import {
   decodeProtectedHeader,
   importJWK,
@@ -12,6 +11,7 @@ import { headerSchema } from "./headerSchema";
 import { payloadSchema } from "./payloadSchema";
 import { createAccessToken } from "./createAccessToken";
 import { createDidKey, createProofJwt } from "./createProofJwt";
+import { getCredential } from "./getCredential";
 
 export async function validateCredential(
   preAuthorizedCodePayload: JWTPayload,
@@ -37,11 +37,17 @@ export async function validateCredential(
     privateKey,
   );
 
-  const response = await getCredential(
-    accessToken.access_token,
-    proofJwt,
-    credentialsEndpoint,
-  );
+  let response;
+  try {
+    response = await getCredential(
+      accessToken.access_token,
+      proofJwt,
+      credentialsEndpoint,
+    );
+  } catch (error) {
+    console.log(`Error trying to fetch credential: ${JSON.stringify(error)}`);
+    throw new Error("POST_CREDENTIAL_ERROR");
+  }
 
   if (response.status !== 200) {
     throw new Error("INVALID_STATUS_CODE");
@@ -59,36 +65,6 @@ export async function validateCredential(
   validatePayload(payload, didKey);
 
   return true;
-}
-
-export async function getCredential(
-  accessToken: string,
-  proofJwt: string,
-  endpoint: string,
-): Promise<AxiosResponse> {
-  try {
-    // When running the CRI and test harness locally, replace domain "localhost" with "host.docker.internal" before making the request
-    endpoint = endpoint.replace("localhost", "host.docker.internal");
-    const credentialUrl = new URL(endpoint).toString();
-
-    return await axios.post(
-      credentialUrl,
-      {
-        proof: {
-          proof_type: "jwt",
-          jwt: proofJwt,
-        },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    );
-  } catch (error) {
-    console.log(`Error trying to fetch credential: ${JSON.stringify(error)}`);
-    throw new Error("POST_CREDENTIAL_ERROR");
-  }
 }
 
 function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
