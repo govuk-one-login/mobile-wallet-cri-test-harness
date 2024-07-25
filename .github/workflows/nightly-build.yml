@@ -1,0 +1,84 @@
+name: Build and Scan Docker Image
+
+on:
+  schedule:
+    - cron: '0 0 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  sonarcloud:
+    name: "Sonar Cloud Scan"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout code"
+        uses: "actions/checkout@v3"
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: "Run SonarCloud Scan"
+        if: ${{ success() }}
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  cd:
+    name: "BaseImageBuild"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout Code"
+        uses: "actions/checkout@v3"
+
+      - name: Set tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Build docker image
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY:$IMAGE_TAG .
+          echo "image=$ECR_REGISTRY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ secrets.ECR_REGISTRY }}:latest"
+          format: 'table'
+          output: "results-di-ipv-dca-app-base-image.sarif"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL"
+
+      - name:  Copy vulnerability scan report to s3
+        if: always()
+        env:
+          BUCKET_NAME: vulnerability-scan-report
+          AWS_REGION: 'eu-west-2'
+        run: |
+          aws s3 cp ./results-di-ipv-dca-app-base-image.sarif s3://$BUCKET_NAME/
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: tag, and push image to Amazon ECR
+        id: push-image
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          IMAGE_TAG: latest
+        run: |
+          docker push $ECR_REGISTRY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY:$IMAGE_TAG" >> $GITHUB_OUTPUT
