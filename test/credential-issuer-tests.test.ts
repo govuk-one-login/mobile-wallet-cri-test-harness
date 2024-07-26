@@ -106,7 +106,7 @@ describe("credential issuer tests", () => {
   });
 
   describe("unsuccessful responses", () => {
-    it("should return true when the CRI returns 400 'invalid_credential_request' when the access token and the credential offer wallet subject IDs do not match", async () => {
+    it("should return 400 and 'invalid_credential_request' when the access token and the credential offer wallet subject IDs do not match", async () => {
       const accessTokenWithInvalidWalletSubjectId = (
         await createAccessToken(
           NONCE,
@@ -135,7 +135,7 @@ describe("credential issuer tests", () => {
       }
     });
 
-    it("should return true when the CRI returns 400 'invalid_credential_request' when the access token signature is invalid", async () => {
+    it("should return 400 and 'invalid_credential_request' when the access token signature is invalid", async () => {
       const accessToken = (
         await createAccessToken(
           NONCE,
@@ -165,7 +165,7 @@ describe("credential issuer tests", () => {
       }
     });
 
-    it("should return true when the CRI returns 400 'invalid_proof' when the proof JWT nonce does not match the access token c_nonce", async () => {
+    it("should return 400 and 'invalid_proof' when the proof JWT nonce does not match the access token c_nonce", async () => {
       const proofJwtWithMismatchingNonce = await createProofJwt(
         "not_the_same_nonce",
         createDidKey(PUBLIC_KEY_JWK),
@@ -193,7 +193,7 @@ describe("credential issuer tests", () => {
       }
     });
 
-    it("should return true when the CRI returns 400 'invalid_proof' when the proof JWT signature is invalid", async () => {
+    it("should return 400 and 'invalid_proof' when the proof JWT signature is invalid", async () => {
       const proofJwt = await createProofJwt(
         NONCE,
         createDidKey(PUBLIC_KEY_JWK),
