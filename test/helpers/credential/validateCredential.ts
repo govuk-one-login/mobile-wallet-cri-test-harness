@@ -4,6 +4,7 @@ import {
   JWK,
   JWTPayload,
   jwtVerify,
+  JWTVerifyResult,
   ProtectedHeaderParameters,
 } from "jose";
 import Ajv from "ajv";
@@ -21,7 +22,7 @@ export async function validateCredential(
   jwks: JWK[],
   privateKey: JWK,
   publicKey: JWK,
-) {
+): Promise<true> {
   const accessToken = await createAccessToken(
     nonce,
     walletSubjectId,
@@ -92,7 +93,7 @@ async function verifySignature(
   jwks: JWK[],
   header: ProtectedHeaderParameters,
   preAuthorizedCode: string,
-) {
+): Promise<JWTVerifyResult> {
   const jwk = jwks.find((item) => item.kid === header.kid!);
   if (!jwk) {
     throw new Error("JWK_NOT_IN_DID");
