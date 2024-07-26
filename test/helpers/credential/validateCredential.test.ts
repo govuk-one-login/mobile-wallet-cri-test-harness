@@ -2,6 +2,7 @@ import { validateCredential } from "./validateCredential";
 import * as createProofJwtModule from "./createProofJwt";
 import * as createAccessTokenModule from "./createAccessToken";
 import axios, { AxiosResponse } from "axios";
+import { randomUUID } from "node:crypto";
 
 jest.mock("axios");
 jest.mock("./createProofJwt", () => ({
@@ -24,9 +25,16 @@ describe("validateCredential", () => {
     createAccessTokenModule.createAccessToken as jest.Mock;
   const createDidKey = createProofJwtModule.createDidKey as jest.Mock;
 
+  const nonce = randomUUID();
   const walletSubjectId = "wallet_subject_id";
-  const preAuthorizedCode =
-    "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiNmM4ZjFlMjItNDM2NC00ZDMwLTgyZDAtZjZmNDU0NzBkMzdhIl0sImV4cCI6MTcyMTIxODgzOCwiaWF0IjoxNzIxMjE4NTM4fQ.anOHt0g5RXY80XcjVsU1KGYM4pCJB4ustDWvFMT-7_JHpjHRZHXbjUsCzv59aPO4GRvNRdxKnJw2YLogUfUQgw";
+  const preAuthorizedCodePayload = {
+    aud: "urn:fdc:gov:uk:wallet",
+    clientId: "EXAMPLE_CRI",
+    iss: "urn:fdc:gov:uk:example-credential-issuer",
+    credential_identifiers: ["6c8f1e22-4364-4d30-82d0-f6f45470d37a"],
+    exp: 1721218838,
+    iat: 1721218538,
+  };
   const credentialsEndpoint = "http://example-cri.test.gov.uk/credential";
   const didJwks = [
     {
@@ -75,7 +83,8 @@ describe("validateCredential", () => {
 
     expect(
       await validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,
@@ -109,7 +118,8 @@ describe("validateCredential", () => {
 
     await expect(
       validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,
@@ -139,7 +149,8 @@ describe("validateCredential", () => {
 
     await expect(
       validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,
@@ -173,7 +184,8 @@ describe("validateCredential", () => {
 
     await expect(
       validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,
@@ -210,7 +222,8 @@ describe("validateCredential", () => {
 
     await expect(
       validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,
@@ -256,7 +269,8 @@ describe("validateCredential", () => {
 
     await expect(
       validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,
@@ -299,7 +313,8 @@ describe("validateCredential", () => {
 
     await expect(
       validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,
@@ -336,7 +351,8 @@ describe("validateCredential", () => {
 
     await expect(
       validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,
@@ -373,7 +389,8 @@ describe("validateCredential", () => {
 
     await expect(
       validateCredential(
-        preAuthorizedCode,
+        preAuthorizedCodePayload,
+        nonce,
         walletSubjectId,
         credentialsEndpoint,
         didJwks,

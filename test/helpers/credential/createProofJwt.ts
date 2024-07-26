@@ -20,7 +20,7 @@ export async function createProofJwt(
     .sign(signingKeyAsKeyLike);
 }
 
-export function createDidKey(publicKeyJwk: JWK) {
+export function createDidKey(publicKeyJwk: JWK): string {
   const publicKeyBuffer = getPublicKeyFromJwk(publicKeyJwk);
   const compressedPublicKey = compress(publicKeyBuffer);
 
