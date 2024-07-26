@@ -1,4 +1,4 @@
-name: Build and Scan Docker Image
+name: Sonar Cloud & Docker Image Scan
 
 on:
   schedule:
@@ -16,7 +16,7 @@ jobs:
       - name: "Checkout code"
         uses: "actions/checkout@v3"
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
 
       - name: "Run SonarCloud Scan"
         if: ${{ success() }}
@@ -25,60 +25,24 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  cd:
-    name: "BaseImageBuild"
+
+  build:
+    name: "Docker Image Scan"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout Code"
         uses: "actions/checkout@v3"
 
-      - name: Set tag
-        id: vars
-        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: eu-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-
-      - name: Build docker image
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          IMAGE_TAG: latest
+      - name: "Build an image from Dockerfile"
         run: |
-          docker build -t $ECR_REGISTRY:$IMAGE_TAG .
-          echo "image=$ECR_REGISTRY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t "test-harness" .  
 
-      - name: Run Trivy vulnerability scanner
+      - name: "Run Trivy vulnerability scanner"
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "${{ secrets.ECR_REGISTRY }}:latest"
-          format: 'table'
-          output: "results-di-ipv-dca-app-base-image.sarif"
+          image-ref: "node:lts-bookworm-slim"
+          format: "table"
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: "os,library"
-          severity: "CRITICAL"
-
-      - name:  Copy vulnerability scan report to s3
-        if: always()
-        env:
-          BUCKET_NAME: vulnerability-scan-report
-          AWS_REGION: 'eu-west-2'
-        run: |
-          aws s3 cp ./results-di-ipv-dca-app-base-image.sarif s3://$BUCKET_NAME/
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: tag, and push image to Amazon ECR
-        id: push-image
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          IMAGE_TAG: latest
-        run: |
-          docker push $ECR_REGISTRY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          severity: "CRITICAL,HIGH"
