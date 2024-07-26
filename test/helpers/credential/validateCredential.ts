@@ -1,11 +1,10 @@
-import axios, { AxiosResponse } from "axios";
 import {
-  decodeJwt,
   decodeProtectedHeader,
   importJWK,
   JWK,
   JWTPayload,
   jwtVerify,
+  JWTVerifyResult,
   ProtectedHeaderParameters,
 } from "jose";
 import Ajv from "ajv";
@@ -13,41 +12,43 @@ import { headerSchema } from "./headerSchema";
 import { payloadSchema } from "./payloadSchema";
 import { createAccessToken } from "./createAccessToken";
 import { createDidKey, createProofJwt } from "./createProofJwt";
-import { randomUUID } from "node:crypto";
-
-const NONCE = randomUUID();
+import { getCredential } from "./getCredential";
 
 export async function validateCredential(
-  preAuthorizedCode: string,
+  preAuthorizedCodePayload: JWTPayload,
+  nonce: string,
   walletSubjectId: string,
   credentialsEndpoint: string,
   jwks: JWK[],
   privateKey: JWK,
   publicKey: JWK,
-) {
-  const preAuthorizedCodePayload = decodeJwt(preAuthorizedCode);
-
+): Promise<true> {
   const accessToken = await createAccessToken(
-    NONCE,
+    nonce,
     walletSubjectId,
     preAuthorizedCodePayload,
     privateKey,
   );
 
   const didKey = createDidKey(publicKey);
-
   const proofJwt = await createProofJwt(
-    NONCE,
+    nonce,
     didKey,
     preAuthorizedCodePayload,
     privateKey,
   );
 
-  const response = await getCredential(
-    accessToken.access_token,
-    proofJwt,
-    credentialsEndpoint,
-  );
+  let response;
+  try {
+    response = await getCredential(
+      accessToken.access_token,
+      proofJwt,
+      credentialsEndpoint,
+    );
+  } catch (error) {
+    console.log(`Error trying to fetch credential: ${JSON.stringify(error)}`);
+    throw new Error("POST_CREDENTIAL_ERROR");
+  }
 
   if (response.status !== 200) {
     throw new Error("INVALID_STATUS_CODE");
@@ -65,36 +66,6 @@ export async function validateCredential(
   validatePayload(payload, didKey);
 
   return true;
-}
-
-export async function getCredential(
-  accessToken: string,
-  proofJwt: string,
-  endpoint: string,
-): Promise<AxiosResponse> {
-  try {
-    // When running the CRI and test harness locally, replace domain "localhost" with "host.docker.internal" before making the request
-    endpoint = endpoint.replace("localhost", "host.docker.internal");
-    const credentialUrl = new URL(endpoint).toString();
-
-    return await axios.post(
-      credentialUrl,
-      {
-        proof: {
-          proof_type: "jwt",
-          jwt: proofJwt,
-        },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    );
-  } catch (error) {
-    console.log(`Error trying to fetch credential: ${JSON.stringify(error)}`);
-    throw new Error("POST_CREDENTIAL_ERROR");
-  }
 }
 
 function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
@@ -122,7 +93,7 @@ async function verifySignature(
   jwks: JWK[],
   header: ProtectedHeaderParameters,
   preAuthorizedCode: string,
-) {
+): Promise<JWTVerifyResult> {
   const jwk = jwks.find((item) => item.kid === header.kid!);
   if (!jwk) {
     throw new Error("JWK_NOT_IN_DID");
