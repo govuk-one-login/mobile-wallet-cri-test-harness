@@ -26,7 +26,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
-  build:
+  buildAndScan:
     name: "Docker Image Scan"
     runs-on: "ubuntu-latest"
     steps:
