@@ -24,6 +24,7 @@ describe("validatePreAuthorizedCode", () => {
   });
 
   afterEach(() => {
+    jest.setSystemTime(jest.getRealSystemTime());
     jest.useRealTimers();
     jest.clearAllMocks();
   });
