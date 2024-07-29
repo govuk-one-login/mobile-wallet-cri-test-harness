@@ -19,18 +19,12 @@ const jwks = [
 ];
 
 describe("validatePreAuthorizedCode", () => {
-  beforeEach(() => {
-    jest.useFakeTimers();
-  });
-
   afterEach(() => {
-    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
   it("should return 'true' when metadata is valid", async () => {
-    const mockedDate = new Date(2024, 6, 17, 13, 16);
-    jest.setSystemTime(mockedDate);
+    jest.useFakeTimers().setSystemTime(new Date("2024-07-17T12:16:24.000Z"));
     const preAuthorizedCode =
       "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiNmM4ZjFlMjItNDM2NC00ZDMwLTgyZDAtZjZmNDU0NzBkMzdhIl0sImV4cCI6MTcyMTIxODgzOCwiaWF0IjoxNzIxMjE4NTM4fQ.anOHt0g5RXY80XcjVsU1KGYM4pCJB4ustDWvFMT-7_JHpjHRZHXbjUsCzv59aPO4GRvNRdxKnJw2YLogUfUQgw";
 
@@ -97,8 +91,7 @@ describe("validatePreAuthorizedCode", () => {
   });
 
   it("should throw 'INVALID_PAYLOAD' error when payload is missing 'iss' claim", async () => {
-    const mockedDate = new Date(2024, 5, 17, 13, 16);
-    jest.setSystemTime(mockedDate);
+    jest.useFakeTimers().setSystemTime(new Date("2024-07-17T12:16:24.000Z"));
     const preAuthorizedCode =
       "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiY3JlZGVudGlhbF9pZGVudGlmaWVycyI6WyI5YzBkMjYzNy04NmJjLTQ1Y2UtOTllZS0yOGU0ODkxZDYzN2IiXSwiZXhwIjoxNzIxMjIyNTY2LCJpYXQiOjE3MjEyMjIzMjZ9.KMybgMtmrqkM3AfZ-spDudIvDe3O4XGgyxEqC_F4tVQiIbm7qL9mp9L_3AqYA-1tJvuDELmlWDkPLgp3D0pysg";
 
@@ -111,8 +104,7 @@ describe("validatePreAuthorizedCode", () => {
   });
 
   it("should throw 'INVALID_PAYLOAD' error when 'iat' claim is in the future", async () => {
-    const mockedDate = new Date(2024, 5, 17, 13, 16);
-    jest.setSystemTime(mockedDate);
+    jest.useFakeTimers().setSystemTime(new Date("2024-07-17T11:16:24.000Z"));
     const preAuthorizedCode =
       "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiNmM4ZjFlMjItNDM2NC00ZDMwLTgyZDAtZjZmNDU0NzBkMzdhIl0sImV4cCI6MTcyMTIxODgzOCwiaWF0IjoxNzIxMjE4NTM4fQ.anOHt0g5RXY80XcjVsU1KGYM4pCJB4ustDWvFMT-7_JHpjHRZHXbjUsCzv59aPO4GRvNRdxKnJw2YLogUfUQgw";
 
@@ -125,8 +117,8 @@ describe("validatePreAuthorizedCode", () => {
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token expiry is not 5 minutes", async () => {
-    const mockedDate = new Date(2024, 6, 17, 14, 0);
-    jest.setSystemTime(mockedDate);
+    jest.useFakeTimers().setSystemTime(new Date("2024-07-17T13:00:00.000Z"));
+
     const preAuthorizedCode =
       "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiYjMxYTA2ZTgtZmMwNi00YmE1LTkyNWItZWQ2N2NkZWEyNDgwIl0sImV4cCI6MTcyMTIyMTM4MywiaWF0IjoxNzIxMjIxMTQzfQ.IiVSp9p65Hfeh_GcLvJtJcz_LmjR5gAEkaIzVLKEWdt7-uXipFP9cr2d0eTL37Y9zHUcqed4ojsuufpZsxFbEQ";
 

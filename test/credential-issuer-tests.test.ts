@@ -31,6 +31,7 @@ import {
   createProofJwt,
 } from "./helpers/credential/createProofJwt";
 import { getCredential } from "./helpers/credential/getCredential";
+import { AxiosError } from "axios";
 
 let CREDENTIAL_OFFER_DEEP_LINK;
 let CRI_URL;
@@ -129,9 +130,11 @@ describe("credential issuer tests", () => {
           proofJwt,
           CREDENTIALS_ENDPOINT,
         );
-      } catch (error: any) {
-        expect(error.response.status).toEqual(400);
-        expect(error.response.data).toEqual("invalid_credential_request");
+      } catch (error) {
+        expect((error as AxiosError).response?.status).toEqual(400);
+        expect((error as AxiosError).response?.data).toEqual(
+          "invalid_credential_request",
+        );
       }
     });
 
@@ -159,9 +162,11 @@ describe("credential issuer tests", () => {
           proofJwt,
           CREDENTIALS_ENDPOINT,
         );
-      } catch (error: any) {
-        expect(error.response.status).toEqual(400);
-        expect(error.response.data).toEqual("invalid_credential_request");
+      } catch (error) {
+        expect((error as AxiosError).response?.status).toEqual(400);
+        expect((error as AxiosError).response?.data).toEqual(
+          "invalid_credential_request",
+        );
       }
     });
 
@@ -187,9 +192,9 @@ describe("credential issuer tests", () => {
           proofJwtWithMismatchingNonce,
           CREDENTIALS_ENDPOINT,
         );
-      } catch (error: any) {
-        expect(error.response.status).toEqual(400);
-        expect(error.response.data).toEqual("invalid_proof");
+      } catch (error) {
+        expect((error as AxiosError).response?.status).toEqual(400);
+        expect((error as AxiosError).response?.data).toEqual("invalid_proof");
       }
     });
 
@@ -216,9 +221,9 @@ describe("credential issuer tests", () => {
           proofJwtWithInvalidSignature,
           CREDENTIALS_ENDPOINT,
         );
-      } catch (error: any) {
-        expect(error.response.status).toEqual(400);
-        expect(error.response.data).toEqual("invalid_proof");
+      } catch (error) {
+        expect((error as AxiosError).response?.status).toEqual(400);
+        expect((error as AxiosError).response?.data).toEqual("invalid_proof");
       }
     });
   });

@@ -29,7 +29,7 @@ export function createDidKey(publicKeyJwk: JWK): string {
   bytes[1] = 0x24;
   bytes.set(compressedPublicKey, 2);
 
-  const base58EncodedKey = bs58.encode(bytes);
+  const base58EncodedKey = bs58.default.encode(bytes);
   return `did:key:z${base58EncodedKey}`;
 }
 
