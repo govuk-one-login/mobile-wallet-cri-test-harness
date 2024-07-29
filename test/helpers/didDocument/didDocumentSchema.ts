@@ -64,7 +64,7 @@ export const didDocumentSchema = {
                 enum: ["ES256"],
               },
             },
-            required: ["kty", "kid", "crv", "x", "y"],
+            required: ["kty", "kid", "crv", "x", "y", "alg"],
             additionalProperties: false,
           },
         },
