@@ -23,7 +23,7 @@ jobs:
 
       - name: 'Install dependencies'
         if: ${{ success() }}
-        run: npm run install
+        run: npm install
 
       - name: 'Build source code'
         if: ${{ success() }}
