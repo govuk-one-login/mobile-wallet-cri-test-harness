@@ -1,0 +1,38 @@
+name: Pull-Request Checks
+
+on:
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  ci:
+    name: 'Run tests, lint and build'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: 'Checkout code'
+        uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # pin@v3
+
+      - name: 'Setup nodeJS'
+        if: ${{ success() }}
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # pin@v4
+        with:
+          node-version: '20.9.0'
+
+      - name: 'Install dependencies'
+        if: ${{ success() }}
+        run: npm run install
+
+      - name: 'Build source code'
+        if: ${{ success() }}
+        run: npm run build
+
+      - name: 'Run the linter'
+        if: ${{ success() }}
+        run: npm run lint
+
+      - name: 'Run unit tests'
+        if: ${{ success() }}
+        run: 'npm run test:unit'
