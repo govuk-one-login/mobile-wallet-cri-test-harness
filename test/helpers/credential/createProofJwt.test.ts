@@ -3,17 +3,8 @@ import { decodeJwt, decodeProtectedHeader } from "jose";
 
 describe("createProofJwt", () => {
   describe("createProofJwt", () => {
-    beforeEach(() => {
-      jest.useFakeTimers();
-      const mockedDate = new Date(2024, 6, 17, 13, 16);
-      jest.setSystemTime(mockedDate);
-    });
-
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
     it("should return the proof JWT", async () => {
+      jest.useFakeTimers().setSystemTime(new Date("2024-07-17T12:16:00.000Z"));
       const nonce = "e4cedcf6-1fb1-48f8-bf74-94cfbe9d0d86";
       const preAuthorizedCodePayload = {
         aud: "urn:fdc:gov:uk:wallet",
