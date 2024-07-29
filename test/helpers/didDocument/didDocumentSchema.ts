@@ -59,6 +59,10 @@ export const didDocumentSchema = {
                 type: "string",
                 minLength: 1,
               },
+              alg: {
+                type: "string",
+                enum: ["ES256"],
+              },
             },
             required: ["kty", "kid", "crv", "x", "y"],
             additionalProperties: false,
