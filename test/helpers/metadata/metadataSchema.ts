@@ -5,7 +5,7 @@ export const metadataSchema = {
       type: "string",
       format: "uri",
     },
-    authorization_servers: {
+    authorization_servers: { // should be SELF
       type: "array",
       items: {
         type: "string",
@@ -13,7 +13,7 @@ export const metadataSchema = {
       },
       minItems: 1,
     },
-    credential_issuer: {
+    credential_issuer: { // CRI_URL
       type: "string",
       format: "uri",
     },

@@ -7,7 +7,7 @@ export const payloadSchema = {
     },
     iss: {
       type: "string",
-      enum: ["urn:fdc:gov:uk:example-credential-issuer"],
+      minLength: 1,
     },
     vc: {
       type: "object",

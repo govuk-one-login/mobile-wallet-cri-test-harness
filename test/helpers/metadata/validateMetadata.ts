@@ -10,8 +10,8 @@ export interface Metadata {
   credential_configurations_supported: object;
 }
 
-export async function validateMetadata(criDomain: string): Promise<true> {
-  const metadataResponse = await getMetadata(criDomain);
+export async function validateMetadata(criUrl: string): Promise<true> {
+  const metadataResponse = await getMetadata(criUrl);
 
   if (metadataResponse.status !== 200) {
     throw new Error("INVALID_STATUS_CODE");

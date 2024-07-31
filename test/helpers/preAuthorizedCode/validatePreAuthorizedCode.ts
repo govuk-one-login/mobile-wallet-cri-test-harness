@@ -8,12 +8,15 @@ import type { JwtPayload } from "jsonwebtoken";
 export async function validatePreAuthorizedCode(
   preAuthorizedCode: string,
   jwks: JWK[],
+  criUrl: string,
+  authorizationServerUrl: string,
+  clientId: string,
 ) {
   const header: ProtectedHeaderParameters = getHeaderClaims(preAuthorizedCode);
 
   const verifyResult = await verifySignature(jwks, header, preAuthorizedCode);
 
-  validatePayload(verifyResult);
+  validatePayload(verifyResult, criUrl, authorizationServerUrl, clientId);
 
   return true;
 }
@@ -57,13 +60,39 @@ async function verifySignature(
   }
 }
 
-function validatePayload(verifyResult: JWTVerifyResult): void {
+function validatePayload(verifyResult: JWTVerifyResult,  criUrl: string,
+                         authorizationServerUrl: string,
+                         clientId: string): void {
   const payload = verifyResult.payload as JwtPayload;
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
   if (!rulesValidator(payload)) {
     console.log(
       `Pre-authorized code payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+    );
+    throw new Error("INVALID_PAYLOAD");
+  }
+
+  const iss = payload.iss!;
+  if (criUrl !== iss) {
+    console.log(
+        `Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
+    );
+    throw new Error("INVALID_PAYLOAD");
+  }
+
+  const aud = payload.aud!;
+  if (authorizationServerUrl !== aud) {
+    console.log(
+        `Invalid "aud" value in token. Should be ${authorizationServerUrl} but found ${aud}`,
+    );
+    throw new Error("INVALID_PAYLOAD");
+  }
+
+  const payloadClientId = payload.cliendId!;
+  if (clientId !== payloadClientId) {
+    console.log(
+        `Invalid "cliendId" value in token. Should be ${clientId} but found ${payloadClientId}`,
     );
     throw new Error("INVALID_PAYLOAD");
   }

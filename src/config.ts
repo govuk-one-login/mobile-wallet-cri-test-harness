@@ -37,3 +37,12 @@ export function getCriUrl(): string {
     return "https://" + criDomain;
   }
 }
+
+export function getSelf(): string {
+  const port = getPortNumber();
+  return `http://localhost:${port}`
+}
+
+export function getClientId(): string {
+  return getEnvVarValue("CLIENT_ID");
+}
