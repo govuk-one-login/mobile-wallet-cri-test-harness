@@ -45,7 +45,7 @@ let PRIVATE_KEY_JWK;
 let PUBLIC_KEY_JWK;
 let NONCE;
 let CLIENT_ID;
-let SELF;
+let SELF_URL;
 
 describe("credential issuer tests", () => {
   beforeAll(async () => {
@@ -55,9 +55,9 @@ describe("credential issuer tests", () => {
     WALLET_SUBJECT_ID = getWalletSubjectId();
     PRE_AUTHORIZED_CODE = extractPreAuthorizedCode(CREDENTIAL_OFFER_DEEP_LINK);
     PRE_AUTHORIZED_CODE_PAYLOAD = decodeJwt(PRE_AUTHORIZED_CODE);
-    const didDocument: DidDocument = (await getDidDocument(getDockerDnsName(CRI_URL))).data;
+    const didDocument: DidDocument = (await getDidDocument(CRI_URL)).data;
     DID_JWKS = extractJwks(didDocument);
-    CREDENTIALS_ENDPOINT = ((await getMetadata(getDockerDnsName(CRI_URL))).data as Metadata)
+    CREDENTIALS_ENDPOINT = ((await getMetadata(CRI_URL)).data as Metadata)
       .credentials_endpoint;
     PRIVATE_KEY_JWK = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
@@ -67,7 +67,7 @@ describe("credential issuer tests", () => {
     ) as JWK;
     NONCE = randomUUID();
     CLIENT_ID = getClientId()
-    SELF = getSelf()
+    SELF_URL = getSelf()
   });
 
   describe("unsuccessful responses", () => {
@@ -92,7 +92,7 @@ describe("credential issuer tests", () => {
         await getCredential(
           accessTokenWithInvalidWalletSubjectId,
           proofJwt,
-          getDockerDnsName(CREDENTIALS_ENDPOINT),
+          CREDENTIALS_ENDPOINT,
         );
       } catch (error) {
         expect((error as AxiosError).response?.status).toEqual(400);
@@ -124,7 +124,7 @@ describe("credential issuer tests", () => {
         await getCredential(
           accessTokenWithInvalidSignature,
           proofJwt,
-            getDockerDnsName(CREDENTIALS_ENDPOINT),
+            CREDENTIALS_ENDPOINT,
         );
       } catch (error) {
         expect((error as AxiosError).response?.status).toEqual(400);
@@ -154,7 +154,7 @@ describe("credential issuer tests", () => {
         await getCredential(
           accessToken,
           proofJwtWithMismatchingNonce,
-            getDockerDnsName(CREDENTIALS_ENDPOINT),
+            CREDENTIALS_ENDPOINT,
         );
       } catch (error) {
         expect((error as AxiosError).response?.status).toEqual(400);
@@ -183,7 +183,7 @@ describe("credential issuer tests", () => {
         await getCredential(
           accessToken,
           proofJwtWithInvalidSignature,
-            getDockerDnsName(CREDENTIALS_ENDPOINT),
+            CREDENTIALS_ENDPOINT,
         );
       } catch (error) {
         expect((error as AxiosError).response?.status).toEqual(400);
@@ -201,12 +201,12 @@ describe("credential issuer tests", () => {
     });
 
     it("should validate the credential metadata", async () => {
-      const isValidMetadata = await validateMetadata(getDockerDnsName(CRI_URL));
+      const isValidMetadata = await validateMetadata(CRI_URL, SELF_URL);
       expect(isValidMetadata).toEqual(true);
     });
 
     it("should validate the DID document", async () => {
-      const isValidDidDocument = await validateDidDocument(getDockerDnsName(CRI_URL), CRI_DOMAIN);
+      const isValidDidDocument = await validateDidDocument(CRI_URL, CRI_DOMAIN);
       expect(isValidDidDocument).toEqual(true);
     });
 
@@ -215,7 +215,7 @@ describe("credential issuer tests", () => {
           PRE_AUTHORIZED_CODE,
           DID_JWKS,
           CRI_URL,
-          SELF,
+          SELF_URL,
           CLIENT_ID
       );
       expect(isValidPreAuthorizedCode).toEqual(true);
@@ -226,7 +226,7 @@ describe("credential issuer tests", () => {
           PRE_AUTHORIZED_CODE_PAYLOAD,
           NONCE,
           WALLET_SUBJECT_ID,
-          getDockerDnsName(CREDENTIALS_ENDPOINT),
+          CREDENTIALS_ENDPOINT,
           DID_JWKS,
           PRIVATE_KEY_JWK,
           PUBLIC_KEY_JWK,
@@ -236,15 +236,6 @@ describe("credential issuer tests", () => {
     });
   });
 });
-
-// When running locally, "localhost" must be replaced with "host.docker.internal" when making a request to an application running locally
-function getDockerDnsName(url) {
-  if (url.startsWith("http://localhost")) {
-    return url.replace("localhost", "host.docker.internal");
-  } else {
-    return url;
-  }
-}
 
 function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
   const credentialOffer = getCredentialOffer(credentialOfferDeepLink);

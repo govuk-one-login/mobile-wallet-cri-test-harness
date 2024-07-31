@@ -5,6 +5,15 @@ import { JWK, JWTVerifyResult, ProtectedHeaderParameters } from "jose";
 import { payloadSchema } from "./payloadSchema";
 import type { JwtPayload } from "jsonwebtoken";
 
+export interface Payload {
+  aud: string;
+  clientId: string;
+  iss: string;
+  credential_identifiers: string[];
+  iat: number;
+  exp: number;
+}
+
 export async function validatePreAuthorizedCode(
   preAuthorizedCode: string,
   jwks: JWK[],
@@ -16,7 +25,9 @@ export async function validatePreAuthorizedCode(
 
   const verifyResult = await verifySignature(jwks, header, preAuthorizedCode);
 
-  validatePayload(verifyResult, criUrl, authorizationServerUrl, clientId);
+  const payload = verifyResult.payload as Payload;
+
+  validatePayload(payload, criUrl, authorizationServerUrl, clientId);
 
   return true;
 }
@@ -60,10 +71,9 @@ async function verifySignature(
   }
 }
 
-function validatePayload(verifyResult: JWTVerifyResult,  criUrl: string,
+function validatePayload(payload: Payload,  criUrl: string,
                          authorizationServerUrl: string,
                          clientId: string): void {
-  const payload = verifyResult.payload as JwtPayload;
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
   if (!rulesValidator(payload)) {
@@ -73,7 +83,7 @@ function validatePayload(verifyResult: JWTVerifyResult,  criUrl: string,
     throw new Error("INVALID_PAYLOAD");
   }
 
-  const iss = payload.iss!;
+  const iss = payload.iss;
   if (criUrl !== iss) {
     console.log(
         `Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
@@ -81,7 +91,7 @@ function validatePayload(verifyResult: JWTVerifyResult,  criUrl: string,
     throw new Error("INVALID_PAYLOAD");
   }
 
-  const aud = payload.aud!;
+  const aud = payload.aud;
   if (authorizationServerUrl !== aud) {
     console.log(
         `Invalid "aud" value in token. Should be ${authorizationServerUrl} but found ${aud}`,
@@ -89,15 +99,14 @@ function validatePayload(verifyResult: JWTVerifyResult,  criUrl: string,
     throw new Error("INVALID_PAYLOAD");
   }
 
-  const payloadClientId = payload.cliendId!;
-  if (clientId !== payloadClientId) {
+  if (clientId !== payload.clientId) {
     console.log(
-        `Invalid "cliendId" value in token. Should be ${clientId} but found ${payloadClientId}`,
+        `Invalid "clientId" value in token. Should be ${clientId} but found ${payload.clientId}`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
 
-  const tokenIssuedAt = new Date(payload.iat! * 1000);
+  const tokenIssuedAt = new Date(payload.iat * 1000);
   if (tokenIssuedAt > new Date()) {
     console.log(
       `Invalid "iat" value in token. Should be in the past but is in the future`,
@@ -105,7 +114,7 @@ function validatePayload(verifyResult: JWTVerifyResult,  criUrl: string,
     throw new Error("INVALID_PAYLOAD");
   }
 
-  const tokenExpiresAt = new Date(payload.exp! * 1000);
+  const tokenExpiresAt = new Date(payload.exp * 1000);
   const expiry = (tokenExpiresAt.getTime() - tokenIssuedAt.getTime()) / 60000;
   if (expiry !== 5) {
     console.log(

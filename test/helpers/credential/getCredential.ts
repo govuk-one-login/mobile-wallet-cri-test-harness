@@ -1,14 +1,13 @@
 import axios, { AxiosResponse } from "axios";
+import {getDockerDnsName} from "../../../src/config";
 
 export async function getCredential(
   accessToken: string,
   proofJwt: string,
-  endpoint: string,
+  credentialUrl: string,
 ): Promise<AxiosResponse> {
-  const credentialUrl = new URL(endpoint).toString();
-
   return await axios.post(
-    credentialUrl,
+      getDockerDnsName(credentialUrl),
     {
       proof: {
         proof_type: "jwt",

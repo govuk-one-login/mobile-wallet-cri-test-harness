@@ -46,3 +46,12 @@ export function getSelf(): string {
 export function getClientId(): string {
   return getEnvVarValue("CLIENT_ID");
 }
+
+// When running locally, "localhost" must be replaced with "host.docker.internal" when making a request to an application running locally
+export function getDockerDnsName(url) {
+  if (url.startsWith("http://localhost")) {
+    return url.replace("localhost", "host.docker.internal");
+  } else {
+    return url;
+  }
+}

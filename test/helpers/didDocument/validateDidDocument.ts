@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import Ajv, { ValidateFunction } from "ajv";
 import { didDocumentSchema } from "./didDocumentSchema";
 import { JWK } from "jose";
+import {getDockerDnsName} from "../../../src/config";
 
 export interface DidDocument {
   "@context": string[];
@@ -93,11 +94,11 @@ function checkPayload(
   return true;
 }
 
-export async function getDidDocument(domain): Promise<AxiosResponse> {
+export async function getDidDocument(criUrl): Promise<AxiosResponse> {
   const DID_DOCUMENT_PATH: string = ".well-known/did.json";
   try {
-    const url = new URL(DID_DOCUMENT_PATH, domain).toString();
-    return await axios.get(url);
+    const didUrl = new URL(DID_DOCUMENT_PATH, criUrl).toString();
+    return await axios.get(getDockerDnsName(didUrl));
   } catch (error) {
     console.log(`Error trying to fetch DID document: ${JSON.stringify(error)}`);
     throw new Error("GET_DID_DOCUMENT_ERROR");
