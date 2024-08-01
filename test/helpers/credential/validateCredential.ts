@@ -103,6 +103,7 @@ async function verifySignature(
   try {
     return await jwtVerify(preAuthorizedCode, publicKey);
   } catch (error) {
+    console.info(error);
     console.log(`Error verifying signature: ${JSON.stringify(error)}`);
     throw new Error("INVALID_SIGNATURE");
   }

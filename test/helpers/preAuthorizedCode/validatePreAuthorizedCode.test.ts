@@ -1,6 +1,4 @@
 import { importJWK, SignJWT } from "jose";
-
-process.env.CRI_DOMAIN = "localhost:8080";
 import { validatePreAuthorizedCode } from "./validatePreAuthorizedCode";
 console.log = jest.fn();
 
@@ -20,7 +18,6 @@ const jwks = [
     crv: "P-256",
   },
 ];
-
 const clientId = "TEST_CLIENT_ID";
 const authServerUrl = "https://test-auth-server.gov.uk";
 const criUrl = "https://test-example-cri.gov.uk";
