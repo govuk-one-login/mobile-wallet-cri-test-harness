@@ -3,15 +3,15 @@ export const payloadSchema = {
   properties: {
     aud: {
       type: "string",
-      minLength: 1
+      minLength: 1,
     },
     clientId: {
       type: "string",
-      minLength: 1
+      minLength: 1,
     },
     iss: {
       type: "string",
-      minLength: 1
+      minLength: 1,
     },
     credential_identifiers: {
       type: "array",

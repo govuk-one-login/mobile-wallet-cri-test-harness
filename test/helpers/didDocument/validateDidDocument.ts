@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import Ajv, { ValidateFunction } from "ajv";
 import { didDocumentSchema } from "./didDocumentSchema";
 import { JWK } from "jose";
-import {getDockerDnsName} from "../../../src/config";
+import { getDockerDnsName } from "../../../src/config";
 
 export interface DidDocument {
   "@context": string[];

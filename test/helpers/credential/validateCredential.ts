@@ -22,7 +22,7 @@ export async function validateCredential(
   jwks: JWK[],
   privateKey: JWK,
   publicKey: JWK,
-  criUrl: string
+  criUrl: string,
 ): Promise<true> {
   const accessToken = await createAccessToken(
     nonce,
@@ -108,7 +108,11 @@ async function verifySignature(
   }
 }
 
-function validatePayload(payload: JWTPayload, didKey: string, criUrl: string): void {
+function validatePayload(
+  payload: JWTPayload,
+  didKey: string,
+  criUrl: string,
+): void {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
   if (!rulesValidator(payload)) {
@@ -121,7 +125,7 @@ function validatePayload(payload: JWTPayload, didKey: string, criUrl: string): v
   const iss = payload.iss;
   if (criUrl !== iss) {
     console.log(
-        `Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
+      `Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
     );
     throw new Error("INVALID_PAYLOAD");
   }

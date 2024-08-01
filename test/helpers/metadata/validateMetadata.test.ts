@@ -17,7 +17,7 @@ describe("validateMetadata", () => {
     const mockedResponse = {
       status: 200,
       data: {
-        credentials_endpoint: TEST_CRI_URL+ "/credential",
+        credentials_endpoint: TEST_CRI_URL + "/credential",
         authorization_servers: [TEST_AUTH_SERVER_URL],
         credential_issuer: TEST_CRI_URL,
         credential_configurations_supported: {
@@ -100,9 +100,11 @@ describe("validateMetadata", () => {
     } as AxiosResponse;
     mockedAxios.get.mockResolvedValueOnce(mockedResponse);
     await expect(
-        validateMetadata(TEST_CRI_URL, TEST_AUTH_SERVER_URL),
+      validateMetadata(TEST_CRI_URL, TEST_AUTH_SERVER_URL),
     ).rejects.toThrow("INVALID_METADATA");
-    expect(console.log).toHaveBeenCalledWith("Invalid \"credential_issuer\" value. Should be https://example-cri.test.gov.uk but found https://something-else.com/")
+    expect(console.log).toHaveBeenCalledWith(
+      'Invalid "credential_issuer" value. Should be https://example-cri.test.gov.uk but found https://something-else.com/',
+    );
   });
 
   it("should throw 'INVALID_METADATA' error when 'authorization_servers' does not match the test harness URL", async () => {
@@ -123,8 +125,10 @@ describe("validateMetadata", () => {
     } as AxiosResponse;
     mockedAxios.get.mockResolvedValueOnce(mockedResponse);
     await expect(
-        validateMetadata(TEST_CRI_URL, TEST_AUTH_SERVER_URL),
+      validateMetadata(TEST_CRI_URL, TEST_AUTH_SERVER_URL),
     ).rejects.toThrow("INVALID_METADATA");
-    expect(console.log).toHaveBeenCalledWith("Invalid \"authorization_servers\" value. Should contain https://auth-server.test.gov.uk but only contains https://something-else.com/")
+    expect(console.log).toHaveBeenCalledWith(
+      'Invalid "authorization_servers" value. Should contain https://auth-server.test.gov.uk but only contains https://something-else.com/',
+    );
   });
 });

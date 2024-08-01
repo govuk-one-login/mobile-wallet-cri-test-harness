@@ -40,7 +40,7 @@ export function getCriUrl(): string {
 
 export function getSelf(): string {
   const port = getPortNumber();
-  return `http://localhost:${port}`
+  return `http://localhost:${port}`;
 }
 
 export function getClientId(): string {

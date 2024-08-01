@@ -92,7 +92,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).toEqual(true);
   });
@@ -128,7 +128,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).rejects.toThrow("INVALID_STATUS_CODE");
   });
@@ -160,7 +160,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).rejects.toThrow("INVALID_RESPONSE_DATA");
   });
@@ -196,7 +196,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).rejects.toThrow("HEADER_DECODING_ERROR");
     expect(console.log).toHaveBeenCalledWith(
@@ -235,7 +235,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).rejects.toThrow("INVALID_HEADER");
     expect(console.log).toHaveBeenCalledWith(
@@ -283,7 +283,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).rejects.toThrow("JWK_NOT_IN_DID");
   });
@@ -328,7 +328,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).rejects.toThrow("INVALID_SIGNATURE");
     expect(console.log).toHaveBeenCalledWith(
@@ -367,7 +367,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
@@ -406,7 +406,7 @@ describe("validateCredential", () => {
         didJwks,
         privateKeyJwk,
         publicKeyJwk,
-          criUrl
+        criUrl,
       ),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(

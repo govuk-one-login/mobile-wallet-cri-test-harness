@@ -70,9 +70,12 @@ async function verifySignature(
   }
 }
 
-function validatePayload(payload: Payload,  criUrl: string,
-                         authorizationServerUrl: string,
-                         clientId: string): void {
+function validatePayload(
+  payload: Payload,
+  criUrl: string,
+  authorizationServerUrl: string,
+  clientId: string,
+): void {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
   if (!rulesValidator(payload)) {
@@ -85,7 +88,7 @@ function validatePayload(payload: Payload,  criUrl: string,
   const iss = payload.iss;
   if (criUrl !== iss) {
     console.log(
-        `Invalid "iss" value in token. Should be "${criUrl}" but found "${iss}"`,
+      `Invalid "iss" value in token. Should be "${criUrl}" but found "${iss}"`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
@@ -93,14 +96,14 @@ function validatePayload(payload: Payload,  criUrl: string,
   const aud = payload.aud;
   if (authorizationServerUrl !== aud) {
     console.log(
-        `Invalid "aud" value in token. Should be "${authorizationServerUrl}" but found "${aud}"`,
+      `Invalid "aud" value in token. Should be "${authorizationServerUrl}" but found "${aud}"`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
 
   if (clientId !== payload.clientId) {
     console.log(
-        `Invalid "clientId" value in token. Should be "${clientId}" but found "${payload.clientId}"`,
+      `Invalid "clientId" value in token. Should be "${clientId}" but found "${payload.clientId}"`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
