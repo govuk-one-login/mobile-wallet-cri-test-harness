@@ -1,9 +1,8 @@
 import Ajv from "ajv";
 import * as jose from "jose";
 import { headerSchema } from "./headerSchema";
-import { JWK, JWTVerifyResult, ProtectedHeaderParameters } from "jose";
+import { JWK, ProtectedHeaderParameters } from "jose";
 import { payloadSchema } from "./payloadSchema";
-import type { JwtPayload } from "jsonwebtoken";
 
 export interface Payload {
   aud: string;
@@ -25,7 +24,7 @@ export async function validatePreAuthorizedCode(
 
   const verifyResult = await verifySignature(jwks, header, preAuthorizedCode);
 
-  const payload = verifyResult.payload as Payload;
+  const payload = verifyResult.payload as unknown as Payload;
 
   validatePayload(payload, criUrl, authorizationServerUrl, clientId);
 
@@ -86,7 +85,7 @@ function validatePayload(payload: Payload,  criUrl: string,
   const iss = payload.iss;
   if (criUrl !== iss) {
     console.log(
-        `Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
+        `Invalid "iss" value in token. Should be "${criUrl}" but found "${iss}"`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
@@ -94,14 +93,14 @@ function validatePayload(payload: Payload,  criUrl: string,
   const aud = payload.aud;
   if (authorizationServerUrl !== aud) {
     console.log(
-        `Invalid "aud" value in token. Should be ${authorizationServerUrl} but found ${aud}`,
+        `Invalid "aud" value in token. Should be "${authorizationServerUrl}" but found "${aud}"`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
 
   if (clientId !== payload.clientId) {
     console.log(
-        `Invalid "clientId" value in token. Should be ${clientId} but found ${payload.clientId}`,
+        `Invalid "clientId" value in token. Should be "${clientId}" but found "${payload.clientId}"`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
@@ -118,7 +117,7 @@ function validatePayload(payload: Payload,  criUrl: string,
   const expiry = (tokenExpiresAt.getTime() - tokenIssuedAt.getTime()) / 60000;
   if (expiry !== 5) {
     console.log(
-      `Invalid "exp" value in token. Should be 5 minutes seconds but found ${expiry}`,
+      `Invalid "exp" value in token. Should be "5 minutes" seconds but found "${expiry} minutes"`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
