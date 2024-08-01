@@ -4,7 +4,7 @@ import {
   getCredentialOfferDeepLink,
   getWalletSubjectId,
   getClientId,
-  getSelf,
+  getSelfURL,
 } from "../src/config";
 import {
   CredentialOffer,
@@ -69,7 +69,7 @@ describe("credential issuer tests", () => {
     ) as JWK;
     NONCE = randomUUID();
     CLIENT_ID = getClientId();
-    SELF_URL = getSelf();
+    SELF_URL = getSelfURL();
   });
 
   it("should return 400 and 'invalid_credential_request' when the access token and the credential offer wallet subject IDs do not match", async () => {

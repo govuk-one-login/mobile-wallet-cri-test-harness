@@ -29,7 +29,6 @@ export function getKeyId(): string {
 export function getCriUrl(): string {
   const criDomain = getCriDomain();
   if (
-    criDomain.startsWith("host.docker.internal") ||
     criDomain.startsWith("localhost")
   ) {
     return "http://" + criDomain;
@@ -38,16 +37,19 @@ export function getCriUrl(): string {
   }
 }
 
-export function getSelf(): string {
-  const port = getPortNumber();
-  return `http://localhost:${port}`;
+export function getSelfURL(): string {
+  try {
+    return getEnvVarValue("TEST_HARNESS_URL");
+  } catch (error) {
+    return `http://localhost:${getPortNumber()}`;
+  }
 }
 
 export function getClientId(): string {
   return getEnvVarValue("CLIENT_ID");
 }
 
-// When running locally, "localhost" must be replaced with "host.docker.internal" when making a request to an application running locally
+// When running locally, "localhost" must be replaced with "host.docker.internal" when making a request
 export function getDockerDnsName(url) {
   if (url.startsWith("http://localhost")) {
     return url.replace("localhost", "host.docker.internal");
