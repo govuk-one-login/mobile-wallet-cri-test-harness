@@ -4,4 +4,4 @@ RUN npm install && \
     mkdir /results
 EXPOSE 3001
 ENV PORT=3001
-ENTRYPOINT ["bash", "run_all.sh"]
+ENTRYPOINT ["bash", "run_server_and_tests.sh"]
