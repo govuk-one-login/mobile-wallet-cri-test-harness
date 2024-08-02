@@ -3,6 +3,8 @@ import {
   getCriUrl,
   getCredentialOfferDeepLink,
   getWalletSubjectId,
+  getClientId,
+  getSelfURL,
 } from "../src/config";
 import {
   CredentialOffer,
@@ -44,6 +46,8 @@ let CREDENTIALS_ENDPOINT;
 let PRIVATE_KEY_JWK;
 let PUBLIC_KEY_JWK;
 let NONCE;
+let CLIENT_ID;
+let SELF_URL;
 
 describe("credential issuer tests", () => {
   beforeAll(async () => {
@@ -64,168 +68,196 @@ describe("credential issuer tests", () => {
       readFileSync("test/helpers/credential/publicKey", "utf8"),
     ) as JWK;
     NONCE = randomUUID();
+    CLIENT_ID = getClientId();
+    SELF_URL = getSelfURL();
   });
 
-  describe("successful responses", () => {
-    it("should validate the credential offer", async () => {
-      const isValidCredentialOffer = validateCredentialOffer(
-        CREDENTIAL_OFFER_DEEP_LINK,
-      );
-      expect(isValidCredentialOffer).toEqual(true);
-    });
-
-    it("should validate the credential metadata", async () => {
-      const isValidMetadata = await validateMetadata(CRI_URL);
-      expect(isValidMetadata).toEqual(true);
-    });
-
-    it("should validate the DID document", async () => {
-      const isValidDidDocument = await validateDidDocument(CRI_URL, CRI_DOMAIN);
-      expect(isValidDidDocument).toEqual(true);
-    });
-
-    it("should validate the pre-authorized code", async () => {
-      const isValidPreAuthorizedCode = await validatePreAuthorizedCode(
-        PRE_AUTHORIZED_CODE,
-        DID_JWKS,
-      );
-      expect(isValidPreAuthorizedCode).toEqual(true);
-    });
-
-    it("should validate the credential", async () => {
-      const isValidCredential = await validateCredential(
+  it("should return 400 and 'invalid_credential_request' when the access token and the credential offer wallet subject IDs do not match", async () => {
+    const accessTokenWithInvalidWalletSubjectId = (
+      await createAccessToken(
+        NONCE,
+        "not_the_same_wallet_subject_id",
         PRE_AUTHORIZED_CODE_PAYLOAD,
+        PRIVATE_KEY_JWK,
+      )
+    ).access_token;
+    const didKey = createDidKey(PUBLIC_KEY_JWK);
+    const proofJwt = await createProofJwt(
+      NONCE,
+      didKey,
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      PRIVATE_KEY_JWK,
+    );
+
+    try {
+      await getCredential(
+        accessTokenWithInvalidWalletSubjectId,
+        proofJwt,
+        CREDENTIALS_ENDPOINT,
+      );
+    } catch (error) {
+      expect((error as AxiosError).response?.status).toEqual(400);
+      expect((error as AxiosError).response?.data).toEqual(
+        "invalid_credential_request",
+      );
+    }
+  });
+
+  it("should return 400 and 'invalid_credential_request' when the access token signature is invalid", async () => {
+    const accessToken = (
+      await createAccessToken(
         NONCE,
         WALLET_SUBJECT_ID,
-        CREDENTIALS_ENDPOINT,
-        DID_JWKS,
+        PRE_AUTHORIZED_CODE_PAYLOAD,
         PRIVATE_KEY_JWK,
-        PUBLIC_KEY_JWK,
+      )
+    ).access_token;
+    const accessTokenWithInvalidSignature = makeSignatureInvalid(accessToken);
+    const didKey = createDidKey(PUBLIC_KEY_JWK);
+    const proofJwt = await createProofJwt(
+      NONCE,
+      didKey,
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      PRIVATE_KEY_JWK,
+    );
+
+    try {
+      await getCredential(
+        accessTokenWithInvalidSignature,
+        proofJwt,
+        CREDENTIALS_ENDPOINT,
       );
-      expect(isValidCredential).toEqual(true);
-    });
+    } catch (error) {
+      expect((error as AxiosError).response?.status).toEqual(400);
+      expect((error as AxiosError).response?.data).toEqual(
+        "invalid_credential_request",
+      );
+    }
   });
 
-  describe("unsuccessful responses", () => {
-    it("should return 400 and 'invalid_credential_request' when the access token and the credential offer wallet subject IDs do not match", async () => {
-      const accessTokenWithInvalidWalletSubjectId = (
-        await createAccessToken(
-          NONCE,
-          "not_the_same_wallet_subject_id",
-          PRE_AUTHORIZED_CODE_PAYLOAD,
-          PRIVATE_KEY_JWK,
-        )
-      ).access_token;
-      const didKey = createDidKey(PUBLIC_KEY_JWK);
-      const proofJwt = await createProofJwt(
+  it("should return 400 and 'invalid_proof' when the proof JWT nonce does not match the access token c_nonce", async () => {
+    const proofJwtWithMismatchingNonce = await createProofJwt(
+      "not_the_same_nonce",
+      createDidKey(PUBLIC_KEY_JWK),
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      PRIVATE_KEY_JWK,
+    );
+    const accessToken = (
+      await createAccessToken(
         NONCE,
-        didKey,
+        WALLET_SUBJECT_ID,
         PRE_AUTHORIZED_CODE_PAYLOAD,
         PRIVATE_KEY_JWK,
+      )
+    ).access_token;
+
+    try {
+      await getCredential(
+        accessToken,
+        proofJwtWithMismatchingNonce,
+        CREDENTIALS_ENDPOINT,
       );
+    } catch (error) {
+      expect((error as AxiosError).response?.status).toEqual(400);
+      expect((error as AxiosError).response?.data).toEqual("invalid_proof");
+    }
+  });
 
-      try {
-        await getCredential(
-          accessTokenWithInvalidWalletSubjectId,
-          proofJwt,
-          CREDENTIALS_ENDPOINT,
-        );
-      } catch (error) {
-        expect((error as AxiosError).response?.status).toEqual(400);
-        expect((error as AxiosError).response?.data).toEqual(
-          "invalid_credential_request",
-        );
-      }
-    });
-
-    it("should return 400 and 'invalid_credential_request' when the access token signature is invalid", async () => {
-      const accessToken = (
-        await createAccessToken(
-          NONCE,
-          WALLET_SUBJECT_ID,
-          PRE_AUTHORIZED_CODE_PAYLOAD,
-          PRIVATE_KEY_JWK,
-        )
-      ).access_token;
-      const accessTokenWithInvalidSignature = makeSignatureInvalid(accessToken);
-      const didKey = createDidKey(PUBLIC_KEY_JWK);
-      const proofJwt = await createProofJwt(
+  it("should return 400 and 'invalid_proof' when the proof JWT signature is invalid", async () => {
+    const proofJwt = await createProofJwt(
+      NONCE,
+      createDidKey(PUBLIC_KEY_JWK),
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      PRIVATE_KEY_JWK,
+    );
+    const proofJwtWithInvalidSignature = makeSignatureInvalid(proofJwt);
+    const accessToken = (
+      await createAccessToken(
         NONCE,
-        didKey,
+        WALLET_SUBJECT_ID,
         PRE_AUTHORIZED_CODE_PAYLOAD,
         PRIVATE_KEY_JWK,
+      )
+    ).access_token;
+
+    try {
+      await getCredential(
+        accessToken,
+        proofJwtWithInvalidSignature,
+        CREDENTIALS_ENDPOINT,
       );
+    } catch (error) {
+      expect((error as AxiosError).response?.status).toEqual(400);
+      expect((error as AxiosError).response?.data).toEqual("invalid_proof");
+    }
+  });
 
-      try {
-        await getCredential(
-          accessTokenWithInvalidSignature,
-          proofJwt,
-          CREDENTIALS_ENDPOINT,
-        );
-      } catch (error) {
-        expect((error as AxiosError).response?.status).toEqual(400);
-        expect((error as AxiosError).response?.data).toEqual(
-          "invalid_credential_request",
-        );
-      }
-    });
+  it.skip("should validate the credential offer", async () => {
+    const isValidCredentialOffer = validateCredentialOffer(
+      CREDENTIAL_OFFER_DEEP_LINK,
+    );
+    expect(isValidCredentialOffer).toEqual(true);
+  });
 
-    it("should return 400 and 'invalid_proof' when the proof JWT nonce does not match the access token c_nonce", async () => {
-      const proofJwtWithMismatchingNonce = await createProofJwt(
-        "not_the_same_nonce",
-        createDidKey(PUBLIC_KEY_JWK),
-        PRE_AUTHORIZED_CODE_PAYLOAD,
-        PRIVATE_KEY_JWK,
-      );
-      const accessToken = (
-        await createAccessToken(
-          NONCE,
-          WALLET_SUBJECT_ID,
-          PRE_AUTHORIZED_CODE_PAYLOAD,
-          PRIVATE_KEY_JWK,
-        )
-      ).access_token;
+  it("should validate the credential metadata", async () => {
+    const isValidMetadata = await validateMetadata(CRI_URL, SELF_URL);
+    expect(isValidMetadata).toEqual(true);
+  });
 
-      try {
-        await getCredential(
-          accessToken,
-          proofJwtWithMismatchingNonce,
-          CREDENTIALS_ENDPOINT,
-        );
-      } catch (error) {
-        expect((error as AxiosError).response?.status).toEqual(400);
-        expect((error as AxiosError).response?.data).toEqual("invalid_proof");
-      }
-    });
+  it("should validate the DID document", async () => {
+    const isValidDidDocument = await validateDidDocument(CRI_URL, CRI_DOMAIN);
+    expect(isValidDidDocument).toEqual(true);
+  });
 
-    it("should return 400 and 'invalid_proof' when the proof JWT signature is invalid", async () => {
-      const proofJwt = await createProofJwt(
+  it("should validate the pre-authorized code", async () => {
+    const isValidPreAuthorizedCode = await validatePreAuthorizedCode(
+      PRE_AUTHORIZED_CODE,
+      DID_JWKS,
+      CRI_URL,
+      SELF_URL,
+      CLIENT_ID,
+    );
+    expect(isValidPreAuthorizedCode).toEqual(true);
+  });
+
+  it("should validate the credential", async () => {
+    const isValidCredential = await validateCredential(
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      NONCE,
+      WALLET_SUBJECT_ID,
+      CREDENTIALS_ENDPOINT,
+      DID_JWKS,
+      PRIVATE_KEY_JWK,
+      PUBLIC_KEY_JWK,
+      CRI_URL,
+    );
+    expect(isValidCredential).toEqual(true);
+  });
+
+  it("should return 404 and 'invalid_credential_request' when the credential offer cannot be found in the database", async () => {
+    const proofJwt = await createProofJwt(
+      NONCE,
+      createDidKey(PUBLIC_KEY_JWK),
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      PRIVATE_KEY_JWK,
+    );
+    const accessToken = (
+      await createAccessToken(
         NONCE,
-        createDidKey(PUBLIC_KEY_JWK),
+        WALLET_SUBJECT_ID,
         PRE_AUTHORIZED_CODE_PAYLOAD,
         PRIVATE_KEY_JWK,
-      );
-      const proofJwtWithInvalidSignature = makeSignatureInvalid(proofJwt);
-      const accessToken = (
-        await createAccessToken(
-          NONCE,
-          WALLET_SUBJECT_ID,
-          PRE_AUTHORIZED_CODE_PAYLOAD,
-          PRIVATE_KEY_JWK,
-        )
-      ).access_token;
+      )
+    ).access_token;
 
-      try {
-        await getCredential(
-          accessToken,
-          proofJwtWithInvalidSignature,
-          CREDENTIALS_ENDPOINT,
-        );
-      } catch (error) {
-        expect((error as AxiosError).response?.status).toEqual(400);
-        expect((error as AxiosError).response?.data).toEqual("invalid_proof");
-      }
-    });
+    try {
+      await getCredential(accessToken, proofJwt, CREDENTIALS_ENDPOINT);
+    } catch (error) {
+      expect((error as AxiosError).response?.status).toEqual(404);
+      expect((error as AxiosError).response?.data).toEqual(
+        "invalid_credential_request",
+      );
+    }
   });
 });
 

@@ -3,15 +3,15 @@ export const payloadSchema = {
   properties: {
     aud: {
       type: "string",
-      enum: ["urn:fdc:gov:uk:wallet"],
+      minLength: 1,
     },
     clientId: {
       type: "string",
-      enum: ["EXAMPLE_CRI"],
+      minLength: 1,
     },
     iss: {
       type: "string",
-      enum: ["urn:fdc:gov:uk:example-credential-issuer"],
+      minLength: 1,
     },
     credential_identifiers: {
       type: "array",

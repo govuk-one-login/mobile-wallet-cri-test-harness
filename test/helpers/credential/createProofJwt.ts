@@ -3,6 +3,7 @@ import { importJWK, JWK, JWTPayload, SignJWT } from "jose";
 const bs58 = require("bs58");
 
 const SIGNING_ALGORITHM = "ES256";
+const PROOF_JWT_ISSUER = "urn:fdc:gov:uk:wallet";
 
 export async function createProofJwt(
   nonce: string,
@@ -15,7 +16,7 @@ export async function createProofJwt(
   return await new SignJWT({ nonce: nonce })
     .setProtectedHeader({ alg: SIGNING_ALGORITHM, kid: didKey })
     .setIssuedAt()
-    .setIssuer(preAuthorizedCodePayload.aud! as string)
+    .setIssuer(PROOF_JWT_ISSUER)
     .setAudience(preAuthorizedCodePayload.iss!)
     .sign(signingKeyAsKeyLike);
 }

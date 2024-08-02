@@ -1,53 +1,85 @@
+import { importJWK, SignJWT } from "jose";
 import { validatePreAuthorizedCode } from "./validatePreAuthorizedCode";
 console.log = jest.fn();
 
 const jwks = [
   {
     kty: "EC",
-    kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+    kid: "66fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058086",
     crv: "P-256",
     x: "7uUkwFnUzJGteTfUiHoG9xN0RdiN1ElvS0q2ToRU2kw",
     y: "DX4zp6nCqgYmiZTRcdwJvsxnHmHlb9I-xyezz8cf-LM",
   },
   {
+    kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
     kty: "EC",
-    kid: "44fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058266",
+    x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
+    y: "1yKvdIgdktb6MYaVU2Ptt_yrnU1Y5gmT2uJbc9q4vGg",
     crv: "P-256",
-    x: "7uUkwFnUzJGteTfUiHoG9xN0RdiN1ElvS0q2ToRU2kw",
-    y: "DX4zp6nCqgYmiZTRcdwJvsxnHmHlb9I-xyezz8cf-LM",
   },
 ];
+const clientId = "TEST_CLIENT_ID";
+const authServerUrl = "https://test-auth-server.gov.uk";
+const criUrl = "https://test-example-cri.gov.uk";
+const kid = "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274";
 
 describe("validatePreAuthorizedCode", () => {
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date("2024-08-01T09:08:24.000Z"));
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should return 'true' when metadata is valid", async () => {
-    jest.useFakeTimers().setSystemTime(new Date("2024-07-17T12:16:24.000Z"));
-    const preAuthorizedCode =
-      "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiNmM4ZjFlMjItNDM2NC00ZDMwLTgyZDAtZjZmNDU0NzBkMzdhIl0sImV4cCI6MTcyMTIxODgzOCwiaWF0IjoxNzIxMjE4NTM4fQ.anOHt0g5RXY80XcjVsU1KGYM4pCJB4ustDWvFMT-7_JHpjHRZHXbjUsCzv59aPO4GRvNRdxKnJw2YLogUfUQgw";
-
-    expect(await validatePreAuthorizedCode(preAuthorizedCode, jwks)).toEqual(
-      true,
+  it("should return 'true' when pre-authorized code is valid", async () => {
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      criUrl,
+      clientId,
+      kid,
     );
+    expect(
+      await validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
+    ).toEqual(true);
   });
 
   it("should throw 'HEADER_DECODING_ERROR' error when token header cannot be decoded", async () => {
     const preAuthorizedCode =
-      "invalidHeader.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiYjMxYTA2ZTgtZmMwNi00YmE1LTkyNWItZWQ2N2NkZWEyNDgwIl0sImV4cCI6MTcyMTIyMTM4MywiaWF0IjoxNzIxMjIxMTQzfQ.IiVSp9p65Hfeh_GcLvJtJcz_LmjR5gAEkaIzVLKEWdt7-uXipFP9cr2d0eTL37Y9zHUcqed4ojsuufpZsxFbEQ";
-
+      "invalidHeader" +
+      (await getTestJwt(authServerUrl, criUrl, clientId, kid));
     await expect(
-      validatePreAuthorizedCode(preAuthorizedCode, jwks),
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
     ).rejects.toThrow("HEADER_DECODING_ERROR");
   });
 
   it("should throw 'INVALID_HEADER' error when header is missing 'kid' claim", async () => {
-    const preAuthorizedCode =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiNWE5N2JmNDktYTlkYy00Nzk0LTk5YjQtOWZjYWU0ZDExNDQ4Il0sImV4cCI6MTcyMTIyMjAyOCwiaWF0IjoxNzIxMjIxNzg4fQ.Hd1_-zO5vU_09Hj0TRiCRIoLU-xMS-yPxEJCsnp4HZW5U3JET98-FO8IFuN3GOhpwks9ChAI8vSUSsHyVJm6zA";
-
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      criUrl,
+      clientId,
+      undefined,
+    );
     await expect(
-      validatePreAuthorizedCode(preAuthorizedCode, jwks),
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
     ).rejects.toThrow("INVALID_HEADER");
     expect(console.log).toHaveBeenCalledWith(
       'Pre-authorized code header does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"kid"},"message":"must have required property \'kid\'"}]',
@@ -55,26 +87,24 @@ describe("validatePreAuthorizedCode", () => {
   });
 
   it("should throw 'JWK_NOT_IN_DID' error when 'kid' claim does not match JWK 'kid'", async () => {
-    const preAuthorizedCode =
-      "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiNmM4ZjFlMjItNDM2NC00ZDMwLTgyZDAtZjZmNDU0NzBkMzdhIl0sImV4cCI6MTcyMTIxODgzOCwiaWF0IjoxNzIxMjE4NTM4fQ.anOHt0g5RXY80XcjVsU1KGYM4pCJB4ustDWvFMT-7_JHpjHRZHXbjUsCzv59aPO4GRvNRdxKnJw2YLogUfUQgw";
-    const jwks = [
-      {
-        kty: "EC",
-        kid: "different-key-id",
-        crv: "P-256",
-        x: "7uUkwFnUzJGteTfUiHoG9xN0RdiN1ElvS0q2ToRU2kw",
-        y: "DX4zp6nCqgYmiZTRcdwJvsxnHmHlb9I-xyezz8cf-LM",
-      },
-    ];
-
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      criUrl,
+      clientId,
+      "not-the-same-kid",
+    );
     await expect(
-      validatePreAuthorizedCode(preAuthorizedCode, jwks),
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
     ).rejects.toThrow("JWK_NOT_IN_DID");
   });
 
   it("should throw 'INVALID_SIGNATURE' when signature cannot be verified", async () => {
-    const preAuthorizedCode =
-      "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiNmM4ZjFlMjItNDM2NC00ZDMwLTgyZDAtZjZmNDU0NzBkMzdhIl0sImV4cCI6MTcyMTIxODgzOCwiaWF0IjoxNzIxMjE4NTM4fQ.anOHt0g5RXY80XcjVsU1KGYM4pCJB4ustDWvFMT-7_JHpjHRZHXbjUsCzv59aPO4GRvNRdxKnJw2YLogUfUQgw";
     const jwks = [
       {
         kty: "EC",
@@ -84,19 +114,38 @@ describe("validatePreAuthorizedCode", () => {
         y: "mXADd0XOLEtq8mk2mP0qhdDnS0hIUjQJZ4fJ1Df3Cvo",
       },
     ];
-
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      criUrl,
+      clientId,
+      kid,
+    );
     await expect(
-      validatePreAuthorizedCode(preAuthorizedCode, jwks),
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
     ).rejects.toThrow("INVALID_SIGNATURE");
   });
 
   it("should throw 'INVALID_PAYLOAD' error when payload is missing 'iss' claim", async () => {
-    jest.useFakeTimers().setSystemTime(new Date("2024-07-17T12:16:24.000Z"));
-    const preAuthorizedCode =
-      "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiY3JlZGVudGlhbF9pZGVudGlmaWVycyI6WyI5YzBkMjYzNy04NmJjLTQ1Y2UtOTllZS0yOGU0ODkxZDYzN2IiXSwiZXhwIjoxNzIxMjIyNTY2LCJpYXQiOjE3MjEyMjIzMjZ9.KMybgMtmrqkM3AfZ-spDudIvDe3O4XGgyxEqC_F4tVQiIbm7qL9mp9L_3AqYA-1tJvuDELmlWDkPLgp3D0pysg";
-
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      undefined,
+      clientId,
+      kid,
+    );
     await expect(
-      validatePreAuthorizedCode(preAuthorizedCode, jwks),
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
       'Pre-authorized code payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',
@@ -104,12 +153,22 @@ describe("validatePreAuthorizedCode", () => {
   });
 
   it("should throw 'INVALID_PAYLOAD' error when 'iat' claim is in the future", async () => {
-    jest.useFakeTimers().setSystemTime(new Date("2024-07-17T11:16:24.000Z"));
-    const preAuthorizedCode =
-      "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiNmM4ZjFlMjItNDM2NC00ZDMwLTgyZDAtZjZmNDU0NzBkMzdhIl0sImV4cCI6MTcyMTIxODgzOCwiaWF0IjoxNzIxMjE4NTM4fQ.anOHt0g5RXY80XcjVsU1KGYM4pCJB4ustDWvFMT-7_JHpjHRZHXbjUsCzv59aPO4GRvNRdxKnJw2YLogUfUQgw";
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      criUrl,
+      clientId,
+      kid,
+    );
+    jest.useFakeTimers().setSystemTime(new Date("2024-08-01T07:08:24.000Z"));
 
     await expect(
-      validatePreAuthorizedCode(preAuthorizedCode, jwks),
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
       'Invalid "iat" value in token. Should be in the past but is in the future',
@@ -117,16 +176,114 @@ describe("validatePreAuthorizedCode", () => {
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token expiry is not 5 minutes", async () => {
-    jest.useFakeTimers().setSystemTime(new Date("2024-07-17T13:00:00.000Z"));
-
-    const preAuthorizedCode =
-      "eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiYjMxYTA2ZTgtZmMwNi00YmE1LTkyNWItZWQ2N2NkZWEyNDgwIl0sImV4cCI6MTcyMTIyMTM4MywiaWF0IjoxNzIxMjIxMTQzfQ.IiVSp9p65Hfeh_GcLvJtJcz_LmjR5gAEkaIzVLKEWdt7-uXipFP9cr2d0eTL37Y9zHUcqed4ojsuufpZsxFbEQ";
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      criUrl,
+      clientId,
+      kid,
+      "10minutes",
+    );
 
     await expect(
-      validatePreAuthorizedCode(preAuthorizedCode, jwks),
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
-      'Invalid "exp" value in token. Should be 5 minutes seconds but found 4',
+      'Invalid "exp" value in token. Should be "5 minutes" seconds but found "10 minutes"',
+    );
+  });
+
+  it("should throw 'INVALID_PAYLOAD' error when token issuer is not 'https://test-example-cri.gov.uk'", async () => {
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      "https://different-issuer.gov.uk",
+      clientId,
+      kid,
+    );
+
+    await expect(
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
+    ).rejects.toThrow("INVALID_PAYLOAD");
+    expect(console.log).toHaveBeenCalledWith(
+      'Invalid "iss" value in token. Should be "https://test-example-cri.gov.uk" but found "https://different-issuer.gov.uk"',
+    );
+  });
+
+  it("should throw 'INVALID_PAYLOAD' error when token audience is not 'https://test-auth-server.gov.uk'", async () => {
+    const preAuthorizedCode = await getTestJwt(
+      "https://different-audience.gov.uk",
+      criUrl,
+      clientId,
+      kid,
+    );
+
+    await expect(
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
+    ).rejects.toThrow("INVALID_PAYLOAD");
+    expect(console.log).toHaveBeenCalledWith(
+      'Invalid "aud" value in token. Should be "https://test-auth-server.gov.uk" but found "https://different-audience.gov.uk"',
+    );
+  });
+
+  it("should throw 'INVALID_PAYLOAD' error when token clientId is not 'TEST_CLIENT_ID", async () => {
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      criUrl,
+      "invalid-client-id",
+      kid,
+    );
+
+    await expect(
+      validatePreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
+    ).rejects.toThrow("INVALID_PAYLOAD");
+    expect(console.log).toHaveBeenCalledWith(
+      'Invalid "clientId" value in token. Should be "TEST_CLIENT_ID" but found "invalid-client-id"',
     );
   });
 });
+
+async function getTestJwt(audience, issuer, clientId, kid, exp = "5minutes") {
+  const privateKey = {
+    kty: "EC",
+    x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
+    y: "1yKvdIgdktb6MYaVU2Ptt_yrnU1Y5gmT2uJbc9q4vGg",
+    crv: "P-256",
+    d: "uhF3qwj2ddRwnWO84tCS-qJEsm7m__bAG5x6klw-rng",
+  };
+
+  const signingKeyAsKeyLike = await importJWK(privateKey, "ES256");
+
+  return await new SignJWT({
+    clientId: clientId,
+    credential_identifiers: ["727da4d1-0636-4951-81eb-801c1cf90dd3"],
+  })
+    .setProtectedHeader({ alg: "ES256", typ: "JWT", kid: kid })
+    .setIssuedAt()
+    .setExpirationTime(exp)
+    .setIssuer(issuer)
+    .setAudience(audience)
+    .sign(signingKeyAsKeyLike);
+}

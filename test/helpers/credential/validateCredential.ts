@@ -22,6 +22,7 @@ export async function validateCredential(
   jwks: JWK[],
   privateKey: JWK,
   publicKey: JWK,
+  criUrl: string,
 ): Promise<true> {
   const accessToken = await createAccessToken(
     nonce,
@@ -63,7 +64,7 @@ export async function validateCredential(
 
   const { payload } = await verifySignature(jwks, header, credential);
 
-  validatePayload(payload, didKey);
+  validatePayload(payload, didKey, criUrl);
 
   return true;
 }
@@ -102,17 +103,30 @@ async function verifySignature(
   try {
     return await jwtVerify(preAuthorizedCode, publicKey);
   } catch (error) {
+    console.info(error);
     console.log(`Error verifying signature: ${JSON.stringify(error)}`);
     throw new Error("INVALID_SIGNATURE");
   }
 }
 
-function validatePayload(payload: JWTPayload, didKey: string): void {
+function validatePayload(
+  payload: JWTPayload,
+  didKey: string,
+  criUrl: string,
+): void {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
   if (!rulesValidator(payload)) {
     console.log(
       `Credential payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+    );
+    throw new Error("INVALID_PAYLOAD");
+  }
+
+  const iss = payload.iss;
+  if (criUrl !== iss) {
+    console.log(
+      `Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
     );
     throw new Error("INVALID_PAYLOAD");
   }

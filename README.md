@@ -54,14 +54,8 @@ npm run test:unit
 
 ### Run
 #### Running the Application
-Build the Docker image:
+Build the Docker image and run it inside a container (you must first replace the credential offer deep link with a new one):
 ```
-docker build -t "test-harness" .  
+bash build_and_run.sh https://mobile.build.account.gov.uk/wallet/add\?credential_offer\=%7B%22credentials%22%3A%5B%22SocialSecurityCredential%22%5D%2C%22grants%22%3A%7B%22urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code%22%3A%7B%22pre-authorized_code%22%3A%22eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjMwMDEiLCJjbGllbnRJZCI6IlRFU1RfQ0xJRU5UX0lEIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwIiwiY3JlZGVudGlhbF9pZGVudGlmaWVycyI6WyIwZDVlYTIwOC1lZjRlLTQ5ZDMtODFhNy05OGIxN2Y0Y2UwODYiXSwiZXhwIjoxNzIyNTkyMzQ3LCJpYXQiOjE3MjI1OTIwNDd9.67rQiY7MTtgR5vN5llBHUGqZYAoeSSTG94WoHqGTqBWMXZyELQ_JzJI6JBWgVy0DYtEwFyKxCO5VQ00JTufx8A%22%7D%7D%2C%22credential_issuer%22%3A%22http%3A%2F%2Flocalhost%3A8080%22%2C%22credentialIssuer%22%3A%22http%3A%2F%2Flocalhost%3A8080%22%7D
 ```
 
-Before running the image inside a container, replace the JWT with a new one in the command below.
-
-Run the image:
-```
-docker run --rm -v ./output:/results -p 3001:3001 -e CREDENTIAL_OFFER_DEEP_LINK="https://mobile.build.account.gov.uk/wallet/add?credential_offer=%7B%22credentials%22%3A%5B%22SocialSecurityCredential%22%5D%2C%22grants%22%3A%7B%22urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code%22%3A%7B%22pre-authorized_code%22%3A%22eyJraWQiOiI3OGZhMTMxZDY3N2MxYWMwZjE3MmM1M2I0N2FjMTY5YTk1YWQwZDkyYzM4YmQ3OTRhNzBkYTU5MDMyMDU4Mjc0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJ1cm46ZmRjOmdvdjp1azp3YWxsZXQiLCJjbGllbnRJZCI6IkVYQU1QTEVfQ1JJIiwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciIsImNyZWRlbnRpYWxfaWRlbnRpZmllcnMiOlsiYjYyMGM5N2QtZmMxNi00MjZhLTliZGMtODU5ZTVmNWQxY2RjIl0sImV4cCI6MTcyMTkzMDU0MiwiaWF0IjoxNzIxOTMwMjQyfQ.ewOWc0OG-pNKQai9bfyRdHQnu_pFlwtJjP_mejCfWZCoCktgJpnkRZPvq-A0pAscfzsArVb2368lWpc5C75-3A%22%7D%7D%2C%22credential_issuer%22%3A%22http%3A%2F%2Flocalhost%3A8080%22%2C%22credentialIssuer%22%3A%22http%3A%2F%2Flocalhost%3A8080%22%7D" -e CRI_DOMAIN="host.docker.internal:8080" -e WALLET_SUBJECT_ID="urn:fdc:wallet.account.gov.uk:2024:DtPT8x-dp_73tnlY3KNTiCitziN9GEherD16bqxNt9i" test-harness
-```
