@@ -1,6 +1,5 @@
 import { importJWK, JWK, JWTPayload, SignJWT } from "jose";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const bs58 = require("bs58");
+import bs58 = require('bs58');
 
 const SIGNING_ALGORITHM = "ES256";
 const PROOF_JWT_ISSUER = "urn:fdc:gov:uk:wallet";
