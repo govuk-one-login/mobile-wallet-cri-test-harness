@@ -23,7 +23,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "ajv": "^8.16.0",
     "ajv-formats": "^3.0.1",
-    "axios": "^1.7.3",
+    "axios": "^1.7.4",
     "bs58": "^6.0.0",
     "express": "^4.19.2",
     "jose": "^5.6.3"
