@@ -97,9 +97,9 @@ describe("credential issuer tests", () => {
       );
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
-      expect((error as AxiosError).response?.data).toEqual(
-        "invalid_credential_request",
-      );
+      expect((error as AxiosError).response?.data).toEqual({
+        error: "invalid_credential_request",
+      });
     }
   });
 
@@ -129,9 +129,9 @@ describe("credential issuer tests", () => {
       );
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
-      expect((error as AxiosError).response?.data).toEqual(
-        "invalid_credential_request",
-      );
+      expect((error as AxiosError).response?.data).toEqual({
+        error: "invalid_credential_request",
+      });
     }
   });
 
@@ -159,7 +159,9 @@ describe("credential issuer tests", () => {
       );
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
-      expect((error as AxiosError).response?.data).toEqual("invalid_proof");
+      expect((error as AxiosError).response?.data).toEqual({
+        error: "invalid_proof",
+      });
     }
   });
 
@@ -188,7 +190,9 @@ describe("credential issuer tests", () => {
       );
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
-      expect((error as AxiosError).response?.data).toEqual("invalid_proof");
+      expect((error as AxiosError).response?.data).toEqual({
+        error: "invalid_proof",
+      });
     }
   });
 
@@ -254,9 +258,9 @@ describe("credential issuer tests", () => {
       await getCredential(accessToken, proofJwt, CREDENTIALS_ENDPOINT);
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(404);
-      expect((error as AxiosError).response?.data).toEqual(
-        "invalid_credential_request",
-      );
+      expect((error as AxiosError).response?.data).toEqual({
+        error: "invalid_credential_request",
+      });
     }
   });
 });
