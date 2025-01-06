@@ -28,9 +28,7 @@ export function getKeyId(): string {
 
 export function getCriUrl(): string {
   const criDomain = getCriDomain();
-  if (
-    criDomain.startsWith("localhost")
-  ) {
+  if (criDomain.startsWith("localhost")) {
     return "http://" + criDomain;
   } else {
     return "https://" + criDomain;
@@ -41,7 +39,7 @@ export function getSelfURL(): string {
   try {
     return getEnvVarValue("TEST_HARNESS_URL");
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return `http://localhost:${getPortNumber()}`;
   }
 }

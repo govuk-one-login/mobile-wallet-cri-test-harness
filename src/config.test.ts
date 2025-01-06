@@ -1,4 +1,9 @@
-import {getCriUrl, getDockerDnsName, getPortNumber, getSelfURL} from "./config";
+import {
+  getCriUrl,
+  getDockerDnsName,
+  getPortNumber,
+  getSelfURL,
+} from "./config";
 
 describe("config", () => {
   it("should throw error if environment variable is not defined", async () => {
@@ -30,10 +35,14 @@ describe("config", () => {
   });
 
   it("should replace 'localhost' with 'host.docker.internal'", async () => {
-    expect(getDockerDnsName("http://localhost:3000")).toEqual("http://host.docker.internal:3000");
+    expect(getDockerDnsName("http://localhost:3000")).toEqual(
+      "http://host.docker.internal:3000",
+    );
   });
 
   it("should not change URL if it does not start with 'localhost'", async () => {
-    expect(getDockerDnsName("https://example.cri.test.gov.uk")).toEqual("https://example.cri.test.gov.uk");
+    expect(getDockerDnsName("https://example.cri.test.gov.uk")).toEqual(
+      "https://example.cri.test.gov.uk",
+    );
   });
 });
