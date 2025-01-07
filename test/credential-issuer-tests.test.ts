@@ -192,7 +192,7 @@ describe("credential issuer tests", () => {
     }
   });
 
-  it.skip("should validate the credential offer", async () => {
+  it("should validate the credential offer", async () => {
     const isValidCredentialOffer = validateCredentialOffer(
       CREDENTIAL_OFFER_DEEP_LINK,
     );
