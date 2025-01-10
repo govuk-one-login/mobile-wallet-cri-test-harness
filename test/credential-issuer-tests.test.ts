@@ -99,6 +99,7 @@ describe("credential issuer tests", () => {
       expect((error as AxiosError).response?.status).toEqual(400);
       expect((error as AxiosError).response?.data).toEqual({
         error: "invalid_credential_request",
+        error_description: "Access token failed to validate",
       });
     }
   });
@@ -131,6 +132,7 @@ describe("credential issuer tests", () => {
       expect((error as AxiosError).response?.status).toEqual(400);
       expect((error as AxiosError).response?.data).toEqual({
         error: "invalid_credential_request",
+        error_description: "Access token failed to validate",
       });
     }
   });
@@ -161,6 +163,7 @@ describe("credential issuer tests", () => {
       expect((error as AxiosError).response?.status).toEqual(400);
       expect((error as AxiosError).response?.data).toEqual({
         error: "invalid_proof",
+        error_description: "Proof failed to validate",
       });
     }
   });
@@ -192,6 +195,7 @@ describe("credential issuer tests", () => {
       expect((error as AxiosError).response?.status).toEqual(400);
       expect((error as AxiosError).response?.data).toEqual({
         error: "invalid_proof",
+        error_description: "Proof failed to validate",
       });
     }
   });
@@ -260,8 +264,6 @@ describe("credential issuer tests", () => {
       expect((error as AxiosError).response?.status).toEqual(400);
       expect((error as AxiosError).response?.data).toEqual({
         error: "invalid_credential_request",
-      });
-      expect((error as AxiosError).response?.data).toEqual({
         error_description: "Credential offer not found",
       });
     }
