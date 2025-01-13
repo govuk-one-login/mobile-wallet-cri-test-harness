@@ -238,7 +238,7 @@ describe("credential issuer tests", () => {
     expect(isValidCredential).toEqual(true);
   });
 
-  it("should return 404 and 'invalid_credential_request' when the credential offer cannot be found in the database", async () => {
+  it("should return 400 and 'invalid_credential_request' when the credential offer cannot be found in the database", async () => {
     const proofJwt = await createProofJwt(
       NONCE,
       createDidKey(PUBLIC_KEY_JWK),
@@ -257,7 +257,7 @@ describe("credential issuer tests", () => {
     try {
       await getCredential(accessToken, proofJwt, CREDENTIALS_ENDPOINT);
     } catch (error) {
-      expect((error as AxiosError).response?.status).toEqual(404);
+      expect((error as AxiosError).response?.status).toEqual(400);
       expect((error as AxiosError).response?.data).toEqual({
         error: "invalid_credential_request",
       });
