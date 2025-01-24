@@ -38,7 +38,7 @@ export function getCriUrl(): string {
 export function getSelfURL(): string {
   try {
     return getEnvVarValue("TEST_HARNESS_URL");
-  } catch (error) {
+  } catch {
     console.log(`Returning local TEST_HARNESS_URL value`);
     return `http://localhost:${getPortNumber()}`;
   }
