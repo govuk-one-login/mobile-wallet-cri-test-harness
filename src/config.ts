@@ -39,7 +39,7 @@ export function getSelfURL(): string {
   try {
     return getEnvVarValue("TEST_HARNESS_URL");
   } catch (error) {
-    console.log(error);
+    console.log(`Returning local TEST_HARNESS_URL value`);
     return `http://localhost:${getPortNumber()}`;
   }
 }
