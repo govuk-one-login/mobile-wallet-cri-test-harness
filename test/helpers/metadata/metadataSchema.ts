@@ -23,7 +23,7 @@ export const metadataSchema = {
   },
   additionalProperties: true,
   required: [
-    "credentials_endpoint",
+    "credential_endpoint",
     "authorization_servers",
     "credential_issuer",
     "credential_configurations_supported",

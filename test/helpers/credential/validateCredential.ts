@@ -18,7 +18,7 @@ export async function validateCredential(
   preAuthorizedCodePayload: JWTPayload,
   nonce: string,
   walletSubjectId: string,
-  credentialsEndpoint: string,
+  credentialEndpoint: string,
   jwks: JWK[],
   privateKey: JWK,
   publicKey: JWK,
@@ -44,7 +44,7 @@ export async function validateCredential(
     response = await getCredential(
       accessToken.access_token,
       proofJwt,
-      credentialsEndpoint,
+      credentialEndpoint,
     );
   } catch (error) {
     console.log(`Error trying to fetch credential: ${JSON.stringify(error)}`);

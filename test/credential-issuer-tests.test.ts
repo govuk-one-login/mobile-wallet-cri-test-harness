@@ -42,7 +42,7 @@ let WALLET_SUBJECT_ID;
 let PRE_AUTHORIZED_CODE;
 let PRE_AUTHORIZED_CODE_PAYLOAD;
 let DID_JWKS;
-let CREDENTIALS_ENDPOINT;
+let CREDENTIAL_ENDPOINT;
 let PRIVATE_KEY_JWK;
 let PUBLIC_KEY_JWK;
 let NONCE;
@@ -59,8 +59,8 @@ describe("credential issuer tests", () => {
     PRE_AUTHORIZED_CODE_PAYLOAD = decodeJwt(PRE_AUTHORIZED_CODE);
     const didDocument: DidDocument = (await getDidDocument(CRI_URL)).data;
     DID_JWKS = extractJwks(didDocument);
-    CREDENTIALS_ENDPOINT = ((await getMetadata(CRI_URL)).data as Metadata)
-      .credentials_endpoint;
+    CREDENTIAL_ENDPOINT = ((await getMetadata(CRI_URL)).data as Metadata)
+      .credential_endpoint;
     PRIVATE_KEY_JWK = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
@@ -93,7 +93,7 @@ describe("credential issuer tests", () => {
       await getCredential(
         accessTokenWithInvalidWalletSubjectId,
         proofJwt,
-        CREDENTIALS_ENDPOINT,
+        CREDENTIAL_ENDPOINT,
       );
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
@@ -125,7 +125,7 @@ describe("credential issuer tests", () => {
       await getCredential(
         accessTokenWithInvalidSignature,
         proofJwt,
-        CREDENTIALS_ENDPOINT,
+        CREDENTIAL_ENDPOINT,
       );
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
@@ -155,7 +155,7 @@ describe("credential issuer tests", () => {
       await getCredential(
         accessToken,
         proofJwtWithMismatchingNonce,
-        CREDENTIALS_ENDPOINT,
+        CREDENTIAL_ENDPOINT,
       );
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
@@ -186,7 +186,7 @@ describe("credential issuer tests", () => {
       await getCredential(
         accessToken,
         proofJwtWithInvalidSignature,
-        CREDENTIALS_ENDPOINT,
+        CREDENTIAL_ENDPOINT,
       );
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
@@ -229,7 +229,7 @@ describe("credential issuer tests", () => {
       PRE_AUTHORIZED_CODE_PAYLOAD,
       NONCE,
       WALLET_SUBJECT_ID,
-      CREDENTIALS_ENDPOINT,
+      CREDENTIAL_ENDPOINT,
       DID_JWKS,
       PRIVATE_KEY_JWK,
       PUBLIC_KEY_JWK,
@@ -255,7 +255,7 @@ describe("credential issuer tests", () => {
     ).access_token;
 
     try {
-      await getCredential(accessToken, proofJwt, CREDENTIALS_ENDPOINT);
+      await getCredential(accessToken, proofJwt, CREDENTIAL_ENDPOINT);
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
       expect((error as AxiosError).response?.data).toEqual({
