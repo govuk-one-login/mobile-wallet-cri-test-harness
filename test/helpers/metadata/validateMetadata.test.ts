@@ -97,7 +97,7 @@ describe("validateMetadata", () => {
 
 function getTestMetadata(criUrl, authServerUrl, credentialConfig = true) {
   return {
-    credentials_endpoint: criUrl + "/credential",
+    credential_endpoint: criUrl + "/credential",
     authorization_servers: [authServerUrl],
     credential_issuer: criUrl,
     ...(credentialConfig && {

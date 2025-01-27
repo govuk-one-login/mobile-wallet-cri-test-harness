@@ -5,7 +5,7 @@ import { metadataSchema } from "./metadataSchema";
 import { getDockerDnsName } from "../../../src/config";
 
 export interface Metadata {
-  credentials_endpoint: string;
+  credential_endpoint: string;
   authorization_servers: string[];
   credential_issuer: string;
   credential_configurations_supported: object;
@@ -50,6 +50,13 @@ export async function validateMetadata(
   if (metadata.credential_issuer !== criUrl) {
     console.log(
       `Invalid "credential_issuer" value. Should be ${criUrl} but found ${metadata.credential_issuer}`,
+    );
+    throw new Error("INVALID_METADATA");
+  }
+
+  if (metadata.credential_endpoint !== criUrl + "/credential") {
+    console.log(
+      `Invalid "credential_endpoint" value. Should be ${criUrl + "/credential"} but found ${metadata.credential_endpoint}`,
     );
     throw new Error("INVALID_METADATA");
   }
