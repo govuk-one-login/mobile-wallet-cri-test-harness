@@ -13,7 +13,7 @@ jobs:
     runs-on: 'ubuntu-22.04'
     steps:
       - name: 'Checkout code'
-        uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # pin@v3
+        uses: 'actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2' # pin@v3
 
       - name: 'Setup nodeJS'
         if: ${{ success() }}
