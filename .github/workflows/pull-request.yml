@@ -8,31 +8,28 @@ permissions:
   contents: read
 
 jobs:
-  ci:
-    name: 'Run tests, lint and build'
-    runs-on: 'ubuntu-22.04'
+  build-lint-and-test:
+    name: Build, lint and test
+    runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout code'
-        uses: 'actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2' # pin@v3
+      - name: Check out repository code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
 
-      - name: 'Setup nodeJS'
-        if: ${{ success() }}
+      - name: Setup Node.js
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # pin@v4
         with:
-          node-version: '20.9.0'
+          node-version-file: .nvmrc
 
-      - name: 'Install dependencies'
-        if: ${{ success() }}
+      - name: Install dependencies
         run: npm install
 
-      - name: 'Build source code'
-        if: ${{ success() }}
+      - name: Build source code
         run: npm run build
 
-      - name: 'Run the linter'
-        if: ${{ success() }}
+      - name: Run the linter
         run: npm run lint
 
-      - name: 'Run unit tests'
-        if: ${{ success() }}
-        run: 'npm run test:unit'
+      - name: Run unit tests
+        run: npm run test:unit
