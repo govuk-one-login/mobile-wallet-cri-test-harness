@@ -25,7 +25,7 @@
     "axios": "^1.7.9",
     "bs58": "^6.0.0",
     "express": "^4.21.2",
-    "jose": "^5.9.6"
+    "jose": "^5.10.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
