@@ -326,7 +326,7 @@ async function getTestJwt(issuer, kid, sub) {
     sub: sub,
     context: ["727da4d1-0636-4951-81eb-801c1cf90dd3"],
   })
-    .setProtectedHeader({ alg: "ES256", typ: "JWT", kid: kid })
+    .setProtectedHeader({ alg: "ES256", typ: "vc+jwt", cty: "vc", kid: kid })
     .setIssuedAt(1721731169)
     .setExpirationTime("1year")
     .setIssuer(issuer)
