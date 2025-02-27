@@ -16,7 +16,7 @@ jest.mock("./createAccessToken", () => ({
 console.log = jest.fn();
 
 const criUrl = "https://test-example-cri.gov.uk";
-const kid = "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274";
+const kid = "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274";
 const proofJwt =
   "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDprZXk6ekRuYWVvNHV0OGl5dTFOVW16WU4xNmNtM2dXSHAzWVpXRzJDNnVFS2VGWmdFV1BlNyJ9.eyJub25jZSI6ImU0Y2VkY2Y2LTFmYjEtNDhmOC1iZjc0LTk0Y2ZiZTlkMGQ4NiIsImlhdCI6MTcyMTIxODU2MCwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6d2FsbGV0IiwiYXVkIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciJ9.9TR7FMtm_8s1apfFDcT_Jz72OQUFOB1jnbl3qyfNKeoKe0NBw1UNq3FdvuWkvRfxow_29V29I1tISCHpExF7HA";
 const accessToken = {
@@ -36,15 +36,20 @@ const preAuthorizedCodePayload = {
   iat: 1721218538,
 };
 const credentialEndpoint = "http://example-cri.test.gov.uk/credential";
-const didJwks = [
-  {
-    kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-    kty: "EC",
-    x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
-    y: "1yKvdIgdktb6MYaVU2Ptt_yrnU1Y5gmT2uJbc9q4vGg",
-    crv: "P-256",
-  },
-];
+const verificationMethod = [{
+  id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+  type: "JsonWebKey2020",
+  controller: "did:web:test-example-cri.gov.uk",
+  publicKeyJwk:
+      {
+        alg: "ES256",
+        kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+        kty: "EC",
+        x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
+        y: "1yKvdIgdktb6MYaVU2Ptt_yrnU1Y5gmT2uJbc9q4vGg",
+        crv: "P-256",
+      },
+}];
 const privateKeyJwk = {
   kty: "EC",
   x: "MMDgSI-XZWGzTCuPXwJerzvcvn93CJTe8ARsb0oLZw8",
@@ -94,7 +99,7 @@ describe("validateCredential", () => {
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
@@ -118,7 +123,7 @@ describe("validateCredential", () => {
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
@@ -138,7 +143,7 @@ describe("validateCredential", () => {
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
@@ -163,7 +168,7 @@ describe("validateCredential", () => {
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
@@ -187,7 +192,7 @@ describe("validateCredential", () => {
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
@@ -195,8 +200,8 @@ describe("validateCredential", () => {
     ).rejects.toThrow("INVALID_HEADER");
   });
 
-  it("should throw 'JWK_NOT_IN_DID' error when 'kid' claim does not match JWK 'kid'", async () => {
-    const credential = await getTestJwt(criUrl, "not-the-same-kid", didKey);
+  it("should throw 'VERIFICATION_METHOD_NOT_IN_DID' error when 'kid' claim does not match JWK 'kid'", async () => {
+    const credential = await getTestJwt(criUrl, "did:web:test-example-cri.gov.uk#11fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032059645", didKey);
     const mockedResponse = {
       status: 200,
       data: {
@@ -205,18 +210,33 @@ describe("validateCredential", () => {
     } as AxiosResponse;
     mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
+    const verificationMethod = [{
+      id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+      type: "JsonWebKey2020",
+      controller: "did:web:test-example-cri.gov.uk",
+      publicKeyJwk:
+          {
+            alg: "ES256",
+            kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+            kty: "EC",
+            x: "oU5Xs7sFXCckKMKGAiRMhv1q7RWqlYTl80Voqi1kZow",
+            y: "mXADd0XOLEtq8mk2mP0qhdDnS0hIUjQJZ4fJ1Df3Cvo",
+            crv: "P-256",
+          },
+    }];
+
     await expect(
       validateCredential(
         preAuthorizedCodePayload,
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
       ),
-    ).rejects.toThrow("JWK_NOT_IN_DID");
+    ).rejects.toThrow("VERIFICATION_METHOD_NOT_IN_DID");
   });
 
   it("should throw 'INVALID_SIGNATURE' when signature cannot be verified", async () => {
@@ -228,15 +248,21 @@ describe("validateCredential", () => {
       },
     } as AxiosResponse;
     mockedAxios.post.mockResolvedValueOnce(mockedResponse);
-    const didJwks = [
-      {
-        kty: "EC",
-        kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-        crv: "P-256",
-        x: "oU5Xs7sFXCckKMKGAiRMhv1q7RWqlYTl80Voqi1kZow",
-        y: "mXADd0XOLEtq8mk2mP0qhdDnS0hIUjQJZ4fJ1Df3Cvo",
-      },
-    ];
+
+    const verificationMethod = [{
+      id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+      type: "JsonWebKey2020",
+      controller: "did:web:test-example-cri.gov.uk",
+      publicKeyJwk:
+          {
+            alg: "ES256",
+            kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+            kty: "EC",
+            x: "oU5Xs7sFXCckKMKGAiRMhv1q7RWqlYTl80Voqi1kZow",
+            y: "mXADd0XOLEtq8mk2mP0qhdDnS0hIUjQJZ4fJ1Df3Cvo",
+            crv: "P-256",
+          },
+    }];
 
     await expect(
       validateCredential(
@@ -244,7 +270,7 @@ describe("validateCredential", () => {
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
@@ -268,7 +294,7 @@ describe("validateCredential", () => {
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
@@ -299,7 +325,7 @@ describe("validateCredential", () => {
         nonce,
         walletSubjectId,
         credentialEndpoint,
-        didJwks,
+        verificationMethod,
         privateKeyJwk,
         publicKeyJwk,
         criUrl,
@@ -322,9 +348,18 @@ async function getTestJwt(issuer, kid, sub) {
   const signingKeyAsKeyLike = await importJWK(privateKey, "ES256");
 
   return await new SignJWT({
-    vc: { test: "testVc" },
+    iss: "https://test-example-cri.gov.uk",
     sub: sub,
-    context: ["727da4d1-0636-4951-81eb-801c1cf90dd3"],
+    nbf: 1721731169,
+    exp: 1754060904,
+    "@context": ["727da4d1-0636-4951-81eb-801c1cf90dd3", "728da3e1-0641-4981-81ae-801c1cf90ee5"],
+    type: ["VerifiableCredential", "digitalVeteranCard"],
+    issuer: "urn:fdc:gov:uk:example-credential-issuer",
+    name: "Veteran's Card",
+    description: "issuer-specified credential description",
+    validFrom: "2024-04-09T12:12:11Z",
+    validUntil: "2034-04-08T22:59:59Z",
+    credentialSubject: { id: sub },
   })
     .setProtectedHeader({ alg: "ES256", typ: "vc+jwt", cty: "vc", kid: kid })
     .setIssuedAt(1721731169)

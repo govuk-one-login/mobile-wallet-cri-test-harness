@@ -7,7 +7,7 @@ export const payloadSchema = {
     },
     sub: {
       type: "string",
-      pattern: "^did:key:[a-zA-Z0-9]+$",
+      minLength: 1,
     },
     nbf: {
       type: "number",
@@ -15,30 +15,33 @@ export const payloadSchema = {
     exp: {
       type: "number",
     },
-    context: {
+    "@context": {
       type: "array",
       items: {
-        type: "string"
+        type: "string",
+        minLength: 1,
       },
-      minItems: 2,
-      maxItems: 2,
+      minItems: 1,
     },
     type: {
       type: "array",
       items: {
-        type: "string"
+        type: "string",
+        minLength: 1,
       },
       minItems: 2,
-      maxItems: 2,
     },
     issuer: {
       type: "string",
+      minLength: 1,
     },
     name: {
       type: "string",
+      minLength: 1,
     },
     description: {
       type: "string",
+      minLength: 1,
     },
     validFrom: {
       type: "string",
@@ -53,13 +56,13 @@ export const payloadSchema = {
       properties: {
         id: {
           type: "string",
-          pattern: "^did:key:[a-zA-Z0-9]+$",
+          minLength: 1,
         }
       },
       additionalProperties: true,
       required: ["id"],
-    },
+    }
   },
-  additionalProperties: false,
-  required: ["iss", "sub", "nbf", "exp", "@context", "type", "issuer", "name", "description", "validFrom", "validUntil", "credentialSubject"],
+  additionalProperties: true,
+  required: ["iss", "sub", "nbf", "exp", "@context", "type", "issuer", "name", "description", "validFrom", "credentialSubject"],
 };

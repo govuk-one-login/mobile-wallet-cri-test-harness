@@ -11,7 +11,7 @@ export interface DidDocument {
   assertionMethod: string[];
 }
 
-interface VerificationMethod {
+export interface VerificationMethod {
   id: string;
   type: string;
   controller: string;
@@ -104,3 +104,4 @@ export async function getDidDocument(criUrl): Promise<AxiosResponse> {
     throw new Error("GET_DID_DOCUMENT_ERROR");
   }
 }
+
