@@ -236,7 +236,7 @@ describe("validateCredential", () => {
         publicKeyJwk,
         criUrl,
       ),
-    ).rejects.toThrow("VERIFICATION_METHOD_NOT_IN_DID");
+    ).rejects.toThrow("PUBLIC_KEY_NOT_IN_DID");
   });
 
   it("should throw 'INVALID_SIGNATURE' when signature cannot be verified", async () => {
