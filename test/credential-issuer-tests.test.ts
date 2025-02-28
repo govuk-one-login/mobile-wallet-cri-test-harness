@@ -227,6 +227,7 @@ describe("credential issuer tests", () => {
     expect(isValidPreAuthorizedCode).toEqual(true);
   });
 
+  // THIS TEST WILL FAIL WITH AN "INVALID_HEADER" ERROR UNTIL THE "KID" IN THE CREDENTIAL HEADER IS UPDATED TO FOLLOW THE PATTERN "^did:web:[a-z0-9.#\\-_]+$"
   it("should validate the credential", async () => {
     const isValidCredential = await validateCredential(
       PRE_AUTHORIZED_CODE_PAYLOAD,
