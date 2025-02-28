@@ -34,7 +34,7 @@ import {
 } from "./helpers/credential/createProofJwt";
 import { getCredential } from "./helpers/credential/getCredential";
 import { AxiosError } from "axios";
-import {getJwks} from "./helpers/jwks/getJwks";
+import { getJwks } from "./helpers/jwks/getJwks";
 
 let CREDENTIAL_OFFER_DEEP_LINK;
 let CRI_URL;

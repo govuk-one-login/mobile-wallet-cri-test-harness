@@ -1,7 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { getDockerDnsName } from "../../../src/config";
 
-
 export async function getJwks(criUrl): Promise<AxiosResponse> {
   const JWKS_PATH: string = ".well-known/jwks.json";
   try {
@@ -12,4 +11,3 @@ export async function getJwks(criUrl): Promise<AxiosResponse> {
     throw new Error("GET_JWKS_ERROR");
   }
 }
-

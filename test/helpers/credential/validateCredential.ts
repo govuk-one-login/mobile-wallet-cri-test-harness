@@ -13,14 +13,14 @@ import { payloadSchema } from "./payloadSchema";
 import { createAccessToken } from "./createAccessToken";
 import { createDidKey, createProofJwt } from "./createProofJwt";
 import { getCredential } from "./getCredential";
-import {VerificationMethod} from "../didDocument/validateDidDocument";
+import { VerificationMethod } from "../didDocument/validateDidDocument";
 
 export async function validateCredential(
   preAuthorizedCodePayload: JWTPayload,
   nonce: string,
   walletSubjectId: string,
   credentialEndpoint: string,
-  verificationMethod: VerificationMethod[],
+  verificationMethods: VerificationMethod[],
   privateKey: JWK,
   publicKey: JWK,
   criUrl: string,
@@ -63,7 +63,11 @@ export async function validateCredential(
 
   const header: ProtectedHeaderParameters = getHeaderClaims(credential);
 
-  const { payload } = await verifySignature(verificationMethod, header, credential);
+  const { payload } = await verifySignature(
+    verificationMethods,
+    header,
+    credential,
+  );
 
   validatePayload(payload, didKey, criUrl);
 
@@ -96,15 +100,19 @@ async function verifySignature(
   header: ProtectedHeaderParameters,
   credential: string,
 ): Promise<JWTVerifyResult> {
-  const verificationMethod = verificationMethods.find((item) => item.id === header.kid!);
+  const verificationMethod = verificationMethods.find(
+    (item) => item.id === header.kid!,
+  );
   if (!verificationMethod) {
-    throw new Error("VERIFICATION_METHOD_NOT_IN_DID");
+    throw new Error("PUBLIC_KEY_NOT_IN_DID");
   }
-  const publicKey = await importJWK(verificationMethod.publicKeyJwk, header.alg);
+  const publicKey = await importJWK(
+    verificationMethod.publicKeyJwk,
+    header.alg,
+  );
   try {
     return await jwtVerify(credential, publicKey);
   } catch (error) {
-    console.info(error);
     console.log(`Error verifying signature: ${JSON.stringify(error)}`);
     throw new Error("INVALID_SIGNATURE");
   }

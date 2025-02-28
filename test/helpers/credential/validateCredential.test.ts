@@ -200,7 +200,7 @@ describe("validateCredential", () => {
     ).rejects.toThrow("INVALID_HEADER");
   });
 
-  it("should throw 'VERIFICATION_METHOD_NOT_IN_DID' error when 'kid' claim does not match JWK 'kid'", async () => {
+  it("should throw 'PUBLIC_KEY_NOT_IN_DID' error when when public key is not in the DID document", async () => {
     const credential = await getTestJwt(criUrl, "did:web:test-example-cri.gov.uk#11fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032059645", didKey);
     const mockedResponse = {
       status: 200,
@@ -352,9 +352,9 @@ async function getTestJwt(issuer, kid, sub) {
     sub: sub,
     nbf: 1721731169,
     exp: 1754060904,
-    "@context": ["727da4d1-0636-4951-81eb-801c1cf90dd3", "728da3e1-0641-4981-81ae-801c1cf90ee5"],
+    "@context": ["https://www.w3.org/ns/credentials/v2", "https://www.w3.org/ns/credentials/examples/v2"],
     type: ["VerifiableCredential", "digitalVeteranCard"],
-    issuer: "urn:fdc:gov:uk:example-credential-issuer",
+    issuer: "https://test-example-cri.gov.uk",
     name: "Veteran's Card",
     description: "issuer-specified credential description",
     validFrom: "2024-04-09T12:12:11Z",

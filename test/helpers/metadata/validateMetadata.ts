@@ -54,7 +54,6 @@ export async function validateMetadata(
     throw new Error("INVALID_METADATA");
   }
 
-
   const validCredentialEndpoint = criUrl + "/credential";
   if (metadata.credential_endpoint !== validCredentialEndpoint) {
     console.log(

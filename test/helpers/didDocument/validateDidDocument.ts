@@ -104,4 +104,3 @@ export async function getDidDocument(criUrl): Promise<AxiosResponse> {
     throw new Error("GET_DID_DOCUMENT_ERROR");
   }
 }
-

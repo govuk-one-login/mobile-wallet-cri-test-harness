@@ -45,11 +45,13 @@ export const payloadSchema = {
     },
     validFrom: {
       type: "string",
-      pattern: "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d)|3[01]T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\dZ$",
+      pattern:
+        "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d)|3[01]T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\dZ$",
     },
     validUntil: {
       type: "string",
-      pattern: "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d)|3[01]T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\dZ$",
+      pattern:
+        "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d)|3[01]T([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\dZ$",
     },
     credentialSubject: {
       type: "object",
@@ -57,12 +59,24 @@ export const payloadSchema = {
         id: {
           type: "string",
           minLength: 1,
-        }
+        },
       },
       additionalProperties: true,
       required: ["id"],
-    }
+    },
   },
   additionalProperties: true,
-  required: ["iss", "sub", "nbf", "exp", "@context", "type", "issuer", "name", "description", "validFrom", "credentialSubject"],
+  required: [
+    "iss",
+    "sub",
+    "nbf",
+    "exp",
+    "@context",
+    "type",
+    "issuer",
+    "name",
+    "description",
+    "validFrom",
+    "credentialSubject",
+  ],
 };
