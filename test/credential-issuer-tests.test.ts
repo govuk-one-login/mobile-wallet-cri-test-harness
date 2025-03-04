@@ -34,6 +34,7 @@ import {
 } from "./helpers/credential/createProofJwt";
 import { getCredential } from "./helpers/credential/getCredential";
 import { AxiosError } from "axios";
+import { getJwks } from "./helpers/jwks/getJwks";
 
 let CREDENTIAL_OFFER_DEEP_LINK;
 let CRI_URL;
@@ -41,7 +42,8 @@ let CRI_DOMAIN;
 let WALLET_SUBJECT_ID;
 let PRE_AUTHORIZED_CODE;
 let PRE_AUTHORIZED_CODE_PAYLOAD;
-let DID_JWKS;
+let DID_VERIFICATION_METHOD;
+let JWKS;
 let CREDENTIAL_ENDPOINT;
 let PRIVATE_KEY_JWK;
 let PUBLIC_KEY_JWK;
@@ -58,7 +60,7 @@ describe("credential issuer tests", () => {
     PRE_AUTHORIZED_CODE = extractPreAuthorizedCode(CREDENTIAL_OFFER_DEEP_LINK);
     PRE_AUTHORIZED_CODE_PAYLOAD = decodeJwt(PRE_AUTHORIZED_CODE);
     const didDocument: DidDocument = (await getDidDocument(CRI_URL)).data;
-    DID_JWKS = extractJwks(didDocument);
+    DID_VERIFICATION_METHOD = didDocument.verificationMethod;
     CREDENTIAL_ENDPOINT = ((await getMetadata(CRI_URL)).data as Metadata)
       .credential_endpoint;
     PRIVATE_KEY_JWK = JSON.parse(
@@ -70,6 +72,7 @@ describe("credential issuer tests", () => {
     NONCE = randomUUID();
     CLIENT_ID = getClientId();
     SELF_URL = getSelfURL();
+    JWKS = (await getJwks(CRI_URL)).data.keys;
   });
 
   it("should return 400 and 'invalid_credential_request' when the access token and the credential offer wallet subject IDs do not match", async () => {
@@ -216,7 +219,7 @@ describe("credential issuer tests", () => {
   it("should validate the pre-authorized code", async () => {
     const isValidPreAuthorizedCode = await validatePreAuthorizedCode(
       PRE_AUTHORIZED_CODE,
-      DID_JWKS,
+      JWKS,
       CRI_URL,
       SELF_URL,
       CLIENT_ID,
@@ -224,13 +227,14 @@ describe("credential issuer tests", () => {
     expect(isValidPreAuthorizedCode).toEqual(true);
   });
 
+  // THIS TEST WILL FAIL WITH AN "INVALID_HEADER" ERROR UNTIL THE "KID" IN THE CREDENTIAL HEADER IS UPDATED TO FOLLOW THE PATTERN "^did:web:[a-z0-9.#\\-_]+$"
   it("should validate the credential", async () => {
     const isValidCredential = await validateCredential(
       PRE_AUTHORIZED_CODE_PAYLOAD,
       NONCE,
       WALLET_SUBJECT_ID,
       CREDENTIAL_ENDPOINT,
-      DID_JWKS,
+      DID_VERIFICATION_METHOD,
       PRIVATE_KEY_JWK,
       PUBLIC_KEY_JWK,
       CRI_URL,
@@ -272,13 +276,6 @@ function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
     "pre-authorized_code"
   ];
   return preAuthorizedCode;
-}
-
-function extractJwks(didDocument: DidDocument) {
-  const publicKeyJwks = didDocument.verificationMethod.map(
-    (verificationMethod) => verificationMethod.publicKeyJwk,
-  );
-  return publicKeyJwks;
 }
 
 function makeSignatureInvalid(token: string) {

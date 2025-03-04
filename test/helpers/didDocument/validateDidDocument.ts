@@ -11,7 +11,7 @@ export interface DidDocument {
   assertionMethod: string[];
 }
 
-interface VerificationMethod {
+export interface VerificationMethod {
   id: string;
   type: string;
   controller: string;
