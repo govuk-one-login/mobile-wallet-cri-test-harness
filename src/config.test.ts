@@ -1,8 +1,11 @@
 import {
+  getClientId,
+  getCredentialOfferDeepLink,
   getCriUrl,
   getDockerDnsName,
   getPortNumber,
   getSelfURL,
+  getWalletSubjectId,
 } from "./config";
 
 describe("config", () => {
@@ -44,5 +47,23 @@ describe("config", () => {
     expect(getDockerDnsName("https://example.cri.test.gov.uk")).toEqual(
       "https://example.cri.test.gov.uk",
     );
+  });
+
+  it("should throw error when CREDENTIAL_OFFER_DEEP_LINK value when set", async () => {
+    expect(() => {
+      getCredentialOfferDeepLink();
+    }).toThrowError("CREDENTIAL_OFFER_DEEP_LINK environment variable not set");
+  });
+
+  it("should throw error when WALLET_SUBJECT_ID value when set", async () => {
+    expect(() => {
+      getWalletSubjectId();
+    }).toThrowError("WALLET_SUBJECT_ID environment variable not set");
+  });
+
+  it("should throw error when CLIENT_ID value when set", async () => {
+    expect(() => {
+      getClientId();
+    }).toThrowError("CLIENT_ID environment variable not set");
   });
 });
