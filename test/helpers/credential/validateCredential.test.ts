@@ -303,7 +303,7 @@ describe("validateCredential", () => {
     ).rejects.toThrow("INVALID_SIGNATURE");
   });
 
-  it("should throw 'INVALID_PAYLOAD' error when payload is missing 'issuer' claim", async () => {
+  it("should throw 'INVALID_PAYLOAD' error when payload is missing 'iss' claim", async () => {
     const credential = await getTestJwt(undefined, kid, didKey);
     const mockedResponse = {
       status: 200,
@@ -330,7 +330,7 @@ describe("validateCredential", () => {
     );
   });
 
-  it("should throw 'INVALID_PAYLOAD' error when payload 'issuer' is not the CRI URL", async () => {
+  it("should throw 'INVALID_PAYLOAD' error when 'iss' claim value is not the CRI URL", async () => {
     const credential = await getTestJwt("invalidIssuer", kid, didKey);
     const mockedResponse = {
       status: 200,
@@ -357,7 +357,7 @@ describe("validateCredential", () => {
     );
   });
 
-  it("should throw 'INVALID_PAYLOAD' error when 'sub' value does not match the Proof JWT 'did:key' value", async () => {
+  it("should throw 'INVALID_PAYLOAD' error when 'sub' claim value does not match the Proof JWT 'did:key' value", async () => {
     const credential = await getTestJwt(criUrl, kid, "notTheProofJwtDidKey");
     const mockedResponse = {
       status: 200,
