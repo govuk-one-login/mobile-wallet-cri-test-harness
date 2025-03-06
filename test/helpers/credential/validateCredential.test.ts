@@ -16,7 +16,8 @@ jest.mock("./createAccessToken", () => ({
 console.log = jest.fn();
 
 const criUrl = "https://test-example-cri.gov.uk";
-const kid = "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274";
+const kid =
+  "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274";
 const proofJwt =
   "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDprZXk6ekRuYWVvNHV0OGl5dTFOVW16WU4xNmNtM2dXSHAzWVpXRzJDNnVFS2VGWmdFV1BlNyJ9.eyJub25jZSI6ImU0Y2VkY2Y2LTFmYjEtNDhmOC1iZjc0LTk0Y2ZiZTlkMGQ4NiIsImlhdCI6MTcyMTIxODU2MCwiaXNzIjoidXJuOmZkYzpnb3Y6dWs6d2FsbGV0IiwiYXVkIjoidXJuOmZkYzpnb3Y6dWs6ZXhhbXBsZS1jcmVkZW50aWFsLWlzc3VlciJ9.9TR7FMtm_8s1apfFDcT_Jz72OQUFOB1jnbl3qyfNKeoKe0NBw1UNq3FdvuWkvRfxow_29V29I1tISCHpExF7HA";
 const accessToken = {
@@ -36,20 +37,21 @@ const preAuthorizedCodePayload = {
   iat: 1721218538,
 };
 const credentialEndpoint = "http://example-cri.test.gov.uk/credential";
-const verificationMethod = [{
-  id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-  type: "JsonWebKey2020",
-  controller: "did:web:test-example-cri.gov.uk",
-  publicKeyJwk:
-      {
-        alg: "ES256",
-        kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-        kty: "EC",
-        x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
-        y: "1yKvdIgdktb6MYaVU2Ptt_yrnU1Y5gmT2uJbc9q4vGg",
-        crv: "P-256",
-      },
-}];
+const verificationMethod = [
+  {
+    id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+    type: "JsonWebKey2020",
+    controller: "did:web:test-example-cri.gov.uk",
+    publicKeyJwk: {
+      alg: "ES256",
+      kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+      kty: "EC",
+      x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
+      y: "1yKvdIgdktb6MYaVU2Ptt_yrnU1Y5gmT2uJbc9q4vGg",
+      crv: "P-256",
+    },
+  },
+];
 const privateKeyJwk = {
   kty: "EC",
   x: "MMDgSI-XZWGzTCuPXwJerzvcvn93CJTe8ARsb0oLZw8",
@@ -107,6 +109,23 @@ describe("validateCredential", () => {
     ).toEqual(true);
   });
 
+  it("should throw 'POST_CREDENTIAL_ERROR' error when an error happens trying to fetch the credential", async () => {
+    mockedAxios.post.mockRejectedValueOnce("SOME_ERROR");
+
+    await expect(
+      validateCredential(
+        preAuthorizedCodePayload,
+        nonce,
+        walletSubjectId,
+        credentialEndpoint,
+        verificationMethod,
+        privateKeyJwk,
+        publicKeyJwk,
+        criUrl,
+      ),
+    ).rejects.toThrow("POST_CREDENTIAL_ERROR");
+  });
+
   it("should throw 'INVALID_STATUS_CODE' error when response status code is not 200", async () => {
     const credential = await getTestJwt(criUrl, kid, didKey);
     const mockedResponse = {
@@ -133,7 +152,7 @@ describe("validateCredential", () => {
 
   it("should throw 'INVALID_RESPONSE_DATA' error when response body is falsy", async () => {
     const mockedResponse = {
-      status: 201,
+      status: 200,
     } as AxiosResponse;
     mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
@@ -148,7 +167,7 @@ describe("validateCredential", () => {
         publicKeyJwk,
         criUrl,
       ),
-    ).rejects.toThrow("INVALID_STATUS_CODE");
+    ).rejects.toThrow("INVALID_RESPONSE_DATA");
   });
 
   it("should throw 'HEADER_DECODING_ERROR' error when token header cannot be decoded", async () => {
@@ -201,7 +220,11 @@ describe("validateCredential", () => {
   });
 
   it("should throw 'PUBLIC_KEY_NOT_IN_DID' error when when public key is not in the DID document", async () => {
-    const credential = await getTestJwt(criUrl, "did:web:test-example-cri.gov.uk#11fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032059645", didKey);
+    const credential = await getTestJwt(
+      criUrl,
+      "did:web:test-example-cri.gov.uk#11fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032059645",
+      didKey,
+    );
     const mockedResponse = {
       status: 200,
       data: {
@@ -210,20 +233,21 @@ describe("validateCredential", () => {
     } as AxiosResponse;
     mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
-    const verificationMethod = [{
-      id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-      type: "JsonWebKey2020",
-      controller: "did:web:test-example-cri.gov.uk",
-      publicKeyJwk:
-          {
-            alg: "ES256",
-            kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-            kty: "EC",
-            x: "oU5Xs7sFXCckKMKGAiRMhv1q7RWqlYTl80Voqi1kZow",
-            y: "mXADd0XOLEtq8mk2mP0qhdDnS0hIUjQJZ4fJ1Df3Cvo",
-            crv: "P-256",
-          },
-    }];
+    const verificationMethod = [
+      {
+        id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+        type: "JsonWebKey2020",
+        controller: "did:web:test-example-cri.gov.uk",
+        publicKeyJwk: {
+          alg: "ES256",
+          kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+          kty: "EC",
+          x: "oU5Xs7sFXCckKMKGAiRMhv1q7RWqlYTl80Voqi1kZow",
+          y: "mXADd0XOLEtq8mk2mP0qhdDnS0hIUjQJZ4fJ1Df3Cvo",
+          crv: "P-256",
+        },
+      },
+    ];
 
     await expect(
       validateCredential(
@@ -249,20 +273,21 @@ describe("validateCredential", () => {
     } as AxiosResponse;
     mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
-    const verificationMethod = [{
-      id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-      type: "JsonWebKey2020",
-      controller: "did:web:test-example-cri.gov.uk",
-      publicKeyJwk:
-          {
-            alg: "ES256",
-            kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-            kty: "EC",
-            x: "oU5Xs7sFXCckKMKGAiRMhv1q7RWqlYTl80Voqi1kZow",
-            y: "mXADd0XOLEtq8mk2mP0qhdDnS0hIUjQJZ4fJ1Df3Cvo",
-            crv: "P-256",
-          },
-    }];
+    const verificationMethod = [
+      {
+        id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+        type: "JsonWebKey2020",
+        controller: "did:web:test-example-cri.gov.uk",
+        publicKeyJwk: {
+          alg: "ES256",
+          kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+          kty: "EC",
+          x: "oU5Xs7sFXCckKMKGAiRMhv1q7RWqlYTl80Voqi1kZow",
+          y: "mXADd0XOLEtq8mk2mP0qhdDnS0hIUjQJZ4fJ1Df3Cvo",
+          crv: "P-256",
+        },
+      },
+    ];
 
     await expect(
       validateCredential(
@@ -278,7 +303,7 @@ describe("validateCredential", () => {
     ).rejects.toThrow("INVALID_SIGNATURE");
   });
 
-  it("should throw 'INVALID_PAYLOAD' error when payload is missing 'issuer' claim", async () => {
+  it("should throw 'INVALID_PAYLOAD' error when payload is missing 'iss' claim", async () => {
     const credential = await getTestJwt(undefined, kid, didKey);
     const mockedResponse = {
       status: 200,
@@ -305,12 +330,8 @@ describe("validateCredential", () => {
     );
   });
 
-  it("should throw 'INVALID_PAYLOAD' error when 'sub' value is not ", async () => {
-    const credential = await getTestJwt(
-      criUrl,
-      kid,
-      "did:key:zDnaecBLbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehP8d",
-    );
+  it("should throw 'INVALID_PAYLOAD' error when 'iss' claim value is not the CRI URL", async () => {
+    const credential = await getTestJwt("invalidIssuer", kid, didKey);
     const mockedResponse = {
       status: 200,
       data: {
@@ -332,7 +353,34 @@ describe("validateCredential", () => {
       ),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
-      'Invalid "sub" value in token. Should be did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c but found did:key:zDnaecBLbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehP8d',
+      'Invalid "iss" value in token. Should be https://test-example-cri.gov.uk but found invalidIssuer',
+    );
+  });
+
+  it("should throw 'INVALID_PAYLOAD' error when 'sub' claim value does not match the Proof JWT 'did:key' value", async () => {
+    const credential = await getTestJwt(criUrl, kid, "notTheProofJwtDidKey");
+    const mockedResponse = {
+      status: 200,
+      data: {
+        credential: credential,
+      },
+    } as AxiosResponse;
+    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
+
+    await expect(
+      validateCredential(
+        preAuthorizedCodePayload,
+        nonce,
+        walletSubjectId,
+        credentialEndpoint,
+        verificationMethod,
+        privateKeyJwk,
+        publicKeyJwk,
+        criUrl,
+      ),
+    ).rejects.toThrow("INVALID_PAYLOAD");
+    expect(console.log).toHaveBeenCalledWith(
+      'Invalid "sub" value in token. Should be did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c but found notTheProofJwtDidKey',
     );
   });
 });
@@ -352,7 +400,10 @@ async function getTestJwt(issuer, kid, sub) {
     sub: sub,
     nbf: 1721731169,
     exp: 1754060904,
-    "@context": ["https://www.w3.org/ns/credentials/v2", "https://www.w3.org/ns/credentials/examples/v2"],
+    "@context": [
+      "https://www.w3.org/ns/credentials/v2",
+      "https://www.w3.org/ns/credentials/examples/v2",
+    ],
     type: ["VerifiableCredential", "digitalVeteranCard"],
     issuer: "https://test-example-cri.gov.uk",
     name: "Veteran's Card",

@@ -1,12 +1,15 @@
 import {
+  getClientId,
+  getCredentialOfferDeepLink,
   getCriUrl,
   getDockerDnsName,
   getPortNumber,
   getSelfURL,
+  getWalletSubjectId,
 } from "./config";
 
 describe("config", () => {
-  it("should throw error if environment variable is not defined", async () => {
+  it("should throw error when PORT is not set", async () => {
     process.env.PORT = "";
     expect(() => getPortNumber()).toThrow("PORT environment variable not set");
   });
@@ -44,5 +47,23 @@ describe("config", () => {
     expect(getDockerDnsName("https://example.cri.test.gov.uk")).toEqual(
       "https://example.cri.test.gov.uk",
     );
+  });
+
+  it("should throw error when CREDENTIAL_OFFER_DEEP_LINK is not set", async () => {
+    expect(() => {
+      getCredentialOfferDeepLink();
+    }).toThrowError("CREDENTIAL_OFFER_DEEP_LINK environment variable not set");
+  });
+
+  it("should throw error when WALLET_SUBJECT_ID is not set", async () => {
+    expect(() => {
+      getWalletSubjectId();
+    }).toThrowError("WALLET_SUBJECT_ID environment variable not set");
+  });
+
+  it("should throw error when CLIENT_ID is not set", async () => {
+    expect(() => {
+      getClientId();
+    }).toThrowError("CLIENT_ID environment variable not set");
   });
 });

@@ -10,14 +10,10 @@ const criUrl = "https://test-example-cri.gov.uk";
 describe("validateMetadata", () => {
   const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it("should return 'true' when metadata is valid", async () => {
     const mockedResponse = {
       status: 200,
-      data: getTestMetadata(criUrl, authServerUrl),
+      data: metadataBuilder().withDefaults(),
     } as AxiosResponse;
     mockedAxios.get.mockResolvedValueOnce(mockedResponse);
     expect(await validateMetadata(criUrl, authServerUrl)).toEqual(true);
@@ -58,7 +54,9 @@ describe("validateMetadata", () => {
   it("should throw 'INVALID_METADATA' error when 'credential_configurations_supported' is missing", async () => {
     const mockedResponse = {
       status: 200,
-      data: getTestMetadata(criUrl, authServerUrl, false),
+      data: metadataBuilder().withOverrides({
+        credential_configurations_supported: false,
+      }),
     } as AxiosResponse;
     mockedAxios.get.mockResolvedValueOnce(mockedResponse);
     await expect(validateMetadata(criUrl, authServerUrl)).rejects.toThrow(
@@ -69,7 +67,9 @@ describe("validateMetadata", () => {
   it("should throw 'INVALID_METADATA' error when 'credential_issuer' does not match CRI URL", async () => {
     const mockedResponse = {
       status: 200,
-      data: getTestMetadata("https://something-else.com/", authServerUrl),
+      data: metadataBuilder().withOverrides({
+        credential_issuer: "https://something-else.com/",
+      }),
     } as AxiosResponse;
     mockedAxios.get.mockResolvedValueOnce(mockedResponse);
     await expect(validateMetadata(criUrl, authServerUrl)).rejects.toThrow(
@@ -80,10 +80,28 @@ describe("validateMetadata", () => {
     );
   });
 
+  it("should throw 'INVALID_METADATA' error when 'credential_endpoint' does not match CRI's credential endpoint", async () => {
+    const mockedResponse = {
+      status: 200,
+      data: metadataBuilder().withOverrides({
+        credential_endpoint: "https://something-else.com/something",
+      }),
+    } as AxiosResponse;
+    mockedAxios.get.mockResolvedValueOnce(mockedResponse);
+    await expect(validateMetadata(criUrl, authServerUrl)).rejects.toThrow(
+      "INVALID_METADATA",
+    );
+    expect(console.log).toHaveBeenCalledWith(
+      'Invalid "credential_endpoint" value. Should be https://test-example-cri.gov.uk/credential but found https://something-else.com/something',
+    );
+  });
+
   it("should throw 'INVALID_METADATA' error when 'authorization_servers' does not match the test harness URL", async () => {
     const mockedResponse = {
       status: 200,
-      data: getTestMetadata(criUrl, "https://something-else.com/"),
+      data: metadataBuilder().withOverrides({
+        authorization_servers: ["https://something-else.com/"],
+      }),
     } as AxiosResponse;
     mockedAxios.get.mockResolvedValueOnce(mockedResponse);
     await expect(validateMetadata(criUrl, authServerUrl)).rejects.toThrow(
@@ -95,19 +113,27 @@ describe("validateMetadata", () => {
   });
 });
 
-function getTestMetadata(criUrl, authServerUrl, credentialConfig = true) {
-  return {
+function metadataBuilder<T>(): {
+  withDefaults();
+  withOverrides(overrides: T);
+} {
+  const defaults = {
     credential_endpoint: criUrl + "/credential",
     authorization_servers: [authServerUrl],
     credential_issuer: criUrl,
-    ...(credentialConfig && {
-      credential_configurations_supported: {
-        dummyCredential: {
-          format: "jwt_vc_json",
-          id: "DummyCredential_JWT",
-          types: ["VerifiableCredential", "DummyCredential"],
-        },
+    credential_configurations_supported: {
+      dummyCredential: {
+        format: "jwt_vc_json",
+        types: ["VerifiableCredential", "DummyCredential"],
       },
-    }),
+    },
+  };
+  return {
+    withDefaults() {
+      return { ...defaults };
+    },
+    withOverrides(overrides: T) {
+      return { ...defaults, ...overrides };
+    },
   };
 }
