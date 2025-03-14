@@ -20,6 +20,8 @@ const server = app
   .listen(port, async () => {
     console.log(`Server is running on port ${port}`);
 
+    console.log("TEST")
+
     const keyPair = await generateKeyPair("ES256", {
       extractable: true,
     });
