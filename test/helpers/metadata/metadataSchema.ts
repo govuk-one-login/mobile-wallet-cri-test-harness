@@ -20,6 +20,10 @@ export const metadataSchema = {
     credential_configurations_supported: {
       type: "object",
     },
+    notification_endpoint: {
+      type: "string",
+      format: "uri",
+    },
   },
   additionalProperties: true,
   required: [

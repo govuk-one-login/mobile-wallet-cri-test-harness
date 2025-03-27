@@ -6,6 +6,7 @@ import { getDockerDnsName } from "../../../src/config";
 
 export interface Metadata {
   credential_endpoint: string;
+  notification_endpoint?: string;
   authorization_servers: string[];
   credential_issuer: string;
   credential_configurations_supported: object;
@@ -58,6 +59,17 @@ export async function validateMetadata(
   if (metadata.credential_endpoint !== validCredentialEndpoint) {
     console.log(
       `Invalid "credential_endpoint" value. Should be ${validCredentialEndpoint} but found ${metadata.credential_endpoint}`,
+    );
+    throw new Error("INVALID_METADATA");
+  }
+
+  const validNotificationEndpoint = criUrl + "/notification";
+  if (
+    metadata.notification_endpoint &&
+    metadata.notification_endpoint !== validNotificationEndpoint
+  ) {
+    console.log(
+      `Invalid "notification_endpoint" value. Should be ${validNotificationEndpoint} but found ${metadata.notification_endpoint}`,
     );
     throw new Error("INVALID_METADATA");
   }
