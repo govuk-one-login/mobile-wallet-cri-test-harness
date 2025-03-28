@@ -39,7 +39,9 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
   }
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
-  const rulesValidator = ajv.addSchema(headerSchema).compile(headerSchema);
+  ajv.removeSchema(headerSchema);
+  ajv.addSchema(headerSchema);
+  const rulesValidator = ajv.compile(headerSchema);
   if (!rulesValidator(claims)) {
     console.log(
       `Credential header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,

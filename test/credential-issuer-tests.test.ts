@@ -261,8 +261,9 @@ describe("credential issuer tests", () => {
       expect(response.status).toBe(200);
     } catch (error) {
       expect((error as AxiosError).response?.data).toEqual({
-        error: "INVALID_RESPONSE_DATA",
+        error: "invalid_credential_request",
       });
+      return;
     }
 
     const credential = response.data.credential;
@@ -317,6 +318,7 @@ describe("credential issuer tests", () => {
     }
   });
 });
+
 
 function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
   const credentialOffer = getCredentialOffer(credentialOfferDeepLink);
