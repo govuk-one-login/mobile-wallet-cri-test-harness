@@ -23,9 +23,7 @@ export async function validateCredential(
     header,
     credential,
   );
-
   validatePayload(payload, didKey, criUrl);
-
   return true;
 }
 
@@ -39,8 +37,6 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
   }
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
-  ajv.removeSchema(headerSchema);
-  ajv.addSchema(headerSchema);
   const rulesValidator = ajv.compile(headerSchema);
   if (!rulesValidator(claims)) {
     console.log(
@@ -80,9 +76,7 @@ function validatePayload(
   didKey: string,
   criUrl: string,
 ): void {
-
   const ajv = new Ajv({ allErrors: true, verbose: false });
-
   const rulesValidator = ajv.compile(payloadSchema);
   if (!rulesValidator(payload)) {
     console.log(

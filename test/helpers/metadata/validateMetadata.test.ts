@@ -127,6 +127,17 @@ describe("validateMetadata", () => {
       'Invalid "authorization_servers" value. Should contain https://test-auth-server.gov.uk but only contains https://something-else.com/',
     );
   });
+
+  it("should return true when notification_endpoint is valid", async () => {
+    const mockedResponse = {
+      status: 200,
+      data: metadataBuilder().withOverrides({
+        notification_endpoint: "https://test-example-cri.gov.uk/notification",
+      }),
+    } as AxiosResponse;
+    mockedAxios.get.mockResolvedValueOnce(mockedResponse);
+    await expect(validateMetadata(criUrl, authServerUrl)).resolves.toBe(true);
+  });
 });
 
 function metadataBuilder<T>(): {

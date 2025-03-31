@@ -5,6 +5,7 @@ import {
   getWalletSubjectId,
   getClientId,
   getSelfURL,
+  getDockerDnsName,
 } from "../src/config";
 import {
   CredentialOffer,
@@ -33,7 +34,7 @@ import {
   createProofJwt,
 } from "./helpers/credential/createProofJwt";
 import { getCredential } from "./helpers/credential/getCredential";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { getJwks } from "./helpers/jwks/getJwks";
 
 let CREDENTIAL_OFFER_DEEP_LINK;
@@ -62,10 +63,9 @@ describe("credential issuer tests", () => {
     PRE_AUTHORIZED_CODE_PAYLOAD = decodeJwt(PRE_AUTHORIZED_CODE);
     const didDocument: DidDocument = (await getDidDocument(CRI_URL)).data;
     DID_VERIFICATION_METHOD = didDocument.verificationMethod;
-    CREDENTIAL_ENDPOINT = ((await getMetadata(CRI_URL)).data as Metadata)
-      .credential_endpoint;
-    NOTIFICATION_ENDPOINT = ((await getMetadata(CRI_URL)).data as Metadata)
-      .notification_endpoint;
+    const metadata: Metadata = (await getMetadata(CRI_URL)).data;
+    CREDENTIAL_ENDPOINT = metadata.credential_endpoint;
+    NOTIFICATION_ENDPOINT = metadata.notification_endpoint;
     PRIVATE_KEY_JWK = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
@@ -230,65 +230,72 @@ describe("credential issuer tests", () => {
     expect(isValidPreAuthorizedCode).toEqual(true);
   });
 
-  // THIS TEST WILL FAIL WITH AN "INVALID_HEADER" ERROR UNTIL THE "KID" IN THE CREDENTIAL HEADER IS UPDATED TO FOLLOW THE PATTERN "^did:web:[a-z0-9.#\\-_]+$"
-  it("should validate the credential and return 204 No Content when a valid 'credential_accepted' notification is sent", async () => {
-    const hasNotificationEndpoint = Boolean(NOTIFICATION_ENDPOINT);
-    const accessToken = await createAccessToken(
-      NONCE,
-      WALLET_SUBJECT_ID,
-      PRE_AUTHORIZED_CODE_PAYLOAD,
-      PRIVATE_KEY_JWK,
-    );
-    const didKey = createDidKey(PUBLIC_KEY_JWK);
-    const proofJwt = await createProofJwt(
-      NONCE,
-      didKey,
-      PRE_AUTHORIZED_CODE_PAYLOAD,
-      PRIVATE_KEY_JWK,
-    );
-
-    let notification_id;
+  describe("should validate the credential and return 200", () => {
+    let accessToken;
     let response;
-    try{
-      response = await getCredential(
-          accessToken.access_token,
-          proofJwt,
-          CREDENTIAL_ENDPOINT
+    let didKey;
+
+    beforeAll(async () => {
+      accessToken = await createAccessToken(
+        NONCE,
+        WALLET_SUBJECT_ID,
+        PRE_AUTHORIZED_CODE_PAYLOAD,
+        PRIVATE_KEY_JWK,
       );
-      if (hasNotificationEndpoint && notification_id) {
-        notification_id = response.data.notification_id;
-      }
-      expect(response.status).toBe(200);
-    } catch (error) {
-      expect((error as AxiosError).response?.data).toEqual({
-        error: "invalid_credential_request",
-      });
-      return;
-    }
 
-    const credential = response.data.credential;
-    const isValidCredentialResponse = await validateCredential(
-      credential,
-      didKey,
-      DID_VERIFICATION_METHOD,
-      CRI_URL,
-    );
-    expect(isValidCredentialResponse).toBe(true);
+      didKey = createDidKey(PUBLIC_KEY_JWK);
+      const proofJwt = await createProofJwt(
+        NONCE,
+        didKey,
+        PRE_AUTHORIZED_CODE_PAYLOAD,
+        PRIVATE_KEY_JWK,
+      );
 
-    const notificationPayload = {
-      notification_id: notification_id,
-      event: "credential_accepted",
-    };
-
-    const notificationResponse = await fetch(NOTIFICATION_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(notificationPayload),
+      response = await getCredential(
+        accessToken.access_token,
+        proofJwt,
+        CREDENTIAL_ENDPOINT,
+      );
     });
 
-    expect(notificationResponse.status).toBe(204);
+    // THIS TEST WILL FAIL WITH AN "INVALID_HEADER" ERROR UNTIL THE "KID" IN THE CREDENTIAL HEADER IS UPDATED TO FOLLOW THE PATTERN "^did:web:[a-z0-9.#\\-_]+$"
+    it("should validate the credential response", async () => {
+      expect(response.status).toBe(200);
+      if (NOTIFICATION_ENDPOINT) {
+        expect(response.data.notification_id).toBeTruthy();
+      } else {
+        expect(response.data.notification_id).toBeFalsy();
+      }
+      expect(response.data.credential).toBeTruthy();
+      const isValidCredential = await validateCredential(
+        response.data.credential,
+        didKey,
+        DID_VERIFICATION_METHOD,
+        CRI_URL,
+      );
+      expect(isValidCredential).toBe(true);
+    });
+
+    it("should return 204 when a valid 'credential_accepted' notification is sent", async () => {
+      if (!NOTIFICATION_ENDPOINT) {
+        console.log("CRI doesn't implement a notification endpoint");
+      } else {
+        const notification_id = response.data.notification_id;
+        const notificationResponse = await axios.post(
+          getDockerDnsName(NOTIFICATION_ENDPOINT),
+          {
+            notification_id,
+            event: "credential_accepted",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken.access_token}`,
+            },
+          },
+        );
+        expect(notificationResponse.status).toBe(204);
+      }
+    });
   });
 
   it("should return 400 and 'invalid_credential_request' when the credential offer cannot be found in the database", async () => {
@@ -298,7 +305,6 @@ describe("credential issuer tests", () => {
       PRE_AUTHORIZED_CODE_PAYLOAD,
       PRIVATE_KEY_JWK,
     );
-
     const accessToken = (
       await createAccessToken(
         NONCE,
@@ -307,7 +313,31 @@ describe("credential issuer tests", () => {
         PRIVATE_KEY_JWK,
       )
     ).access_token;
+    try {
+      await getCredential(accessToken, proofJwt, CREDENTIAL_ENDPOINT);
+    } catch (error) {
+      expect((error as AxiosError).response?.status).toEqual(400);
+      expect((error as AxiosError).response?.data).toEqual({
+        error: "invalid_credential_request",
+      });
+    }
+  });
 
+  it("should return 305 and 'invalid_credential_request' when the credential offer cannot be found in the database", async () => {
+    const proofJwt = await createProofJwt(
+      NONCE,
+      createDidKey(PUBLIC_KEY_JWK),
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      PRIVATE_KEY_JWK,
+    );
+    const accessToken = (
+      await createAccessToken(
+        NONCE,
+        WALLET_SUBJECT_ID,
+        PRE_AUTHORIZED_CODE_PAYLOAD,
+        PRIVATE_KEY_JWK,
+      )
+    ).access_token;
     try {
       await getCredential(accessToken, proofJwt, CREDENTIAL_ENDPOINT);
     } catch (error) {
@@ -318,7 +348,6 @@ describe("credential issuer tests", () => {
     }
   });
 });
-
 
 function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
   const credentialOffer = getCredentialOffer(credentialOfferDeepLink);

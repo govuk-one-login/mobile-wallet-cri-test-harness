@@ -1,9 +1,7 @@
 import { validateCredential } from "./validateCredential";
 import * as createProofJwtModule from "./createProofJwt";
-import axios, { AxiosResponse } from "axios";
 import { importJWK, SignJWT } from "jose";
 
-jest.mock("axios");
 jest.mock("./createProofJwt", () => ({
   createProofJwt: jest.fn(),
   createDidKey: jest.fn(),
@@ -33,10 +31,8 @@ const verificationMethod = [
 ];
 
 const didKey = "did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c";
-const notificationId = "d0b2bf35-f286-446a-b061-8465ab40c60c";
 
 describe("validateCredential", () => {
-  const mockedAxios = axios as jest.Mocked<typeof axios>;
   const createDidKey = createProofJwtModule.createDidKey as jest.Mock;
 
   beforeEach(() => {
@@ -50,30 +46,6 @@ describe("validateCredential", () => {
 
   it("should return 'true' when credential is valid", async () => {
     const credential = await getTestJwt(criUrl, kid, didKey);
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
-
-    expect(
-      await validateCredential(credential, didKey, verificationMethod, criUrl),
-    ).toEqual(true);
-  });
-
-  it("should return 'true' when credential response has notification_id", async () => {
-    const credential = await getTestJwt(criUrl, kid, didKey);
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
     expect(
       await validateCredential(credential, didKey, verificationMethod, criUrl),
@@ -83,14 +55,6 @@ describe("validateCredential", () => {
   it("should throw 'HEADER_DECODING_ERROR' error when token header cannot be decoded", async () => {
     const credential =
       "invalidHeader" + (await getTestJwt(criUrl, kid, didKey));
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
     await expect(
       validateCredential(credential, didKey, verificationMethod, criUrl),
@@ -99,14 +63,6 @@ describe("validateCredential", () => {
 
   it("should throw 'INVALID_HEADER' error when header is missing 'kid' claim", async () => {
     const credential = await getTestJwt(criUrl, undefined, didKey);
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
     await expect(
       validateCredential(credential, didKey, verificationMethod, criUrl),
@@ -119,15 +75,6 @@ describe("validateCredential", () => {
       "did:web:test-example-cri.gov.uk#11fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032059645",
       didKey,
     );
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
-
     const verificationMethod = [
       {
         id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
@@ -151,15 +98,6 @@ describe("validateCredential", () => {
 
   it("should throw 'INVALID_SIGNATURE' when signature cannot be verified", async () => {
     const credential = await getTestJwt(criUrl, kid, didKey);
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
-
     const verificationMethod = [
       {
         id: "did:web:test-example-cri.gov.uk#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
@@ -183,14 +121,6 @@ describe("validateCredential", () => {
 
   it("should throw 'INVALID_PAYLOAD' error when payload is missing 'iss' claim", async () => {
     const credential = await getTestJwt(undefined, kid, didKey);
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
     await expect(
       validateCredential(credential, didKey, verificationMethod, criUrl),
@@ -202,14 +132,6 @@ describe("validateCredential", () => {
 
   it("should throw 'INVALID_PAYLOAD' error when 'iss' claim value is not the CRI URL", async () => {
     const credential = await getTestJwt("invalidIssuer", kid, didKey);
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
     await expect(
       validateCredential(credential, didKey, verificationMethod, criUrl),
@@ -221,14 +143,6 @@ describe("validateCredential", () => {
 
   it("should throw 'INVALID_PAYLOAD' error when 'sub' claim value does not match the Proof JWT 'did:key' value", async () => {
     const credential = await getTestJwt(criUrl, kid, "notTheProofJwtDidKey");
-    const mockedResponse = {
-      status: 200,
-      data: {
-        credential: credential,
-        notification_id: notificationId,
-      },
-    } as AxiosResponse;
-    mockedAxios.post.mockResolvedValueOnce(mockedResponse);
 
     await expect(
       validateCredential(credential, didKey, verificationMethod, criUrl),
