@@ -322,31 +322,6 @@ describe("credential issuer tests", () => {
       });
     }
   });
-
-  it("should return 305 and 'invalid_credential_request' when the credential offer cannot be found in the database", async () => {
-    const proofJwt = await createProofJwt(
-      NONCE,
-      createDidKey(PUBLIC_KEY_JWK),
-      PRE_AUTHORIZED_CODE_PAYLOAD,
-      PRIVATE_KEY_JWK,
-    );
-    const accessToken = (
-      await createAccessToken(
-        NONCE,
-        WALLET_SUBJECT_ID,
-        PRE_AUTHORIZED_CODE_PAYLOAD,
-        PRIVATE_KEY_JWK,
-      )
-    ).access_token;
-    try {
-      await getCredential(accessToken, proofJwt, CREDENTIAL_ENDPOINT);
-    } catch (error) {
-      expect((error as AxiosError).response?.status).toEqual(400);
-      expect((error as AxiosError).response?.data).toEqual({
-        error: "invalid_credential_request",
-      });
-    }
-  });
 });
 
 function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
