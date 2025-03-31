@@ -96,6 +96,22 @@ describe("validateMetadata", () => {
     );
   });
 
+  it("should throw 'INVALID_METADATA' error when 'notification_endpoint' does not match CRI's notification endpoint", async () => {
+    const mockedResponse = {
+      status: 200,
+      data: metadataBuilder().withOverrides({
+        notification_endpoint: "https://something-else.com/something",
+      }),
+    } as AxiosResponse;
+    mockedAxios.get.mockResolvedValueOnce(mockedResponse);
+    await expect(validateMetadata(criUrl, authServerUrl)).rejects.toThrow(
+      "INVALID_METADATA",
+    );
+    expect(console.log).toHaveBeenCalledWith(
+      'Invalid "notification_endpoint" value. Should be https://test-example-cri.gov.uk/notification but found https://something-else.com/something',
+    );
+  });
+
   it("should throw 'INVALID_METADATA' error when 'authorization_servers' does not match the test harness URL", async () => {
     const mockedResponse = {
       status: 200,
@@ -110,6 +126,17 @@ describe("validateMetadata", () => {
     expect(console.log).toHaveBeenCalledWith(
       'Invalid "authorization_servers" value. Should contain https://test-auth-server.gov.uk but only contains https://something-else.com/',
     );
+  });
+
+  it("should return true when notification_endpoint is valid", async () => {
+    const mockedResponse = {
+      status: 200,
+      data: metadataBuilder().withOverrides({
+        notification_endpoint: "https://test-example-cri.gov.uk/notification",
+      }),
+    } as AxiosResponse;
+    mockedAxios.get.mockResolvedValueOnce(mockedResponse);
+    await expect(validateMetadata(criUrl, authServerUrl)).resolves.toBe(true);
   });
 });
 

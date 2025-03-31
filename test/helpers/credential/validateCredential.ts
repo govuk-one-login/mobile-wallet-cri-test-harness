@@ -1,7 +1,6 @@
 import {
   decodeProtectedHeader,
   importJWK,
-  JWK,
   JWTPayload,
   jwtVerify,
   JWTVerifyResult,
@@ -10,67 +9,21 @@ import {
 import Ajv from "ajv";
 import { headerSchema } from "./headerSchema";
 import { payloadSchema } from "./payloadSchema";
-import { createAccessToken } from "./createAccessToken";
-import { createDidKey, createProofJwt } from "./createProofJwt";
-import { getCredential } from "./getCredential";
 import { VerificationMethod } from "../didDocument/validateDidDocument";
 
 export async function validateCredential(
-  preAuthorizedCodePayload: JWTPayload,
-  nonce: string,
-  walletSubjectId: string,
-  credentialEndpoint: string,
+  credential: string,
+  didKey: string,
   verificationMethods: VerificationMethod[],
-  privateKey: JWK,
-  publicKey: JWK,
   criUrl: string,
 ): Promise<true> {
-  const accessToken = await createAccessToken(
-    nonce,
-    walletSubjectId,
-    preAuthorizedCodePayload,
-    privateKey,
-  );
-
-  const didKey = createDidKey(publicKey);
-  const proofJwt = await createProofJwt(
-    nonce,
-    didKey,
-    preAuthorizedCodePayload,
-    privateKey,
-  );
-
-  let response;
-  try {
-    response = await getCredential(
-      accessToken.access_token,
-      proofJwt,
-      credentialEndpoint,
-    );
-  } catch (error) {
-    console.log(`Error trying to fetch credential: ${JSON.stringify(error)}`);
-    throw new Error("POST_CREDENTIAL_ERROR");
-  }
-
-  if (response.status !== 200) {
-    throw new Error("INVALID_STATUS_CODE");
-  }
-
-  const credential = response.data?.credential;
-  if (!credential) {
-    throw new Error("INVALID_RESPONSE_DATA");
-  }
-
   const header: ProtectedHeaderParameters = getHeaderClaims(credential);
-
   const { payload } = await verifySignature(
     verificationMethods,
     header,
     credential,
   );
-
   validatePayload(payload, didKey, criUrl);
-
   return true;
 }
 
@@ -84,7 +37,7 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
   }
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
-  const rulesValidator = ajv.addSchema(headerSchema).compile(headerSchema);
+  const rulesValidator = ajv.compile(headerSchema);
   if (!rulesValidator(claims)) {
     console.log(
       `Credential header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
@@ -124,7 +77,7 @@ function validatePayload(
   criUrl: string,
 ): void {
   const ajv = new Ajv({ allErrors: true, verbose: false });
-  const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
+  const rulesValidator = ajv.compile(payloadSchema);
   if (!rulesValidator(payload)) {
     console.log(
       `Credential payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
