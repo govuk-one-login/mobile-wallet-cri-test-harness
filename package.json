@@ -24,7 +24,7 @@
     "ajv-formats": "^3.0.1",
     "axios": "^1.8.4",
     "bs58": "^6.0.0",
-    "express": "^4.21.2",
+    "express": "^5.1.0",
     "jose": "^5.10.0"
   },
   "devDependencies": {
