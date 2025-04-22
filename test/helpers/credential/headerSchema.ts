@@ -15,7 +15,7 @@ export const headerSchema = {
     },
     kid: {
       type: "string",
-      pattern: "^did:web:[a-z0-9.#\\-_]+$",
+      pattern: "^did:web:[a-z0-9.#\\-_:]+$",
     },
   },
   additionalProperties: false,
