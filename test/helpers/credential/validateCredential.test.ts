@@ -52,6 +52,37 @@ describe("validateCredential", () => {
     ).toEqual(true);
   });
 
+  it("should return 'true' when kid is localhost", async () => {
+    const credential = await getTestJwt(
+      criUrl,
+      "did:web:localhost:8080#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+      didKey,
+    );
+
+    expect(
+      await validateCredential(
+        credential,
+        didKey,
+        [
+          {
+            id: "did:web:localhost:8080#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+            type: "JsonWebKey2020",
+            controller: "did:web:test-example-cri.gov.uk",
+            publicKeyJwk: {
+              alg: "ES256",
+              kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
+              kty: "EC",
+              x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
+              y: "1yKvdIgdktb6MYaVU2Ptt_yrnU1Y5gmT2uJbc9q4vGg",
+              crv: "P-256",
+            },
+          },
+        ],
+        criUrl,
+      ),
+    ).toEqual(true);
+  });
+
   it("should throw 'HEADER_DECODING_ERROR' error when token header cannot be decoded", async () => {
     const credential =
       "invalidHeader" + (await getTestJwt(criUrl, kid, didKey));
