@@ -38,13 +38,13 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.compile(headerSchema);
-  if (!rulesValidator(claims)) {
+  if (rulesValidator(claims)) {
+    return claims;
+  } else {
     console.log(
       `Credential header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
     );
     throw new Error("INVALID_HEADER");
-  } else {
-    return claims;
   }
 }
 
