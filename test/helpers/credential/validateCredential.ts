@@ -44,7 +44,6 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
     console.log(
       `Credential header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
     );
-    console.log(JSON.stringify(claims));
     throw new Error("INVALID_HEADER");
   }
 }
