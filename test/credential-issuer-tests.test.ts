@@ -266,9 +266,12 @@ describe("credential issuer tests", () => {
       } else {
         expect(response.data.notification_id).toBeFalsy();
       }
-      expect(response.data.credential).toBeTruthy();
+      expect(response.data.credentials).toBeTruthy();
+      expect(response.data.credentials.length).toEqual(1);
+      const credential = response.data.credentials[0].credential;
+      expect(credential).toBeTruthy();
       const isValidCredential = await validateCredential(
-        response.data.credential,
+        credential,
         didKey,
         DID_VERIFICATION_METHOD,
         CRI_URL,

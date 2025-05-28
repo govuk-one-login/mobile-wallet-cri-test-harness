@@ -5,7 +5,7 @@ export const credentialOfferSchema = {
       type: "string",
       format: "uri",
     },
-    credentials: {
+    credential_configuration_ids: {
       type: "array",
       items: {
         type: "string",
@@ -33,5 +33,5 @@ export const credentialOfferSchema = {
     },
   },
   additionalProperties: false,
-  required: ["credential_issuer", "credentials", "grants"],
+  required: ["credential_issuer", "credential_configuration_ids", "grants"],
 };
