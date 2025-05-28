@@ -299,6 +299,26 @@ describe("credential issuer tests", () => {
         expect(notificationResponse.status).toBe(204);
       }
     });
+
+    it("should return 401 when the 'credential_accepted' notification sent does not contain authentication", async () => {
+      if (!NOTIFICATION_ENDPOINT) {
+        console.log("CRI doesn't implement a notification endpoint");
+      } else {
+        const notification_id = response.data.notification_id;
+        try {
+          await axios.post(getDockerDnsName(NOTIFICATION_ENDPOINT), {
+            notification_id,
+            event: "credential_accepted",
+          });
+        } catch (error) {
+          console.log(error);
+          expect((error as AxiosError).response?.status).toEqual(401);
+          expect(
+            (error as AxiosError).response?.headers["www-authenticate"],
+          ).toEqual("Bearer");
+        }
+      }
+    });
   });
 
   it("should return 400 and 'invalid_credential_request' when the credential offer cannot be found in the database", async () => {
