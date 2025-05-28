@@ -3,15 +3,11 @@ export const didDocumentSchema = {
   properties: {
     "@context": {
       type: "array",
-      minItems: 2,
-      maxItems: 2,
+      minItems: 1,
       uniqueItems: true,
       items: {
         type: "string",
-        enum: [
-          "https://www.w3.org/ns/did/v1",
-          "https://www.w3.org/ns/security/jwk/v1",
-        ],
+        minLength: 1,
       },
     },
     id: {

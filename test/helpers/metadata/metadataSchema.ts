@@ -1,7 +1,7 @@
 export const metadataSchema = {
   type: "object",
   properties: {
-    credentials_endpoint: {
+    credential_endpoint: {
       type: "string",
       format: "uri",
     },

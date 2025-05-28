@@ -12,16 +12,20 @@ export const payloadSchema = {
     nbf: {
       type: "number",
     },
+    iat: {
+      type: "number",
+    },
     exp: {
       type: "number",
     },
     "@context": {
       type: "array",
+      minItems: 1,
+      uniqueItems: true,
       items: {
         type: "string",
         minLength: 1,
       },
-      minItems: 1,
     },
     type: {
       type: "array",
@@ -70,13 +74,9 @@ export const payloadSchema = {
     "iss",
     "sub",
     "nbf",
-    "exp",
     "@context",
     "type",
     "issuer",
-    "name",
-    "description",
-    "validFrom",
     "credentialSubject",
   ],
 };
