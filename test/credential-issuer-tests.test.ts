@@ -300,7 +300,35 @@ describe("credential issuer tests", () => {
       }
     });
 
-    it("should return 401 when the 'credential_accepted' notification sent does not contain authentication", async () => {
+    it("should return 401 when the 'credential_accepted' notification does not contain authentication", async () => {
+      if (!NOTIFICATION_ENDPOINT) {
+        console.log("CRI doesn't implement a notification endpoint");
+      } else {
+        const notification_id = response.data.notification_id;
+        try {
+          await axios.post(
+            getDockerDnsName(NOTIFICATION_ENDPOINT),
+            {
+              notification_id,
+              event: "credential_accepted",
+            },
+            {
+              headers: {
+                Authorization: "Bearer INVALID_TOKEN",
+              },
+            },
+          );
+        } catch (error) {
+          console.log(error);
+          expect((error as AxiosError).response?.status).toEqual(401);
+          expect(
+            (error as AxiosError).response?.headers["www-authenticate"],
+          ).toEqual('Bearer error="invalid_token"');
+        }
+      }
+    });
+
+    it("should return 401 when the 'credential_accepted' notification contains an invalid access token", async () => {
       if (!NOTIFICATION_ENDPOINT) {
         console.log("CRI doesn't implement a notification endpoint");
       } else {
