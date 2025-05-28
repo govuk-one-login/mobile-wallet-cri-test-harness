@@ -65,7 +65,7 @@ npm run test:unit
 To run tests against a credential issuer, run:
 
 ```
-./build_and_run.sh <credential_offer_deep_link>
+./build-and-run.sh <credential_offer_deep_link>
 ```
 
 The `<credential_offer_deep_link>` is the credential offer deep link you wish to test with.
