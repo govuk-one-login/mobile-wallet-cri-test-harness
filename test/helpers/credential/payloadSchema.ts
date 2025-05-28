@@ -24,7 +24,9 @@ export const payloadSchema = {
       uniqueItems: true,
       items: {
         type: "string",
-        minLength: 1,
+      },
+      contains: {
+        const: "https://www.w3.org/ns/credentials/v2",
       },
     },
     type: {

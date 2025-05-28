@@ -7,7 +7,9 @@ export const didDocumentSchema = {
       uniqueItems: true,
       items: {
         type: "string",
-        minLength: 1,
+      },
+      contains: {
+        const: "https://www.w3.org/ns/did/v1",
       },
     },
     id: {
