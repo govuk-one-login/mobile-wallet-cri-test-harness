@@ -78,7 +78,7 @@ describe("credential issuer tests", () => {
     JWKS = (await getJwks(CRI_URL)).data.keys;
   });
 
-  it("should return 400 and 'invalid_credential_request' when the access token and the credential offer wallet subject IDs do not match", async () => {
+  it("should return 401 and 'invalid_token' when the access token and the credential offer wallet subject IDs do not match", async () => {
     const accessTokenWithInvalidWalletSubjectId = (
       await createAccessToken(
         NONCE,
@@ -102,14 +102,14 @@ describe("credential issuer tests", () => {
         CREDENTIAL_ENDPOINT,
       );
     } catch (error) {
-      expect((error as AxiosError).response?.status).toEqual(400);
-      expect((error as AxiosError).response?.data).toEqual({
-        error: "invalid_credential_request",
-      });
+      expect((error as AxiosError).response?.status).toEqual(401);
+      expect(
+        (error as AxiosError).response?.headers["www-authenticate"],
+      ).toEqual('Bearer error="invalid_token"');
     }
   });
 
-  it("should return 400 and 'invalid_credential_request' when the access token signature is invalid", async () => {
+  it("should return 401 and 'invalid_token' when the access token signature is invalid", async () => {
     const accessToken = (
       await createAccessToken(
         NONCE,
@@ -134,10 +134,10 @@ describe("credential issuer tests", () => {
         CREDENTIAL_ENDPOINT,
       );
     } catch (error) {
-      expect((error as AxiosError).response?.status).toEqual(400);
-      expect((error as AxiosError).response?.data).toEqual({
-        error: "invalid_credential_request",
-      });
+      expect((error as AxiosError).response?.status).toEqual(401);
+      expect(
+        (error as AxiosError).response?.headers["www-authenticate"],
+      ).toEqual('Bearer error="invalid_token"');
     }
   });
 
