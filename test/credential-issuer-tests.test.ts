@@ -258,7 +258,6 @@ describe("credential issuer tests", () => {
       );
     });
 
-    // THIS TEST WILL FAIL WITH AN "INVALID_HEADER" ERROR UNTIL THE "KID" IN THE CREDENTIAL HEADER IS UPDATED TO FOLLOW THE PATTERN "^did:web:[a-z0-9.#\\-_]+$"
     it("should validate the credential response", async () => {
       expect(response.status).toBe(200);
       if (NOTIFICATION_ENDPOINT) {
@@ -300,7 +299,7 @@ describe("credential issuer tests", () => {
       }
     });
 
-    it("should return 401 when the 'credential_accepted' notification does not contain authentication", async () => {
+    it("should return 401 and 'invalid_token' when the 'credential_accepted' notification contains an invalid access token", async () => {
       if (!NOTIFICATION_ENDPOINT) {
         console.log("CRI doesn't implement a notification endpoint");
       } else {
@@ -328,7 +327,7 @@ describe("credential issuer tests", () => {
       }
     });
 
-    it("should return 401 when the 'credential_accepted' notification contains an invalid access token", async () => {
+    it("should return 401 when the 'credential_accepted' notification does not contain authentication", async () => {
       if (!NOTIFICATION_ENDPOINT) {
         console.log("CRI doesn't implement a notification endpoint");
       } else {
