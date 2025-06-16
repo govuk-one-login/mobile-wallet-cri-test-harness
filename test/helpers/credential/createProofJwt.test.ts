@@ -43,6 +43,7 @@ describe("createProofJwt", () => {
         "did:key:zDnaeo4ut8iyu1NUmzYN16cm3gWHp3YZWG2C6uEKeFZgEWPe7",
       );
       expect(proofJwtHeader.alg).toEqual("ES256");
+      expect(proofJwtHeader.typ).toEqual("openid4vci-proof+jwt");
     });
   });
 
