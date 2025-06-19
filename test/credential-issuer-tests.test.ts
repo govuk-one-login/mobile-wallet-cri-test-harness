@@ -348,7 +348,7 @@ describe("credential issuer tests", () => {
     });
   });
 
-  it("should return 401 and 'invalid_token' when the credential offer cannot be found in the database", async () => {
+  it("should return 401 and 'invalid_token' when the credential offer is redeemed a second time", async () => {
     const proofJwt = await createProofJwt(
       NONCE,
       createDidKey(PUBLIC_KEY_JWK),
