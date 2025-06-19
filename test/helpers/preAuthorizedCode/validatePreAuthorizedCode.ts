@@ -118,9 +118,11 @@ function validatePayload(
 
   const tokenExpiresAt = new Date(payload.exp * 1000);
   const expiry = (tokenExpiresAt.getTime() - tokenIssuedAt.getTime()) / 60000;
-  if (expiry !== 5) {
+  if (expiry !== 30) {
     console.log(
-      `Invalid "exp" value in token. Should be "5 minutes" seconds but found "${expiry} minutes"`,
+      `Invalid "exp" value in token. Expected 30 minute expiry but found ${expiry} minutes.
+      Note: if your issuer is configured to for the credential offer to be valid for a time 
+      other than 30 minutes then you can change this test expectation in validatePreAuthorizedCode.ts`,
     );
     throw new Error("INVALID_PAYLOAD");
   }
