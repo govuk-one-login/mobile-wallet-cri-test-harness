@@ -45,7 +45,7 @@ describe("createAccessToken", () => {
     expect(accessTokenHeader.kid).toEqual(
       "5d76b492-d62e-46f4-a3d9-bc51e8b91ac5",
     );
-    expect(accessTokenHeader.typ).toEqual("JWT");
+    expect(accessTokenHeader.typ).toEqual("at+jwt");
     expect(accessTokenHeader.alg).toEqual("ES256");
   });
 });

@@ -4,7 +4,7 @@ import { credentialOfferSchema } from "./credentialOfferSchema";
 
 export interface CredentialOffer {
   credential_issuer: string;
-  credentials: string[];
+  credential_configuration_ids: string[];
   grants: Grants;
 }
 

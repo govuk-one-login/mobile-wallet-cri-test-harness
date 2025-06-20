@@ -12,6 +12,7 @@ export const credentialOfferSchema = {
         minLength: 1,
       },
       minItems: 1,
+      maxItems: 1,
     },
     grants: {
       type: "object",

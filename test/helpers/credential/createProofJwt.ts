@@ -3,6 +3,7 @@ import bs58 = require("bs58");
 
 const SIGNING_ALGORITHM = "ES256";
 const PROOF_JWT_ISSUER = "urn:fdc:gov:uk:wallet";
+const TYPE = "openid4vci-proof+jwt";
 
 export async function createProofJwt(
   nonce: string,
@@ -13,7 +14,7 @@ export async function createProofJwt(
   const signingKeyAsKeyLike = await importJWK(privateKeyJwk, SIGNING_ALGORITHM);
 
   return await new SignJWT({ nonce: nonce })
-    .setProtectedHeader({ alg: SIGNING_ALGORITHM, kid: didKey })
+    .setProtectedHeader({ alg: SIGNING_ALGORITHM, kid: didKey, typ: TYPE })
     .setIssuedAt()
     .setIssuer(PROOF_JWT_ISSUER)
     .setAudience(preAuthorizedCodePayload.iss!)

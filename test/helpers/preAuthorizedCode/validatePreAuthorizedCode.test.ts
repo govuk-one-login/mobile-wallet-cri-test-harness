@@ -175,7 +175,7 @@ describe("validatePreAuthorizedCode", () => {
     );
   });
 
-  it("should throw 'INVALID_PAYLOAD' error when token expiry is not 5 minutes", async () => {
+  it("should throw 'INVALID_PAYLOAD' error when token expiry is not 30 minutes", async () => {
     const preAuthorizedCode = await getTestJwt(
       authServerUrl,
       criUrl,
@@ -194,7 +194,9 @@ describe("validatePreAuthorizedCode", () => {
       ),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
-      'Invalid "exp" value in token. Should be "5 minutes" seconds but found "10 minutes"',
+      `Invalid "exp" value in token. Expected 30 minute expiry but found 10 minutes.
+      Note: if your issuer is configured for the credential offer to be valid for a time 
+      other than 30 minutes then you can change this test expectation in validatePreAuthorizedCode.ts`,
     );
   });
 
@@ -265,7 +267,7 @@ describe("validatePreAuthorizedCode", () => {
   });
 });
 
-async function getTestJwt(audience, issuer, clientId, kid, exp = "5minutes") {
+async function getTestJwt(audience, issuer, clientId, kid, exp = "30minutes") {
   const privateKey = {
     kty: "EC",
     x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
