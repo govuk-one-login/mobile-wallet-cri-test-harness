@@ -52,18 +52,18 @@ describe("config", () => {
   it("should throw error when CREDENTIAL_OFFER_DEEP_LINK is not set", async () => {
     expect(() => {
       getCredentialOfferDeepLink();
-    }).toThrowError("CREDENTIAL_OFFER_DEEP_LINK environment variable not set");
+    }).toThrow("CREDENTIAL_OFFER_DEEP_LINK environment variable not set");
   });
 
   it("should throw error when WALLET_SUBJECT_ID is not set", async () => {
     expect(() => {
       getWalletSubjectId();
-    }).toThrowError("WALLET_SUBJECT_ID environment variable not set");
+    }).toThrow("WALLET_SUBJECT_ID environment variable not set");
   });
 
   it("should throw error when CLIENT_ID is not set", async () => {
     expect(() => {
       getClientId();
-    }).toThrowError("CLIENT_ID environment variable not set");
+    }).toThrow("CLIENT_ID environment variable not set");
   });
 });
