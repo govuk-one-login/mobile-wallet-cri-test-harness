@@ -12,8 +12,8 @@
     "lint": "eslint . ",
     "lint:fix": "eslint . --fix",
     "format": "prettier --ignore-path .gitignore --write \"*/**/*.{ts,json}\"",
-    "test": "node_modules/.bin/jest  --testPathPattern=test/credential-issuer-tests.test.ts --coverage=false",
-    "test:unit": "TZ=UTC jest node_modules/.bin/jest --testPathPattern=test/helpers src/config --silent"
+    "test": "node_modules/.bin/jest  --testPathPatterns=test/credential-issuer-tests.test.ts --coverage=false",
+    "test:unit": "TZ=UTC jest node_modules/.bin/jest --testPathPatterns=test/helpers src/config --silent"
   },
   "engines": {
     "node": "20.x",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@eslint/js": "^9.29.0",
     "@types/express": "^5.0.3",
-    "@types/jest": "^29.5.14",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^24.0.1",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
@@ -38,7 +38,7 @@
     "dotenv": "^16.5.0",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
-    "jest": "^29.7.0",
+    "jest": "^30.0.0",
     "jest-junit": "^16.0.0",
     "prettier": "^3.5.3",
     "ts-jest": "^29.4.0",
