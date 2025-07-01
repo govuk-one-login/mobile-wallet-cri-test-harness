@@ -22,7 +22,11 @@ export async function createAccessToken(
   };
 
   const accessToken = await new SignJWT(customClaims)
-    .setProtectedHeader({ alg: SIGNING_ALGORITHM, typ: "at+jwt", kid: getKeyId() })
+    .setProtectedHeader({
+      alg: SIGNING_ALGORITHM,
+      typ: "at+jwt",
+      kid: getKeyId(),
+    })
     .setSubject(walletSubjectId)
     .setIssuer(preAuthorizedCodePayload.aud! as string)
     .setAudience(preAuthorizedCodePayload.iss!)
