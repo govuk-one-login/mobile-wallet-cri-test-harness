@@ -24,12 +24,14 @@ const server = app
       extractable: true,
     });
 
+    // Required for signing mock STS access token
     const privateKey = await exportJWK(keyPair.privateKey);
     writeFileSync(
       "test/helpers/credential/privateKey",
       JSON.stringify(privateKey),
     );
 
+    // Required by the CRI to verify the mock STS access token signature - available from /.well-known/jwks.json
     publicKey = await exportJWK(keyPair.publicKey);
     writeFileSync(
       "test/helpers/credential/publicKey",
