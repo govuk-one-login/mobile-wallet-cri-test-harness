@@ -78,6 +78,39 @@ describe("credential issuer tests", () => {
     JWKS = (await getJwks(CRI_URL)).data.keys;
   });
 
+  // Credential Offer test
+  it("should validate the credential offer", async () => {
+    const isValidCredentialOffer = validateCredentialOffer(
+      CREDENTIAL_OFFER_DEEP_LINK,
+    );
+    expect(isValidCredentialOffer).toEqual(true);
+  });
+
+  // Pre-Authorized Code test
+  it("should validate the pre-authorized code", async () => {
+    const isValidPreAuthorizedCode = await validatePreAuthorizedCode(
+      PRE_AUTHORIZED_CODE,
+      JWKS,
+      CRI_URL,
+      SELF_URL,
+      CLIENT_ID,
+    );
+    expect(isValidPreAuthorizedCode).toEqual(true);
+  });
+
+  // Metadata test
+  it("should validate the credential metadata", async () => {
+    const isValidMetadata = await validateMetadata(CRI_URL, SELF_URL);
+    expect(isValidMetadata).toEqual(true);
+  });
+
+  // did:web Document test
+  it("should validate the did:web document", async () => {
+    const isValidDidDocument = await validateDidDocument(CRI_URL, CRI_DOMAIN);
+    expect(isValidDidDocument).toEqual(true);
+  });
+
+  // Credential tests
   it("should return 401 and 'invalid_token' when the access token and the credential offer wallet subject IDs do not match", async () => {
     const accessTokenWithInvalidWalletSubjectId = (
       await createAccessToken(
@@ -202,34 +235,6 @@ describe("credential issuer tests", () => {
     }
   });
 
-  it("should validate the credential offer", async () => {
-    const isValidCredentialOffer = validateCredentialOffer(
-      CREDENTIAL_OFFER_DEEP_LINK,
-    );
-    expect(isValidCredentialOffer).toEqual(true);
-  });
-
-  it("should validate the credential metadata", async () => {
-    const isValidMetadata = await validateMetadata(CRI_URL, SELF_URL);
-    expect(isValidMetadata).toEqual(true);
-  });
-
-  it("should validate the DID document", async () => {
-    const isValidDidDocument = await validateDidDocument(CRI_URL, CRI_DOMAIN);
-    expect(isValidDidDocument).toEqual(true);
-  });
-
-  it("should validate the pre-authorized code", async () => {
-    const isValidPreAuthorizedCode = await validatePreAuthorizedCode(
-      PRE_AUTHORIZED_CODE,
-      JWKS,
-      CRI_URL,
-      SELF_URL,
-      CLIENT_ID,
-    );
-    expect(isValidPreAuthorizedCode).toEqual(true);
-  });
-
   describe("should validate the credential and return 200", () => {
     let accessToken;
     let response;
@@ -278,6 +283,7 @@ describe("credential issuer tests", () => {
       expect(isValidCredential).toBe(true);
     });
 
+    // Notification tests
     it("should return 204 when a valid 'credential_accepted' notification is sent", async () => {
       if (!NOTIFICATION_ENDPOINT) {
         console.log("CRI doesn't implement a notification endpoint");
@@ -348,6 +354,7 @@ describe("credential issuer tests", () => {
     });
   });
 
+  // Credential test
   it("should return 401 and 'invalid_token' when the credential offer is redeemed a second time", async () => {
     const proofJwt = await createProofJwt(
       NONCE,
