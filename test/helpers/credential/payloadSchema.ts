@@ -31,11 +31,15 @@ export const payloadSchema = {
     },
     type: {
       type: "array",
+      minItems: 1,
+      uniqueItems: true,
       items: {
         type: "string",
         minLength: 1,
       },
-      minItems: 2,
+      contains: {
+        const: "VerifiableCredential",
+      },
     },
     issuer: {
       type: "string",
