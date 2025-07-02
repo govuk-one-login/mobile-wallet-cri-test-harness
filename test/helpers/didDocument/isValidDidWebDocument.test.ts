@@ -2,7 +2,7 @@ import { isValidDidWebDocument } from "./isValidDidWebDocument";
 
 const criDomain = "example-cri.test.gov.uk";
 
-describe("validateDidDocument", () => {
+describe("isValidDidWebDocument", () => {
   it("should return 'true' when DID document is valid", async () => {
     const didWebDocument = didWebDocumentBuilder().withDefaults();
     expect(await isValidDidWebDocument(didWebDocument, criDomain)).toEqual(

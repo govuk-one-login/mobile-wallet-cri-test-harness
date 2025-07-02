@@ -30,7 +30,7 @@ const verificationMethod = [
 ];
 const didKey = "did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c";
 
-describe("validateCredential", () => {
+describe("isValidCredential", () => {
   const createDidKey = createProofJwtModule.createDidKey as jest.Mock;
 
   beforeEach(() => {
