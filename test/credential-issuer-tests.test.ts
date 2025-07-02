@@ -9,10 +9,10 @@ import {
 } from "../src/config";
 import {
   CredentialOffer,
-  getCredentialOffer,
+  extractCredentialOffer,
   parseAsJson,
-  validateCredentialOffer,
-} from "./helpers/credentialOffer/validateCredentialOffer";
+  isValidCredentialOffer,
+} from "./helpers/credentialOffer/isValidCredentialOffer";
 import {
   getMetadata,
   Metadata,
@@ -23,7 +23,7 @@ import {
   getDidDocument,
   isValidDidWebDocument,
 } from "./helpers/didDocument/isValidDidWebDocument";
-import { validatePreAuthorizedCode } from "./helpers/preAuthorizedCode/validatePreAuthorizedCode";
+import { isValidPreAuthorizedCode } from "./helpers/preAuthorizedCode/isValidPreAuthorizedCode";
 import { validateCredential } from "./helpers/credential/validateCredential";
 import { readFileSync } from "fs";
 import { decodeJwt, JWK } from "jose";
@@ -80,28 +80,20 @@ describe("Credential Issuer Tests", () => {
 
   describe("Credential Offer Validation", () => {
     describe("when validating a provided credential offer", () => {
-      let credentialOfferResult;
-      let preAuthorizedCodeResult;
-
-      beforeAll(async () => {
-        credentialOfferResult = validateCredentialOffer(
+      it("should be valid credential offer", async () => {
+        expect(isValidCredentialOffer(
           CREDENTIAL_OFFER_DEEP_LINK,
-        );
-        preAuthorizedCodeResult = await validatePreAuthorizedCode(
+        )).toBe(true);
+      });
+
+      it("should be valid pre-authorized code", async () => {
+        expect(await isValidPreAuthorizedCode(
           PRE_AUTHORIZED_CODE,
           JWKS,
           CRI_URL,
           SELF_URL,
           CLIENT_ID,
-        );
-      });
-
-      it("should be valid credential offer", async () => {
-        expect(credentialOfferResult).toBe(true);
-      });
-
-      it("should be valid pre-authorized code", async () => {
-        expect(preAuthorizedCodeResult).toBe(true);
+        )).toBe(true);
       });
     });
   });
@@ -179,34 +171,11 @@ describe("Credential Issuer Tests", () => {
   //   });
   // });
 
+  let validAccessToken;
+  let validResponse;
+  let validDidKey;
+
   describe("Credential", () => {
-    let validAccessToken;
-    let validResponse;
-    let validDidKey;
-
-    beforeAll(async () => {
-      validAccessToken = await createAccessToken(
-        NONCE,
-        WALLET_SUBJECT_ID,
-        PRE_AUTHORIZED_CODE_PAYLOAD,
-        PRIVATE_KEY_JWK,
-      );
-
-      validDidKey = createDidKey(PUBLIC_KEY_JWK);
-      const validProofJwt = await createProofJwt(
-        NONCE,
-        validDidKey,
-        PRE_AUTHORIZED_CODE_PAYLOAD,
-        PRIVATE_KEY_JWK,
-      );
-
-      validResponse = await getCredential(
-        validAccessToken.access_token,
-        validProofJwt,
-        CREDENTIAL_ENDPOINT,
-      );
-    });
-
     describe("when requesting a credential with invalid access token", () => {
       describe("when the access token and credential offer wallet subject IDs do not match", () => {
         it("should return 401 with invalid_token error", async () => {
@@ -233,7 +202,6 @@ describe("Credential Issuer Tests", () => {
               proofJwt,
               CREDENTIAL_ENDPOINT,
             );
-            fail("Expected request to fail");
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(401);
             expect(
@@ -270,7 +238,6 @@ describe("Credential Issuer Tests", () => {
               proofJwt,
               CREDENTIAL_ENDPOINT,
             );
-            fail("Expected request to fail");
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(401);
             expect(
@@ -305,7 +272,6 @@ describe("Credential Issuer Tests", () => {
               proofJwtWithMismatchingNonce,
               CREDENTIAL_ENDPOINT,
             );
-            fail("Expected request to fail");
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(400);
             expect((error as AxiosError).response?.data).toEqual({
@@ -339,7 +305,6 @@ describe("Credential Issuer Tests", () => {
               proofJwtWithInvalidSignature,
               CREDENTIAL_ENDPOINT,
             );
-            fail("Expected request to fail");
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(400);
             expect((error as AxiosError).response?.data).toEqual({
@@ -378,6 +343,29 @@ describe("Credential Issuer Tests", () => {
       });
 
       it("should return valid credential", async () => {
+        beforeAll(async () => {
+          validAccessToken = await createAccessToken(
+            NONCE,
+            WALLET_SUBJECT_ID,
+            PRE_AUTHORIZED_CODE_PAYLOAD,
+            PRIVATE_KEY_JWK,
+          );
+
+          validDidKey = createDidKey(PUBLIC_KEY_JWK);
+          const validProofJwt = await createProofJwt(
+            NONCE,
+            validDidKey,
+            PRE_AUTHORIZED_CODE_PAYLOAD,
+            PRIVATE_KEY_JWK,
+          );
+
+          validResponse = await getCredential(
+            validAccessToken.access_token,
+            validProofJwt,
+            CREDENTIAL_ENDPOINT,
+          );
+        });
+
         const credential = validResponse.data.credentials[0].credential;
         const isValidCredential = await validateCredential(
           credential,
@@ -408,7 +396,6 @@ describe("Credential Issuer Tests", () => {
 
         try {
           await getCredential(accessToken, proofJwt, CREDENTIAL_ENDPOINT);
-          fail("Expected request to fail");
         } catch (error) {
           expect((error as AxiosError).response?.status).toEqual(401);
           expect(
@@ -417,19 +404,120 @@ describe("Credential Issuer Tests", () => {
         }
       });
     });
+  });
 
-    describe("Notification Endpoint", () => {
-      beforeEach(() => {
-        if (!NOTIFICATION_ENDPOINT) {
-          pending("Notification endpoint not implemented by this CRI");
+  describe("Notification Endpoint", () => {
+    beforeEach(() => {
+      if (!NOTIFICATION_ENDPOINT) {
+        pending("Notification endpoint not implemented by this CRI");
+      }
+    });
+
+    describe("when sending valid notifications", () => {
+      it("should return 204 for credential_accepted event", async () => {
+        const notification_id = validResponse.data.notification_id;
+        const notificationResponse = await axios.post(
+          getDockerDnsName(NOTIFICATION_ENDPOINT),
+          {
+            notification_id,
+            event: "credential_accepted",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${validAccessToken.access_token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        expect(notificationResponse.status).toBe(204);
+      });
+
+      it("should return 204 for credential_deleted event", async () => {
+        const notification_id = validResponse.data.notification_id;
+        const notificationResponse = await axios.post(
+          getDockerDnsName(NOTIFICATION_ENDPOINT),
+          {
+            notification_id,
+            event: "credential_deleted",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${validAccessToken.access_token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        expect(notificationResponse.status).toBe(204);
+      });
+
+      it("should return 204 for credential_failure event", async () => {
+        const notification_id = validResponse.data.notification_id;
+        const notificationResponse = await axios.post(
+          getDockerDnsName(NOTIFICATION_ENDPOINT),
+          {
+            notification_id,
+            event: "credential_failure",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${validAccessToken.access_token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        expect(notificationResponse.status).toBe(204);
+      });
+    });
+
+    describe("when sending invalid notifications", () => {
+      it("should return 400 for missing notification_id", async () => {
+        try {
+          await axios.post(
+            getDockerDnsName(NOTIFICATION_ENDPOINT),
+            {
+              // notification_id: "invalid-id",
+              event: "credential_accepted",
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${validAccessToken.access_token}`,
+                "Content-Type": "application/json",
+              },
+            },
+          );
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toEqual(400);
         }
       });
 
-      const notification_id = validResponse.data.notification_id;
+      it("should return 400 for invalid event type", async () => {
+        const notification_id = validResponse.data.notification_id;
+        try {
+          await axios.post(
+            getDockerDnsName(NOTIFICATION_ENDPOINT),
+            {
+              notification_id,
+              event: "invalid_event",
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${validAccessToken.access_token}`,
+                "Content-Type": "application/json",
+              },
+            },
+          );
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toEqual(400);
+        }
+      });
+    });
 
-      describe("when sending valid notifications", () => {
-        it("should return 204 for credential_accepted event", async () => {
-          const notificationResponse = await axios.post(
+    describe("when sending notifications with invalid authentication", () => {
+      it("should return 401 for invalid access token", async () => {
+        const notification_id = validResponse.data.notification_id;
+        try {
+          await axios.post(
             getDockerDnsName(NOTIFICATION_ENDPOINT),
             {
               notification_id,
@@ -437,142 +525,40 @@ describe("Credential Issuer Tests", () => {
             },
             {
               headers: {
-                Authorization: `Bearer ${validAccessToken.access_token}`,
+                Authorization: "Bearer INVALID_TOKEN",
                 "Content-Type": "application/json",
               },
             },
           );
-
-          expect(notificationResponse.status).toBe(204);
-        });
-
-        it("should return 204 for credential_deleted event", async () => {
-          const notificationResponse = await axios.post(
-            getDockerDnsName(NOTIFICATION_ENDPOINT),
-            {
-              notification_id,
-              event: "credential_deleted",
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${validAccessToken.access_token}`,
-                "Content-Type": "application/json",
-              },
-            },
-          );
-          expect(notificationResponse.status).toBe(204);
-        });
-
-        it("should return 204 for credential_failure event", async () => {
-          const notificationResponse = await axios.post(
-            getDockerDnsName(NOTIFICATION_ENDPOINT),
-            {
-              notification_id,
-              event: "credential_failure",
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${validAccessToken.access_token}`,
-                "Content-Type": "application/json",
-              },
-            },
-          );
-          expect(notificationResponse.status).toBe(204);
-        });
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toEqual(401);
+          expect(
+            (error as AxiosError).response?.headers["www-authenticate"],
+          ).toEqual('Bearer error="invalid_token"');
+        }
       });
 
-      describe("when sending invalid notifications", () => {
-        it("should return 400 for missing notification_id", async () => {
-          try {
-            await axios.post(
-              getDockerDnsName(NOTIFICATION_ENDPOINT),
-              {
-                // notification_id: "invalid-id",
-                event: "credential_accepted",
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${validAccessToken.access_token}`,
-                  "Content-Type": "application/json",
-                },
-              },
-            );
-            fail("Expected request to fail with invalid notification_id");
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(400);
-          }
-        });
-
-        it("should return 400 for invalid event type", async () => {
-          try {
-            await axios.post(
-              getDockerDnsName(NOTIFICATION_ENDPOINT),
-              {
-                notification_id,
-                event: "invalid_event",
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${validAccessToken.access_token}`,
-                  "Content-Type": "application/json",
-                },
-              },
-            );
-            fail("Expected request to fail with invalid event type");
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(400);
-          }
-        });
-      });
-
-      describe("when sending notifications with invalid authentication", () => {
-        it("should return 401 for invalid access token", async () => {
-          try {
-            await axios.post(
-              getDockerDnsName(NOTIFICATION_ENDPOINT),
-              {
-                notification_id,
-                event: "credential_accepted",
-              },
-              {
-                headers: {
-                  Authorization: "Bearer INVALID_TOKEN",
-                  "Content-Type": "application/json",
-                },
-              },
-            );
-            fail("Expected request to fail with invalid token");
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(401);
-            expect(
-              (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual('Bearer error="invalid_token"');
-          }
-        });
-
-        it("should return 401 when no authentication is provided", async () => {
-          const notification_id = validResponse.data.notification_id;
-
-          try {
-            await axios.post(getDockerDnsName(NOTIFICATION_ENDPOINT), {
-              notification_id,
-              event: "credential_accepted",
-            });
-            fail("Expected request to fail without authentication");
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(401);
-            expect(
-              (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual("Bearer");
-          }
-        });
+      it("should return 401 when no authentication is provided", async () => {
+        const notification_id = validResponse.data.notification_id;
+        try {
+          await axios.post(getDockerDnsName(NOTIFICATION_ENDPOINT), {
+            notification_id,
+            event: "credential_accepted",
+          });
+          fail("Expected request to fail without authentication");
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toEqual(401);
+          expect(
+            (error as AxiosError).response?.headers["www-authenticate"],
+          ).toEqual("Bearer");
+        }
       });
     });
   });
 });
 
 function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
-  const credentialOffer = getCredentialOffer(credentialOfferDeepLink);
+  const credentialOffer = extractCredentialOffer(credentialOfferDeepLink);
   const preAuthorizedCode = (parseAsJson(credentialOffer!) as CredentialOffer)
     .grants["urn:ietf:params:oauth:grant-type:pre-authorized_code"][
     "pre-authorized_code"
