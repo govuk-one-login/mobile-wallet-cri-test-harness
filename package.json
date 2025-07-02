@@ -15,10 +15,6 @@
     "test": "node_modules/.bin/jest  --testPathPatterns=test/credential-issuer-tests.test.ts --coverage=false",
     "test:unit": "TZ=UTC jest node_modules/.bin/jest --testPathPatterns=test/helpers src/config --silent"
   },
-  "engines": {
-    "node": "20.x",
-    "npm": "10.x"
-  },
   "dependencies": {
     "ajv": "^8.16.0",
     "ajv-formats": "^3.0.1",
