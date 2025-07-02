@@ -1,3 +1,22 @@
+/**
+ * Configuration module for environment variables and application settings
+ */
+
+const ENV_VARS = {
+  PORT: "PORT",
+  CREDENTIAL_OFFER_DEEP_LINK: "CREDENTIAL_OFFER_DEEP_LINK",
+  CRI_DOMAIN: "CRI_DOMAIN",
+  WALLET_SUBJECT_ID: "WALLET_SUBJECT_ID",
+  TEST_HARNESS_URL: "TEST_HARNESS_URL",
+  CLIENT_ID: "CLIENT_ID",
+} as const;
+
+/**
+ * Gets an environment variable value
+ * @param variableName - Name of the environment variable
+ * @returns The environment variable value
+ * @throws Error if the environment variable is not set
+ */
 function getEnvVarValue(variableName: string): string {
   const variableValue = process.env[variableName];
   if (!variableValue) {
@@ -6,20 +25,20 @@ function getEnvVarValue(variableName: string): string {
   return variableValue;
 }
 
-export function getPortNumber(): string {
-  return getEnvVarValue("PORT");
+export function getPortNumber(): number {
+  return parseInt(getEnvVarValue(ENV_VARS.PORT), 10);
 }
 
 export function getCredentialOfferDeepLink(): string {
-  return getEnvVarValue("CREDENTIAL_OFFER_DEEP_LINK");
+  return getEnvVarValue(ENV_VARS.CREDENTIAL_OFFER_DEEP_LINK);
 }
 
 export function getCriDomain(): string {
-  return getEnvVarValue("CRI_DOMAIN");
+  return getEnvVarValue(ENV_VARS.CRI_DOMAIN);
 }
 
 export function getWalletSubjectId(): string {
-  return getEnvVarValue("WALLET_SUBJECT_ID");
+  return getEnvVarValue(ENV_VARS.WALLET_SUBJECT_ID);
 }
 
 export function getKeyId(): string {
@@ -28,22 +47,19 @@ export function getKeyId(): string {
 
 export function getCriUrl(): string {
   const criDomain = getCriDomain();
-  if (criDomain.startsWith("localhost")) {
-    return "http://" + criDomain;
-  } else {
-    return "https://" + criDomain;
-  }
+  const protocol = criDomain.startsWith("localhost") ? "http" : "https";
+  return `${protocol}://${criDomain}`;
 }
 
 export function getSelfURL(): string {
   try {
-    return getEnvVarValue("TEST_HARNESS_URL");
+    return getEnvVarValue(ENV_VARS.TEST_HARNESS_URL);
   } catch {
-    console.log(`Returning local TEST_HARNESS_URL value`);
+    console.log("TEST_HARNESS_URL not set, using localhost fallback");
     return `http://localhost:${getPortNumber()}`;
   }
 }
 
 export function getClientId(): string {
-  return getEnvVarValue("CLIENT_ID");
+  return getEnvVarValue(ENV_VARS.CLIENT_ID);
 }

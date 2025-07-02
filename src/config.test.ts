@@ -2,11 +2,12 @@ import {
   getClientId,
   getCredentialOfferDeepLink,
   getCriUrl,
-  getDockerDnsName,
   getPortNumber,
   getSelfURL,
   getWalletSubjectId,
 } from "./config";
+
+console.log = jest.fn();
 
 describe("config", () => {
   it("should throw error when PORT is not set", async () => {
@@ -35,18 +36,6 @@ describe("config", () => {
   it("should return TEST_HARNESS_URL value when set", async () => {
     process.env.TEST_HARNESS_URL = "https://test-harness.test.gov.uk";
     expect(getSelfURL()).toEqual("https://test-harness.test.gov.uk");
-  });
-
-  it("should replace 'localhost' with 'host.docker.internal'", async () => {
-    expect(getDockerDnsName("http://localhost:3000")).toEqual(
-      "http://host.docker.internal:3000",
-    );
-  });
-
-  it("should not change URL if it does not start with 'localhost'", async () => {
-    expect(getDockerDnsName("https://example.cri.test.gov.uk")).toEqual(
-      "https://example.cri.test.gov.uk",
-    );
   });
 
   it("should throw error when CREDENTIAL_OFFER_DEEP_LINK is not set", async () => {
