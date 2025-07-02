@@ -26,14 +26,11 @@ export function isValidCredentialOffer(credentialOfferDeepLink: string) {
   const rulesValidator = ajv
     .addSchema(credentialOfferSchema)
     .compile(credentialOfferSchema);
-
-  const isValid = rulesValidator(credentialOffer);
-  if (!isValid) {
+  if (!rulesValidator(credentialOffer)) {
     throw new Error(
       `INVALID_CREDENTIAL_OFFER: ${JSON.stringify(rulesValidator.errors)}`,
     );
   }
-
   return true;
 }
 
@@ -41,7 +38,9 @@ export function parseAsJson(inputString: string) {
   try {
     return JSON.parse(inputString);
   } catch (error) {
-    throw new Error(`INVALID_JSON: ${JSON.stringify(error)}`);
+    throw new Error(
+      `INVALID_CREDENTIAL_OFFER: Not a valid JSON. ${JSON.stringify(error)}`,
+    );
   }
 }
 
@@ -54,7 +53,7 @@ export function extractCredentialOffer(urlString: string) {
   }
   const credentialOffer = url.searchParams.get("credential_offer");
   if (credentialOffer == null) {
-    throw new Error("MISSING_CREDENTIAL_OFFER");
+    throw new Error("INVALID_DEEP_LINK: Missing 'credential_offer'");
   } else {
     return credentialOffer;
   }

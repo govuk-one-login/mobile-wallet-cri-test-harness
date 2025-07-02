@@ -10,7 +10,7 @@ describe("isValidJwks", () => {
     const jwks = jwksBuilder().withOverrides({ keys: [] });
 
     await expect(isValidJwks(jwks)).rejects.toThrow(
-      'INVALID_JWKS: JWKS does not comply with the schema. [{"instancePath":"/keys","schemaPath":"#/properties/keys/minItems","keyword":"minItems","params":{"limit":1},"message":"must NOT have fewer than 1 items"},{"instancePath":"/keys","schemaPath":"#/properties/keys/contains","keyword":"contains","params":{"minContains":1},"message":"must contain at least 1 valid item(s)"}]',
+      'INVALID_JWKS: JWKS does not comply with the schema. [{"instancePath":"/keys","schemaPath":"#/properties/keys/minItems","keyword":"minItems","params":{"limit":1},"message":"must NOT have fewer than 1 items"}]',
     );
   });
 

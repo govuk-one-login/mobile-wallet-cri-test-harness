@@ -32,7 +32,9 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
   try {
     claims = decodeProtectedHeader(jwt);
   } catch (error) {
-    throw new Error(`HEADER_DECODING_ERROR: ${error}`);
+    throw new Error(
+      `INVALID_HEADER: Failed to decode credential header. ${error}`,
+    );
   }
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
@@ -55,7 +57,9 @@ async function verifySignature(
     (item) => item.id === header.kid!,
   );
   if (!verificationMethod) {
-    throw new Error("PUBLIC_KEY_NOT_IN_DID");
+    throw new Error(
+      "INVALID_SIGNATURE: No public key found in DID for provided 'kid'",
+    );
   }
   const publicKey = await importJWK(
     verificationMethod.publicKeyJwk,
@@ -64,7 +68,9 @@ async function verifySignature(
   try {
     return await jwtVerify(credential, publicKey);
   } catch (error) {
-    throw new Error(`INVALID_SIGNATURE: ${JSON.stringify(error)}`);
+    throw new Error(
+      `INVALID_SIGNATURE: Credential verification failed. ${JSON.stringify(error)}`,
+    );
   }
 }
 

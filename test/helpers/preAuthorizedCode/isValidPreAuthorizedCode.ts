@@ -22,11 +22,8 @@ export async function isValidPreAuthorizedCode(
 ) {
   const header: ProtectedHeaderParameters = getHeaderClaims(preAuthorizedCode);
   const verifyResult = await verifySignature(jwks, header, preAuthorizedCode);
-
   const payload = verifyResult.payload as unknown as Payload;
-
   validatePayload(payload, criUrl, authorizationServerUrl, clientId);
-
   return true;
 }
 
@@ -35,14 +32,16 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
   try {
     claims = jose.decodeProtectedHeader(jwt);
   } catch (error) {
-    throw new Error(`HEADER_DECODING_ERROR: ${error}`);
+    throw new Error(
+      `INVALID_HEADER: Failed to decode pre-authorized code header. ${error}`,
+    );
   }
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(headerSchema).compile(headerSchema);
   if (!rulesValidator(claims)) {
     throw new Error(
-      `INVALID_HEADER: Pre-authorized code header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+      `INVALID_HEADER: Pre-authorized code header does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
     );
   } else {
     return claims;
@@ -56,13 +55,17 @@ async function verifySignature(
 ) {
   const jwk = jwks.find((item) => item.kid === header.kid!);
   if (!jwk) {
-    throw new Error("JWK_NOT_IN_JWKS");
+    throw new Error(
+      "INVALID_SIGNATURE: JWK not found in JWKS for provided 'kid'",
+    );
   }
   const publicKey = await jose.importJWK(jwk, header.alg);
   try {
     return await jose.jwtVerify(preAuthorizedCode, publicKey);
   } catch (error) {
-    throw new Error(`INVALID_SIGNATURE: ${JSON.stringify(error)}`);
+    throw new Error(
+      `INVALID_SIGNATURE: Pre-authorized code verification failed. ${JSON.stringify(error)}`,
+    );
   }
 }
 

@@ -62,7 +62,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("HEADER_DECODING_ERROR");
+    ).rejects.toThrow(
+      "INVALID_HEADER: Failed to decode pre-authorized code header. TypeError: Invalid Token or Protected Header formatting",
+    );
   });
 
   it("should throw 'INVALID_HEADER' error when header is missing 'kid' claim", async () => {
@@ -81,7 +83,7 @@ describe("isValidPreAuthorizedCode", () => {
         clientId,
       ),
     ).rejects.toThrow(
-      'INVALID_HEADER: Pre-authorized code header does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"kid"},"message":"must have required property \'kid\'"}]',
+      'INVALID_HEADER: Pre-authorized code header does not comply with the schema. [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"kid"},"message":"must have required property \'kid\'"}]',
     );
   });
 
@@ -100,7 +102,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("JWK_NOT_IN_JWKS");
+    ).rejects.toThrow(
+      "INVALID_SIGNATURE: JWK not found in JWKS for provided 'kid'",
+    );
   });
 
   it("should throw 'INVALID_SIGNATURE' when signature cannot be verified", async () => {

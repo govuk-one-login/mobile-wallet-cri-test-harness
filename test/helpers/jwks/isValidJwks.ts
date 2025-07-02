@@ -9,13 +9,11 @@ export interface JWKS {
 export async function isValidJwks(jwks: JWKS) {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(jwksSchema).compile(jwksSchema);
-  const isValid = rulesValidator(jwks);
-  if (isValid) {
-    return true;
-  } else {
+  if (!rulesValidator(jwks)) {
     const message = JSON.stringify(rulesValidator.errors);
     throw new Error(
       `INVALID_JWKS: JWKS does not comply with the schema. ${message}`,
     );
   }
+  return true;
 }

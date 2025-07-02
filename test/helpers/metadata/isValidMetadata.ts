@@ -17,11 +17,8 @@ export async function isValidMetadata(
 ): Promise<true> {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri"] });
-
   const rulesValidator = ajv.addSchema(metadataSchema).compile(metadataSchema);
-
-  const isValidPayload = rulesValidator(metadata);
-  if (!isValidPayload) {
+  if (!rulesValidator(metadata)) {
     const validationErrors = rulesValidator.errors;
     throw new Error(
       `INVALID_METADATA: Metadata does not comply with the schema. ${JSON.stringify(validationErrors)}`,

@@ -25,8 +25,7 @@ export async function isValidDidWebDocument(
     .addSchema(didWebDocumentSchema)
     .compile(didWebDocumentSchema);
 
-  const isValid = rulesValidator(didWebDocument);
-  if (!isValid) {
+  if (!rulesValidator(didWebDocument)) {
     const validationErrors = rulesValidator.errors;
     throw new Error(
       `INVALID_DID_DOCUMENT: DID document does not comply with the schema. ${JSON.stringify(validationErrors)}`,

@@ -57,7 +57,7 @@ describe("isValidCredential", () => {
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow(
-      "HEADER_DECODING_ERROR: TypeError: Invalid Token or Protected Header formatting",
+      "INVALID_HEADER: Failed to decode credential header. TypeError: Invalid Token or Protected Header formatting",
     );
   });
 
@@ -95,7 +95,9 @@ describe("isValidCredential", () => {
 
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
-    ).rejects.toThrow("PUBLIC_KEY_NOT_IN_DID");
+    ).rejects.toThrow(
+      "INVALID_SIGNATURE: No public key found in DID for provided 'kid'",
+    );
   });
 
   it("should throw 'INVALID_SIGNATURE' when signature cannot be verified", async () => {
@@ -119,7 +121,7 @@ describe("isValidCredential", () => {
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow(
-      'INVALID_SIGNATURE: {"code":"ERR_JWS_SIGNATURE_VERIFICATION_FAILED","name":"JWSSignatureVerificationFailed"}',
+      'INVALID_SIGNATURE: Credential verification failed. {"code":"ERR_JWS_SIGNATURE_VERIFICATION_FAILED","name":"JWSSignatureVerificationFailed"}',
     );
   });
 
