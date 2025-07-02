@@ -3,33 +3,27 @@ import axios, { AxiosResponse } from "axios";
 async function getWellKnown(
   criUrl: string,
   path: string,
-  errorLabel: string,
 ): Promise<AxiosResponse> {
   try {
     const url = new URL(path, criUrl).toString();
     return await axios.get(getDockerDnsName(url));
   } catch (error) {
-    console.log(
-      `Error trying to fetch ${errorLabel}: ${JSON.stringify(error)}`,
+    throw new Error(
+      `API_ERROR: Error trying to fetch ${path}: ${JSON.stringify(error)}`,
     );
-    throw new Error(`GET_${errorLabel.toUpperCase()}_ERROR`);
   }
 }
 
 export async function getJwks(criUrl: string): Promise<AxiosResponse> {
-  return getWellKnown(criUrl, ".well-known/jwks.json", "jwks");
+  return getWellKnown(criUrl, ".well-known/jwks.json");
 }
 
 export async function getMetadata(criUrl: string): Promise<AxiosResponse> {
-  return getWellKnown(
-    criUrl,
-    ".well-known/openid-credential-issuer",
-    "metadata",
-  );
+  return getWellKnown(criUrl, ".well-known/openid-credential-issuer");
 }
 
 export async function getDidDocument(criUrl: string): Promise<AxiosResponse> {
-  return getWellKnown(criUrl, ".well-known/did.json", "did_document");
+  return getWellKnown(criUrl, ".well-known/did.json");
 }
 
 export async function getCredential(
