@@ -27,7 +27,7 @@ describe("isValidMetadata", () => {
     await expect(
       isValidMetadata(metadata, criUrl, authServerUrl),
     ).rejects.toThrow(
-      'INVALID_METADATA: Metadata does not comply with the schema: [{"instancePath":"/credential_configurations_supported","schemaPath":"#/properties/credential_configurations_supported/type","keyword":"type","params":{"type":"object"},"message":"must be object"}]',
+      'INVALID_METADATA: Metadata does not comply with the schema. [{"instancePath":"/credential_configurations_supported","schemaPath":"#/properties/credential_configurations_supported/type","keyword":"type","params":{"type":"object"},"message":"must be object"}]',
     );
   });
 

@@ -17,7 +17,7 @@ describe("validateDidDocument", () => {
     await expect(
       isValidDidWebDocument(didWebDocument, criDomain),
     ).rejects.toThrow(
-      'INVALID_DID_DOCUMENT: DID document does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"verificationMethod"},"message":"must have required property \'verificationMethod\'"}]',
+      'INVALID_DID_DOCUMENT: DID document does not comply with the schema. [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"verificationMethod"},"message":"must have required property \'verificationMethod\'"}]',
     );
   });
 

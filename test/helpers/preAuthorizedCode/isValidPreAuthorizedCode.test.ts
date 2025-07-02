@@ -146,7 +146,7 @@ describe("isValidPreAuthorizedCode", () => {
         clientId,
       ),
     ).rejects.toThrow(
-      'INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',
+      'INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema. [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',
     );
   });
 
