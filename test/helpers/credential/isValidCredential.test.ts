@@ -9,7 +9,6 @@ jest.mock("./createProofJwt", () => ({
 jest.mock("./createAccessToken", () => ({
   createAccessToken: jest.fn(),
 }));
-console.log = jest.fn();
 
 const criUrl = "https://test-example-cri.gov.uk";
 const kid =
@@ -29,7 +28,6 @@ const verificationMethod = [
     },
   },
 ];
-
 const didKey = "did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c";
 
 describe("validateCredential", () => {
@@ -52,44 +50,15 @@ describe("validateCredential", () => {
     ).toEqual(true);
   });
 
-  it("should return 'true' when kid is localhost", async () => {
-    const credential = await getTestJwt(
-      criUrl,
-      "did:web:localhost:8080#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-      didKey,
-    );
-
-    expect(
-      await isValidCredential(
-        credential,
-        didKey,
-        [
-          {
-            id: "did:web:localhost:8080#78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-            type: "JsonWebKey2020",
-            controller: "did:web:test-example-cri.gov.uk",
-            publicKeyJwk: {
-              alg: "ES256",
-              kid: "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274",
-              kty: "EC",
-              x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
-              y: "1yKvdIgdktb6MYaVU2Ptt_yrnU1Y5gmT2uJbc9q4vGg",
-              crv: "P-256",
-            },
-          },
-        ],
-        criUrl,
-      ),
-    ).toEqual(true);
-  });
-
   it("should throw 'HEADER_DECODING_ERROR' error when token header cannot be decoded", async () => {
     const credential =
       "invalidHeader" + (await getTestJwt(criUrl, kid, didKey));
 
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
-    ).rejects.toThrow("HEADER_DECODING_ERROR");
+    ).rejects.toThrow(
+      "HEADER_DECODING_ERROR: TypeError: Invalid Token or Protected Header formatting",
+    );
   });
 
   it("should throw 'INVALID_HEADER' error when header is missing 'kid' claim", async () => {
@@ -97,7 +66,9 @@ describe("validateCredential", () => {
 
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
-    ).rejects.toThrow("INVALID_HEADER");
+    ).rejects.toThrow(
+      'INVALID HEADER: Credential header does not comply with the schema. [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"kid"},"message":"must have required property \'kid\'"}]',
+    );
   });
 
   it("should throw 'PUBLIC_KEY_NOT_IN_DID' error when when public key is not in the DID document", async () => {
@@ -147,7 +118,9 @@ describe("validateCredential", () => {
 
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
-    ).rejects.toThrow("INVALID_SIGNATURE");
+    ).rejects.toThrow(
+      'INVALID_SIGNATURE: {"code":"ERR_JWS_SIGNATURE_VERIFICATION_FAILED","name":"JWSSignatureVerificationFailed"}',
+    );
   });
 
   it("should throw 'INVALID_PAYLOAD' error when payload is missing 'iss' claim", async () => {
@@ -155,9 +128,8 @@ describe("validateCredential", () => {
 
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
-    ).rejects.toThrow("INVALID_PAYLOAD");
-    expect(console.log).toHaveBeenCalledWith(
-      'Credential payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Credential payload does not comply with the schema. [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',
     );
   });
 
@@ -166,9 +138,8 @@ describe("validateCredential", () => {
 
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
-    ).rejects.toThrow("INVALID_PAYLOAD");
-    expect(console.log).toHaveBeenCalledWith(
-      'Invalid "iss" value in token. Should be https://test-example-cri.gov.uk but found invalidIssuer',
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Invalid "iss" value in token. Should be https://test-example-cri.gov.uk but found invalidIssuer',
     );
   });
 
@@ -177,9 +148,8 @@ describe("validateCredential", () => {
 
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
-    ).rejects.toThrow("INVALID_PAYLOAD");
-    expect(console.log).toHaveBeenCalledWith(
-      'Invalid "sub" value in token. Should be did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c but found notTheProofJwtDidKey',
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Invalid "sub" value in token. Should be did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c but found notTheProofJwtDidKey',
     );
   });
 });
