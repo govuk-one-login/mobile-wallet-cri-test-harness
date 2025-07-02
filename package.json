@@ -1,7 +1,7 @@
 {
   "name": "mobile-wallet-cri-test-harness",
   "version": "1.0.0",
-  "description": "A service for testing a Wallet CRI",
+  "description": "A service for testing a Wallet credential issuer",
   "author": "",
   "license": "MIT",
   "main": "src/server.ts",
