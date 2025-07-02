@@ -9,6 +9,7 @@ const ENV_VARS = {
   WALLET_SUBJECT_ID: "WALLET_SUBJECT_ID",
   TEST_HARNESS_URL: "TEST_HARNESS_URL",
   CLIENT_ID: "CLIENT_ID",
+  CREDENTIAL_TYPE: "CREDENTIAL_TYPE",
 } as const;
 
 /**
@@ -62,4 +63,8 @@ export function getSelfURL(): string {
 
 export function getClientId(): string {
   return getEnvVarValue(ENV_VARS.CLIENT_ID);
+}
+
+export function getCredentialType(): string {
+  return getEnvVarValue(ENV_VARS.CREDENTIAL_TYPE);
 }
