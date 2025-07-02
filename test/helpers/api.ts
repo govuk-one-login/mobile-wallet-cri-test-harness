@@ -1,5 +1,4 @@
 import axios, { AxiosResponse } from "axios";
-import { getDockerDnsName } from "../../src/config";
 
 async function getWellKnown(
   criUrl: string,
@@ -74,4 +73,13 @@ export async function sendNotification(
     },
     { headers },
   );
+}
+
+// When running locally, "localhost" must be replaced with "host.docker.internal" when making a request
+export function getDockerDnsName(url) {
+  if (url.startsWith("http://localhost")) {
+    return url.replace("localhost", "host.docker.internal");
+  } else {
+    return url;
+  }
 }
