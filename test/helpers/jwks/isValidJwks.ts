@@ -17,7 +17,7 @@ export async function isValidJwks(jwks: JWKS) {
       ? JSON.stringify(rulesValidator.errors)
       : "Invalid value found";
     throw new Error(
-      `INVALID_DID_DOCUMENT: JWKS does not comply with the schema: ${message}`,
+      `INVALID_DID_DOCUMENT: JWKS does not comply with the schema. ${message}`,
     );
   }
 }

@@ -29,7 +29,7 @@ export async function isValidDidWebDocument(
   if (!isValid) {
     const validationErrors = rulesValidator.errors;
     throw new Error(
-      `INVALID_DID_DOCUMENT: DID document does not comply with the schema: ${JSON.stringify(validationErrors)}`,
+      `INVALID_DID_DOCUMENT: DID document does not comply with the schema. ${JSON.stringify(validationErrors)}`,
     );
   }
 

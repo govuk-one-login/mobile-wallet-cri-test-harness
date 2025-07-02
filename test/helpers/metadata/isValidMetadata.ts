@@ -24,7 +24,7 @@ export async function isValidMetadata(
   if (!isValidPayload) {
     const validationErrors = rulesValidator.errors;
     throw new Error(
-      `INVALID_METADATA: Metadata does not comply with the schema: ${JSON.stringify(validationErrors)}`,
+      `INVALID_METADATA: Metadata does not comply with the schema. ${JSON.stringify(validationErrors)}`,
     );
   }
 

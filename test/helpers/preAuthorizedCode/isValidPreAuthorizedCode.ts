@@ -76,7 +76,7 @@ function validatePayload(
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
   if (!rulesValidator(payload)) {
     throw new Error(
-      `INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+      `INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
     );
   }
 
