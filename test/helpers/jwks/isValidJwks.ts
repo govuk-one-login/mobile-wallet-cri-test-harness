@@ -9,15 +9,13 @@ export type JWKS = {
 export async function isValidJwks(jwks: JWKS) {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(jwksSchema).compile(jwksSchema);
-
-  if (rulesValidator(jwks)) {
+  const isValid = rulesValidator(jwks);
+  if (isValid) {
     return true;
   } else {
-    const message = rulesValidator.errors
-      ? JSON.stringify(rulesValidator.errors)
-      : "Invalid value found";
+    const message = JSON.stringify(rulesValidator.errors);
     throw new Error(
-      `INVALID_DID_DOCUMENT: JWKS does not comply with the schema. ${message}`,
+      `INVALID_JWKS: JWKS does not comply with the schema. ${message}`,
     );
   }
 }
