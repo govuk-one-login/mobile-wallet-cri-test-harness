@@ -35,7 +35,7 @@ import {
 } from "./helpers/credential/createProofJwt";
 import { getCredential } from "./helpers/credential/getCredential";
 import axios, { AxiosError } from "axios";
-import { getJwks } from "./helpers/jwks/getJwks";
+import {getJwks, isValidJwks} from "./helpers/jwks/isValidJwks";
 
 let CREDENTIAL_OFFER_DEEP_LINK;
 let CRI_URL;
@@ -170,28 +170,28 @@ describe("Credential Issuer Tests", () => {
     });
   });
 
-  // describe("JWKS", () => {
-  //   describe("when requesting the credential issuer JWKS", () => {
-  //     let response;
-  //
-  //     beforeAll(async () => {
-  //       response = await getDidDocument(CRI_URL);
-  //     });
-  //
-  //     it("should return 200 status code", () => {
-  //       expect(response.status).toBe(200);
-  //     });
-  //
-  //     it("should return JSON content", () => {
-  //       expect(response.headers['content-type']).toContain('application/json');
-  //       expect(response.data).toBeTruthy();
-  //     });
-  //
-  //     it("should return valid JWKS", async () => {
-  //       expect(await isValidDidWebDocument(response.data, CRI_DOMAIN)).toBe(true);
-  //     });
-  //   });
-  // });
+  describe("JWKS", () => {
+    describe("when requesting the credential issuer JWKS", () => {
+      let response;
+
+      beforeAll(async () => {
+        response = await getJwks(CRI_URL);
+      });
+
+      it("should return 200 status code", () => {
+        expect(response.status).toBe(200);
+      });
+
+      it("should return JSON content", () => {
+        expect(response.headers['content-type']).toContain('application/json');
+        expect(response.data).toBeTruthy();
+      });
+
+      it("should return valid JWKS", async () => {
+        expect(await isValidJwks(response.data)).toBe(true);
+      });
+    });
+  });
 
   describe("Credential", () => {
     describe("when requesting a credential with invalid access token", () => {
