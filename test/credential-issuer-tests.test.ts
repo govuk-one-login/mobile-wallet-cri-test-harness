@@ -52,6 +52,9 @@ let PUBLIC_KEY_JWK;
 let NONCE;
 let CLIENT_ID;
 let SELF_URL;
+let ACCESS_TOKEN;
+let CREDENTIAL_RESPONSE;
+let DID_KEY;
 
 describe("Credential Issuer Tests", () => {
   beforeAll(async () => {
@@ -76,29 +79,48 @@ describe("Credential Issuer Tests", () => {
     CLIENT_ID = getClientId();
     SELF_URL = getSelfURL();
     JWKS = (await getJwks(CRI_URL)).data.keys;
+    // The following are required for happy path credential test:
+    ACCESS_TOKEN = await createAccessToken(
+      NONCE,
+      WALLET_SUBJECT_ID,
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      PRIVATE_KEY_JWK,
+    );
+    DID_KEY = createDidKey(PUBLIC_KEY_JWK);
+    const PROOF_JWT = await createProofJwt(
+      NONCE,
+      DID_KEY,
+      PRE_AUTHORIZED_CODE_PAYLOAD,
+      PRIVATE_KEY_JWK,
+    );
+    CREDENTIAL_RESPONSE = await getCredential(
+      ACCESS_TOKEN.access_token,
+      PROOF_JWT,
+      CREDENTIAL_ENDPOINT,
+    );
   });
 
-  describe("Credential Offer Validation", () => {
+  describe("Credential Offer", () => {
     describe("when validating a provided credential offer", () => {
       it("should be valid credential offer", async () => {
-        expect(isValidCredentialOffer(
-          CREDENTIAL_OFFER_DEEP_LINK,
-        )).toBe(true);
+        expect(isValidCredentialOffer(CREDENTIAL_OFFER_DEEP_LINK)).toBe(true);
       });
 
       it("should be valid pre-authorized code", async () => {
-        expect(await isValidPreAuthorizedCode(
-          PRE_AUTHORIZED_CODE,
-          JWKS,
-          CRI_URL,
-          SELF_URL,
-          CLIENT_ID,
-        )).toBe(true);
+        expect(
+          await isValidPreAuthorizedCode(
+            PRE_AUTHORIZED_CODE,
+            JWKS,
+            CRI_URL,
+            SELF_URL,
+            CLIENT_ID,
+          ),
+        ).toBe(true);
       });
     });
   });
 
-  describe("Credential Issuer Metadata", () => {
+  describe("Metadata", () => {
     describe("when requesting the credential issuer metadata", () => {
       let response;
 
@@ -170,10 +192,6 @@ describe("Credential Issuer Tests", () => {
   //     });
   //   });
   // });
-
-  let validAccessToken;
-  let validResponse;
-  let validDidKey;
 
   describe("Credential", () => {
     describe("when requesting a credential with invalid access token", () => {
@@ -317,59 +335,38 @@ describe("Credential Issuer Tests", () => {
 
     describe("when requesting a credential with valid access token and proof JWT", () => {
       it("should return 200 status code", () => {
-        expect(validResponse.status).toBe(200);
+        expect(CREDENTIAL_RESPONSE.status).toBe(200);
       });
 
       it("should return JSON content", () => {
-        expect(validResponse.headers["content-type"]).toContain(
+        expect(CREDENTIAL_RESPONSE.headers["content-type"]).toContain(
           "application/json",
         );
-        expect(validResponse.data).toBeTruthy();
+        expect(CREDENTIAL_RESPONSE.data).toBeTruthy();
       });
 
       it("should return valid response body", () => {
-        expect(validResponse.data.credentials).toBeTruthy();
-        expect(validResponse.data.credentials.length).toEqual(1);
-        expect(validResponse.data.credentials[0].credential).toBeTruthy();
+        expect(CREDENTIAL_RESPONSE.data.credentials).toBeTruthy();
+        expect(CREDENTIAL_RESPONSE.data.credentials.length).toEqual(1);
+        expect(CREDENTIAL_RESPONSE.data.credentials[0].credential).toBeTruthy();
       });
 
       it("should return notification_id when notification endpoint is supported", () => {
         if (NOTIFICATION_ENDPOINT) {
-          expect(validResponse.data.notification_id).toBeTruthy();
-          expect(typeof validResponse.data.notification_id).toBe("string");
+          expect(CREDENTIAL_RESPONSE.data.notification_id).toBeTruthy();
+          expect(typeof CREDENTIAL_RESPONSE.data.notification_id).toBe(
+            "string",
+          );
         } else {
-          expect(validResponse.data.notification_id).toBeUndefined();
+          expect(CREDENTIAL_RESPONSE.data.notification_id).toBeUndefined();
         }
       });
 
       it("should return valid credential", async () => {
-        beforeAll(async () => {
-          validAccessToken = await createAccessToken(
-            NONCE,
-            WALLET_SUBJECT_ID,
-            PRE_AUTHORIZED_CODE_PAYLOAD,
-            PRIVATE_KEY_JWK,
-          );
-
-          validDidKey = createDidKey(PUBLIC_KEY_JWK);
-          const validProofJwt = await createProofJwt(
-            NONCE,
-            validDidKey,
-            PRE_AUTHORIZED_CODE_PAYLOAD,
-            PRIVATE_KEY_JWK,
-          );
-
-          validResponse = await getCredential(
-            validAccessToken.access_token,
-            validProofJwt,
-            CREDENTIAL_ENDPOINT,
-          );
-        });
-
-        const credential = validResponse.data.credentials[0].credential;
+        const credential = CREDENTIAL_RESPONSE.data.credentials[0].credential;
         const isValidCredential = await validateCredential(
           credential,
-          validDidKey,
+          DID_KEY,
           DID_VERIFICATION_METHOD,
           CRI_URL,
         );
@@ -406,7 +403,7 @@ describe("Credential Issuer Tests", () => {
     });
   });
 
-  describe("Notification Endpoint", () => {
+  describe("Notification", () => {
     beforeEach(() => {
       if (!NOTIFICATION_ENDPOINT) {
         pending("Notification endpoint not implemented by this CRI");
@@ -415,7 +412,7 @@ describe("Credential Issuer Tests", () => {
 
     describe("when sending valid notifications", () => {
       it("should return 204 for credential_accepted event", async () => {
-        const notification_id = validResponse.data.notification_id;
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
         const notificationResponse = await axios.post(
           getDockerDnsName(NOTIFICATION_ENDPOINT),
           {
@@ -424,7 +421,7 @@ describe("Credential Issuer Tests", () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${validAccessToken.access_token}`,
+              Authorization: `Bearer ${ACCESS_TOKEN.access_token}`,
               "Content-Type": "application/json",
             },
           },
@@ -434,7 +431,7 @@ describe("Credential Issuer Tests", () => {
       });
 
       it("should return 204 for credential_deleted event", async () => {
-        const notification_id = validResponse.data.notification_id;
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
         const notificationResponse = await axios.post(
           getDockerDnsName(NOTIFICATION_ENDPOINT),
           {
@@ -443,7 +440,7 @@ describe("Credential Issuer Tests", () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${validAccessToken.access_token}`,
+              Authorization: `Bearer ${ACCESS_TOKEN.access_token}`,
               "Content-Type": "application/json",
             },
           },
@@ -452,7 +449,7 @@ describe("Credential Issuer Tests", () => {
       });
 
       it("should return 204 for credential_failure event", async () => {
-        const notification_id = validResponse.data.notification_id;
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
         const notificationResponse = await axios.post(
           getDockerDnsName(NOTIFICATION_ENDPOINT),
           {
@@ -461,7 +458,7 @@ describe("Credential Issuer Tests", () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${validAccessToken.access_token}`,
+              Authorization: `Bearer ${ACCESS_TOKEN.access_token}`,
               "Content-Type": "application/json",
             },
           },
@@ -476,12 +473,12 @@ describe("Credential Issuer Tests", () => {
           await axios.post(
             getDockerDnsName(NOTIFICATION_ENDPOINT),
             {
-              // notification_id: "invalid-id",
+              notification_id: undefined,
               event: "credential_accepted",
             },
             {
               headers: {
-                Authorization: `Bearer ${validAccessToken.access_token}`,
+                Authorization: `Bearer ${ACCESS_TOKEN.access_token}`,
                 "Content-Type": "application/json",
               },
             },
@@ -492,7 +489,7 @@ describe("Credential Issuer Tests", () => {
       });
 
       it("should return 400 for invalid event type", async () => {
-        const notification_id = validResponse.data.notification_id;
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
         try {
           await axios.post(
             getDockerDnsName(NOTIFICATION_ENDPOINT),
@@ -502,7 +499,7 @@ describe("Credential Issuer Tests", () => {
             },
             {
               headers: {
-                Authorization: `Bearer ${validAccessToken.access_token}`,
+                Authorization: `Bearer ${ACCESS_TOKEN.access_token}`,
                 "Content-Type": "application/json",
               },
             },
@@ -515,7 +512,7 @@ describe("Credential Issuer Tests", () => {
 
     describe("when sending notifications with invalid authentication", () => {
       it("should return 401 for invalid access token", async () => {
-        const notification_id = validResponse.data.notification_id;
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
         try {
           await axios.post(
             getDockerDnsName(NOTIFICATION_ENDPOINT),
@@ -539,7 +536,7 @@ describe("Credential Issuer Tests", () => {
       });
 
       it("should return 401 when no authentication is provided", async () => {
-        const notification_id = validResponse.data.notification_id;
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
         try {
           await axios.post(getDockerDnsName(NOTIFICATION_ENDPOINT), {
             notification_id,
