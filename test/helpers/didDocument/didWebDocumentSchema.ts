@@ -1,4 +1,4 @@
-export const didDocumentSchema = {
+export const didWebDocumentSchema = {
   type: "object",
   properties: {
     "@context": {
