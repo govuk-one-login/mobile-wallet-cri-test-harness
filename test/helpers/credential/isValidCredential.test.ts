@@ -1,4 +1,4 @@
-import { validateCredential } from "./validateCredential";
+import { isValidCredential } from "./isValidCredential";
 import * as createProofJwtModule from "./createProofJwt";
 import { importJWK, SignJWT } from "jose";
 
@@ -48,7 +48,7 @@ describe("validateCredential", () => {
     const credential = await getTestJwt(criUrl, kid, didKey);
 
     expect(
-      await validateCredential(credential, didKey, verificationMethod, criUrl),
+      await isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).toEqual(true);
   });
 
@@ -60,7 +60,7 @@ describe("validateCredential", () => {
     );
 
     expect(
-      await validateCredential(
+      await isValidCredential(
         credential,
         didKey,
         [
@@ -88,7 +88,7 @@ describe("validateCredential", () => {
       "invalidHeader" + (await getTestJwt(criUrl, kid, didKey));
 
     await expect(
-      validateCredential(credential, didKey, verificationMethod, criUrl),
+      isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow("HEADER_DECODING_ERROR");
   });
 
@@ -96,7 +96,7 @@ describe("validateCredential", () => {
     const credential = await getTestJwt(criUrl, undefined, didKey);
 
     await expect(
-      validateCredential(credential, didKey, verificationMethod, criUrl),
+      isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow("INVALID_HEADER");
   });
 
@@ -123,7 +123,7 @@ describe("validateCredential", () => {
     ];
 
     await expect(
-      validateCredential(credential, didKey, verificationMethod, criUrl),
+      isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow("PUBLIC_KEY_NOT_IN_DID");
   });
 
@@ -146,7 +146,7 @@ describe("validateCredential", () => {
     ];
 
     await expect(
-      validateCredential(credential, didKey, verificationMethod, criUrl),
+      isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow("INVALID_SIGNATURE");
   });
 
@@ -154,7 +154,7 @@ describe("validateCredential", () => {
     const credential = await getTestJwt(undefined, kid, didKey);
 
     await expect(
-      validateCredential(credential, didKey, verificationMethod, criUrl),
+      isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
       'Credential payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',
@@ -165,7 +165,7 @@ describe("validateCredential", () => {
     const credential = await getTestJwt("invalidIssuer", kid, didKey);
 
     await expect(
-      validateCredential(credential, didKey, verificationMethod, criUrl),
+      isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
       'Invalid "iss" value in token. Should be https://test-example-cri.gov.uk but found invalidIssuer',
@@ -176,7 +176,7 @@ describe("validateCredential", () => {
     const credential = await getTestJwt(criUrl, kid, "notTheProofJwtDidKey");
 
     await expect(
-      validateCredential(credential, didKey, verificationMethod, criUrl),
+      isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow("INVALID_PAYLOAD");
     expect(console.log).toHaveBeenCalledWith(
       'Invalid "sub" value in token. Should be did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c but found notTheProofJwtDidKey',

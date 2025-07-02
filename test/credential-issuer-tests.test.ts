@@ -24,7 +24,7 @@ import {
   isValidDidWebDocument,
 } from "./helpers/didDocument/isValidDidWebDocument";
 import { isValidPreAuthorizedCode } from "./helpers/preAuthorizedCode/isValidPreAuthorizedCode";
-import { validateCredential } from "./helpers/credential/validateCredential";
+import { isValidCredential } from "./helpers/credential/isValidCredential";
 import { readFileSync } from "fs";
 import { decodeJwt, JWK } from "jose";
 import { createAccessToken } from "./helpers/credential/createAccessToken";
@@ -364,7 +364,7 @@ describe("Credential Issuer Tests", () => {
 
       it("should return valid credential", async () => {
         const credential = CREDENTIAL_RESPONSE.data.credentials[0].credential;
-        const isValidCredential = await validateCredential(
+        const isValidCredential = await isValidCredential(
           credential,
           DID_KEY,
           DID_VERIFICATION_METHOD,
