@@ -80,7 +80,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_HEADER: Pre-authorized code header does not comply with the schema: [{\"instancePath\":\"\",\"schemaPath\":\"#/required\",\"keyword\":\"required\",\"params\":{\"missingProperty\":\"kid\"},\"message\":\"must have required property 'kid'\"}]");
+    ).rejects.toThrow(
+      'INVALID_HEADER: Pre-authorized code header does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"kid"},"message":"must have required property \'kid\'"}]',
+    );
   });
 
   it("should throw 'JWK_NOT_IN_DID' error when 'kid' claim does not match JWK 'kid'", async () => {
@@ -143,7 +145,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow(      'INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',);
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',
+    );
   });
 
   it("should throw 'INVALID_PAYLOAD' error when 'iat' claim is in the future", async () => {
@@ -163,7 +167,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"iat\" value in token. Should be in the past but is in the future");
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Invalid "iat" value in token. Should be in the past but is in the future',
+    );
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token expiry is not 30 minutes", async () => {
@@ -183,7 +189,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"exp\" value in token. Expected 30 minute expiry but found 10 minutes");
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Invalid "exp" value in token. Expected 30 minute expiry but found 10 minutes',
+    );
     expect(console.log).toHaveBeenCalledWith(
       `Note: if your issuer is configured for the credential offer to be valid for a time 
       other than 30 minutes then you can change this test expectation in validatePreAuthorizedCode.ts`,
@@ -206,7 +214,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"iss\" value in token. Should be \"https://test-example-cri.gov.uk\" but found \"https://different-issuer.gov.uk\"");
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Invalid "iss" value in token. Should be "https://test-example-cri.gov.uk" but found "https://different-issuer.gov.uk"',
+    );
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token audience is not 'https://test-auth-server.gov.uk'", async () => {
@@ -225,7 +235,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"aud\" value in token. Should be \"https://test-auth-server.gov.uk\" but found \"https://different-audience.gov.uk\"");
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Invalid "aud" value in token. Should be "https://test-auth-server.gov.uk" but found "https://different-audience.gov.uk"',
+    );
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token clientId is not 'TEST_CLIENT_ID", async () => {
@@ -244,7 +256,9 @@ describe("isValidPreAuthorizedCode", () => {
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"clientId\" value in token. Should be \"TEST_CLIENT_ID\" but found \"invalid-client-id\"");
+    ).rejects.toThrow(
+      'INVALID_PAYLOAD: Invalid "clientId" value in token. Should be "TEST_CLIENT_ID" but found "invalid-client-id"',
+    );
   });
 });
 

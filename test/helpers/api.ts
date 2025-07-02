@@ -1,16 +1,18 @@
-import axios, {AxiosResponse} from "axios";
-import {getDockerDnsName} from "../../src/config";
+import axios, { AxiosResponse } from "axios";
+import { getDockerDnsName } from "../../src/config";
 
 async function getWellKnown(
   criUrl: string,
   path: string,
-  errorLabel: string
+  errorLabel: string,
 ): Promise<AxiosResponse> {
   try {
     const url = new URL(path, criUrl).toString();
     return await axios.get(getDockerDnsName(url));
   } catch (error) {
-    console.log(`Error trying to fetch ${errorLabel}: ${JSON.stringify(error)}`);
+    console.log(
+      `Error trying to fetch ${errorLabel}: ${JSON.stringify(error)}`,
+    );
     throw new Error(`GET_${errorLabel.toUpperCase()}_ERROR`);
   }
 }
@@ -20,7 +22,11 @@ export async function getJwks(criUrl: string): Promise<AxiosResponse> {
 }
 
 export async function getMetadata(criUrl: string): Promise<AxiosResponse> {
-  return getWellKnown(criUrl, ".well-known/openid-credential-issuer", "metadata");
+  return getWellKnown(
+    criUrl,
+    ".well-known/openid-credential-issuer",
+    "metadata",
+  );
 }
 
 export async function getDidDocument(criUrl: string): Promise<AxiosResponse> {
@@ -30,7 +36,7 @@ export async function getDidDocument(criUrl: string): Promise<AxiosResponse> {
 export async function getCredential(
   accessToken: string,
   proofJwt: string,
-  credentialUrl: string
+  credentialUrl: string,
 ): Promise<AxiosResponse> {
   return await axios.post(
     getDockerDnsName(credentialUrl),
@@ -43,9 +49,9 @@ export async function getCredential(
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-    }
+    },
   );
 }
 
@@ -53,7 +59,7 @@ export async function sendNotification(
   accessToken: string | undefined,
   notification_id: string | undefined,
   event: string,
-  notificationUrl: string
+  notificationUrl: string,
 ): Promise<AxiosResponse> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -66,6 +72,6 @@ export async function sendNotification(
       notification_id,
       event,
     },
-    { headers }
+    { headers },
   );
 }

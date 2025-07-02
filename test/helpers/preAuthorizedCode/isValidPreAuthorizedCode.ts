@@ -41,7 +41,9 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(headerSchema).compile(headerSchema);
   if (!rulesValidator(claims)) {
-    throw new Error(`INVALID_HEADER: Pre-authorized code header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`);
+    throw new Error(
+      `INVALID_HEADER: Pre-authorized code header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+    );
   } else {
     return claims;
   }
@@ -73,27 +75,36 @@ function validatePayload(
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
   if (!rulesValidator(payload)) {
-    throw new Error(`INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`);
+    throw new Error(
+      `INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+    );
   }
 
   const iss = payload.iss;
   if (criUrl !== iss) {
-
-    throw new Error(`INVALID_PAYLOAD: Invalid "iss" value in token. Should be "${criUrl}" but found "${iss}"`);
+    throw new Error(
+      `INVALID_PAYLOAD: Invalid "iss" value in token. Should be "${criUrl}" but found "${iss}"`,
+    );
   }
 
   const aud = payload.aud;
   if (authorizationServerUrl !== aud) {
-    throw new Error(`INVALID_PAYLOAD: Invalid "aud" value in token. Should be "${authorizationServerUrl}" but found "${aud}"`);
+    throw new Error(
+      `INVALID_PAYLOAD: Invalid "aud" value in token. Should be "${authorizationServerUrl}" but found "${aud}"`,
+    );
   }
 
   if (clientId !== payload.clientId) {
-    throw new Error(`INVALID_PAYLOAD: Invalid "clientId" value in token. Should be "${clientId}" but found "${payload.clientId}"`);
+    throw new Error(
+      `INVALID_PAYLOAD: Invalid "clientId" value in token. Should be "${clientId}" but found "${payload.clientId}"`,
+    );
   }
 
   const tokenIssuedAt = new Date(payload.iat * 1000);
   if (tokenIssuedAt > new Date()) {
-    throw new Error(`"INVALID_PAYLOAD: Invalid "iat" value in token. Should be in the past but is in the future`);
+    throw new Error(
+      `"INVALID_PAYLOAD: Invalid "iat" value in token. Should be in the past but is in the future`,
+    );
   }
 
   const tokenExpiresAt = new Date(payload.exp * 1000);
@@ -101,8 +112,10 @@ function validatePayload(
   if (expiry !== 30) {
     console.log(
       `Note: if your issuer is configured for the credential offer to be valid for a time 
-      other than 30 minutes then you can change this test expectation in validatePreAuthorizedCode.ts`
+      other than 30 minutes then you can change this test expectation in validatePreAuthorizedCode.ts`,
     );
-    throw new Error(`INVALID_PAYLOAD: Invalid "exp" value in token. Expected 30 minute expiry but found ${expiry} minutes`);
+    throw new Error(
+      `INVALID_PAYLOAD: Invalid "exp" value in token. Expected 30 minute expiry but found ${expiry} minutes`,
+    );
   }
 }

@@ -8,8 +8,8 @@ export const didWebDocumentSchema = {
       uniqueItems: true,
       allOf: [
         { contains: { const: "https://www.w3.org/ns/did/v1" } },
-        { contains: { const: "https://w3id.org/security/suites/jws-2020/v1" } }
-      ]
+        { contains: { const: "https://w3id.org/security/suites/jws-2020/v1" } },
+      ],
     },
     id: {
       type: "string",

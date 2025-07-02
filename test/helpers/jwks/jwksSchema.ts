@@ -9,14 +9,14 @@ export const jwksSchema = {
         properties: {
           kty: { type: "string" },
           crv: { type: "string" },
-          x:   { type: "string" },
-          y:   { type: "string" },
+          x: { type: "string" },
+          y: { type: "string" },
           kid: { type: "string" },
           use: { type: "string" },
           alg: { type: "string" },
         },
         required: ["kty", "crv", "x", "y", "kid", "use", "alg"],
-        additionalProperties: true
+        additionalProperties: true,
       },
       contains: {
         type: "object",
@@ -25,9 +25,9 @@ export const jwksSchema = {
           crv: { const: "P-256" },
         },
         required: ["kty", "crv", "x", "y", "kid", "use", "alg"],
-      }
-    }
+      },
+    },
   },
   required: ["keys"],
-  additionalProperties: false
+  additionalProperties: false,
 };
