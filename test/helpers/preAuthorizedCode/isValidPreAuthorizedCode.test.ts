@@ -1,5 +1,5 @@
 import { importJWK, SignJWT } from "jose";
-import { validatePreAuthorizedCode } from "./validatePreAuthorizedCode";
+import { isValidPreAuthorizedCode } from "./isValidPreAuthorizedCode";
 console.log = jest.fn();
 
 const jwks = [
@@ -23,7 +23,7 @@ const authServerUrl = "https://test-auth-server.gov.uk";
 const criUrl = "https://test-example-cri.gov.uk";
 const kid = "78fa131d677c1ac0f172c53b47ac169a95ad0d92c38bd794a70da59032058274";
 
-describe("validatePreAuthorizedCode", () => {
+describe("isValidPreAuthorizedCode", () => {
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date("2024-08-01T09:08:24.000Z"));
   });
@@ -40,7 +40,7 @@ describe("validatePreAuthorizedCode", () => {
       kid,
     );
     expect(
-      await validatePreAuthorizedCode(
+      await isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
@@ -55,7 +55,7 @@ describe("validatePreAuthorizedCode", () => {
       "invalidHeader" +
       (await getTestJwt(authServerUrl, criUrl, clientId, kid));
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
@@ -73,17 +73,14 @@ describe("validatePreAuthorizedCode", () => {
       undefined,
     );
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_HEADER");
-    expect(console.log).toHaveBeenCalledWith(
-      'Pre-authorized code header does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"kid"},"message":"must have required property \'kid\'"}]',
-    );
+    ).rejects.toThrow("INVALID_HEADER: Pre-authorized code header does not comply with the schema: [{\"instancePath\":\"\",\"schemaPath\":\"#/required\",\"keyword\":\"required\",\"params\":{\"missingProperty\":\"kid\"},\"message\":\"must have required property 'kid'\"}]");
   });
 
   it("should throw 'JWK_NOT_IN_DID' error when 'kid' claim does not match JWK 'kid'", async () => {
@@ -94,14 +91,14 @@ describe("validatePreAuthorizedCode", () => {
       "not-the-same-kid",
     );
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("JWK_NOT_IN_DID");
+    ).rejects.toThrow("JWK_NOT_IN_JWKS");
   });
 
   it("should throw 'INVALID_SIGNATURE' when signature cannot be verified", async () => {
@@ -121,7 +118,7 @@ describe("validatePreAuthorizedCode", () => {
       kid,
     );
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
@@ -139,17 +136,14 @@ describe("validatePreAuthorizedCode", () => {
       kid,
     );
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD");
-    expect(console.log).toHaveBeenCalledWith(
-      'Pre-authorized code payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',
-    );
+    ).rejects.toThrow(      'INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema: [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"iss"},"message":"must have required property \'iss\'"}]',);
   });
 
   it("should throw 'INVALID_PAYLOAD' error when 'iat' claim is in the future", async () => {
@@ -162,17 +156,14 @@ describe("validatePreAuthorizedCode", () => {
     jest.useFakeTimers().setSystemTime(new Date("2024-08-01T07:08:24.000Z"));
 
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD");
-    expect(console.log).toHaveBeenCalledWith(
-      'Invalid "iat" value in token. Should be in the past but is in the future',
-    );
+    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"iat\" value in token. Should be in the past but is in the future");
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token expiry is not 30 minutes", async () => {
@@ -185,17 +176,16 @@ describe("validatePreAuthorizedCode", () => {
     );
 
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD");
+    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"exp\" value in token. Expected 30 minute expiry but found 10 minutes");
     expect(console.log).toHaveBeenCalledWith(
-      `Invalid "exp" value in token. Expected 30 minute expiry but found 10 minutes.
-      Note: if your issuer is configured for the credential offer to be valid for a time 
+      `Note: if your issuer is configured for the credential offer to be valid for a time 
       other than 30 minutes then you can change this test expectation in validatePreAuthorizedCode.ts`,
     );
   });
@@ -209,17 +199,14 @@ describe("validatePreAuthorizedCode", () => {
     );
 
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD");
-    expect(console.log).toHaveBeenCalledWith(
-      'Invalid "iss" value in token. Should be "https://test-example-cri.gov.uk" but found "https://different-issuer.gov.uk"',
-    );
+    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"iss\" value in token. Should be \"https://test-example-cri.gov.uk\" but found \"https://different-issuer.gov.uk\"");
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token audience is not 'https://test-auth-server.gov.uk'", async () => {
@@ -231,17 +218,14 @@ describe("validatePreAuthorizedCode", () => {
     );
 
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD");
-    expect(console.log).toHaveBeenCalledWith(
-      'Invalid "aud" value in token. Should be "https://test-auth-server.gov.uk" but found "https://different-audience.gov.uk"',
-    );
+    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"aud\" value in token. Should be \"https://test-auth-server.gov.uk\" but found \"https://different-audience.gov.uk\"");
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token clientId is not 'TEST_CLIENT_ID", async () => {
@@ -253,17 +237,14 @@ describe("validatePreAuthorizedCode", () => {
     );
 
     await expect(
-      validatePreAuthorizedCode(
+      isValidPreAuthorizedCode(
         preAuthorizedCode,
         jwks,
         criUrl,
         authServerUrl,
         clientId,
       ),
-    ).rejects.toThrow("INVALID_PAYLOAD");
-    expect(console.log).toHaveBeenCalledWith(
-      'Invalid "clientId" value in token. Should be "TEST_CLIENT_ID" but found "invalid-client-id"',
-    );
+    ).rejects.toThrow("INVALID_PAYLOAD: Invalid \"clientId\" value in token. Should be \"TEST_CLIENT_ID\" but found \"invalid-client-id\"");
   });
 });
 
