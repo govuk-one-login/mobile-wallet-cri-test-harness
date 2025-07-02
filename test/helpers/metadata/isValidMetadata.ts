@@ -1,8 +1,6 @@
-import axios, { AxiosResponse } from "axios";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { metadataSchema } from "./metadataSchema";
-import { getDockerDnsName } from "../../../src/config";
 
 export interface Metadata {
   credential_endpoint: string;
@@ -60,16 +58,4 @@ export async function isValidMetadata(
   }
 
   return true;
-}
-
-export async function getMetadata(criUrl): Promise<AxiosResponse> {
-  const METADATA_PATH: string = ".well-known/openid-credential-issuer";
-  try {
-    const metadataUrl = new URL(METADATA_PATH, criUrl).toString();
-    return await axios.get(getDockerDnsName(metadataUrl));
-  } catch (error) {
-    throw new Error(
-      `GET_METADATA_ERROR: Error trying to fetch metadata: ${JSON.stringify(error)}`,
-    );
-  }
 }

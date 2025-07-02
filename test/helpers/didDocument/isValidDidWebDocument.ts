@@ -1,8 +1,6 @@
-import axios, { AxiosResponse } from "axios";
 import Ajv from "ajv";
-import { didDocumentSchema } from "./didDocumentSchema";
+import { didWebDocumentSchema } from "./didWebDocumentSchema";
 import { JWK } from "jose";
-import { getDockerDnsName } from "../../../src/config";
 
 export interface DidDocument {
   "@context": string[];
@@ -24,8 +22,8 @@ export async function isValidDidWebDocument(
 ) {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv
-    .addSchema(didDocumentSchema)
-    .compile(didDocumentSchema);
+    .addSchema(didWebDocumentSchema)
+    .compile(didWebDocumentSchema);
 
   const isValid = rulesValidator(didWebDocument);
   if (!isValid) {
@@ -66,16 +64,4 @@ export async function isValidDidWebDocument(
   }
 
   return true;
-}
-
-
-export async function getDidDocument(criUrl): Promise<AxiosResponse> {
-  const DID_DOCUMENT_PATH: string = ".well-known/did.json";
-  try {
-    const didUrl = new URL(DID_DOCUMENT_PATH, criUrl).toString();
-    return await axios.get(getDockerDnsName(didUrl));
-  } catch (error) {
-    console.log(`Error trying to fetch DID document: ${JSON.stringify(error)}`);
-    throw new Error("GET_DID_DOCUMENT_ERROR");
-  }
 }
