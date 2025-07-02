@@ -2,9 +2,9 @@ import { JWK } from "jose";
 import Ajv from "ajv";
 import { jwksSchema } from "./jwksSchema";
 
-export type JWKS = {
+export interface JWKS {
   keys: JWK[];
-};
+}
 
 export async function isValidJwks(jwks: JWKS) {
   const ajv = new Ajv({ allErrors: true, verbose: false });
