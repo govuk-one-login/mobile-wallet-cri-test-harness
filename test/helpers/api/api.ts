@@ -9,7 +9,7 @@ async function getWellKnown(
     return await axios.get(getDockerDnsName(url));
   } catch (error) {
     throw new Error(
-      `API_ERROR: Error trying to fetch ${path}: ${JSON.stringify(error)}`,
+      `API_ERROR: Error trying to fetch ${path} - ${JSON.stringify(error)}`,
     );
   }
 }
