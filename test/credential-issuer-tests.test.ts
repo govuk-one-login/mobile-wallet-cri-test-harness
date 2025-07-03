@@ -1,7 +1,7 @@
 import {
   getClientId,
   getCredentialOfferDeepLink,
-  getCredentialType,
+  getCredentialFormat,
   getCriDomain,
   getCriUrl,
   getSelfURL,
@@ -38,6 +38,12 @@ import {
   sendNotification,
 } from "./helpers/api/api";
 
+// Helper function to determine if a test should run
+const shouldRun = (types: string[]) => types.includes(getCredentialFormat());
+const JWT_ONLY = ['jwt'];
+const MDOC_ONLY = ['mdoc'];
+const JWT_AND_MDOC = ['jwt', 'mdoc'];
+
 let CREDENTIAL_OFFER_DEEP_LINK;
 let CRI_URL;
 let CRI_DOMAIN;
@@ -56,9 +62,6 @@ let SELF_URL;
 let ACCESS_TOKEN;
 let CREDENTIAL_RESPONSE;
 let DID_KEY;
-
-// Helper function to determine if a test should run
-const shouldRun = (types) => types.includes(getCredentialType());
 
 describe("Credential Issuer Tests", () => {
   beforeAll(async () => {
@@ -104,7 +107,7 @@ describe("Credential Issuer Tests", () => {
     );
   });
 
-  (shouldRun(["jwt", "mdoc"]) ? describe : describe.skip)(
+  (shouldRun(JWT_AND_MDOC) ? describe : describe.skip)(
     "Credential Offer",
     () => {
       describe("when validating a provided credential offer", () => {
@@ -126,7 +129,7 @@ describe("Credential Issuer Tests", () => {
     },
   );
 
-  (shouldRun(["jwt", "mdoc"]) ? describe : describe.skip)("Metadata", () => {
+  (shouldRun(JWT_AND_MDOC) ? describe : describe.skip)("Metadata", () => {
     describe("when requesting the credential issuer metadata", () => {
       let response;
 
@@ -151,7 +154,7 @@ describe("Credential Issuer Tests", () => {
     });
   });
 
-  (shouldRun(["jwt"]) ? describe : describe.skip)("did:web Document", () => {
+  (shouldRun(JWT_ONLY) ? describe : describe.skip)("did:web Document", () => {
     describe("when requesting the credential issuer did:web document", () => {
       let response;
 
@@ -176,7 +179,7 @@ describe("Credential Issuer Tests", () => {
     });
   });
 
-  (shouldRun(["mdoc"]) ? describe : describe.skip)("IACAs", () => {
+  (shouldRun(MDOC_ONLY) ? describe : describe.skip)("IACAs", () => {
     describe("when requesting the credential issuer IACAs", () => {
       it("should be true", () => {
         expect(true).toBe(true);
@@ -184,7 +187,7 @@ describe("Credential Issuer Tests", () => {
     });
   });
 
-  (shouldRun(["jwt", "mdoc"]) ? describe : describe.skip)("JWKS", () => {
+  (shouldRun(JWT_AND_MDOC) ? describe : describe.skip)("JWKS", () => {
     describe("when requesting the credential issuer JWKS", () => {
       let response;
 
@@ -207,7 +210,7 @@ describe("Credential Issuer Tests", () => {
     });
   });
 
-  (shouldRun(["jwt", "mdoc"]) ? describe : describe.skip)("Credential", () => {
+  (shouldRun(JWT_AND_MDOC) ? describe : describe.skip)("Credential", () => {
     describe("when requesting a credential with invalid access token", () => {
       describe("when the access token and credential offer wallet subject IDs do not match", () => {
         it("should return 401 with invalid_token error", async () => {
@@ -418,7 +421,7 @@ describe("Credential Issuer Tests", () => {
     });
   });
 
-  (shouldRun(["jwt", "mdoc"]) ? describe : describe.skip)(
+  (shouldRun(JWT_AND_MDOC) ? describe : describe.skip)(
     "Notification",
     () => {
       beforeEach(() => {
