@@ -15,6 +15,6 @@ export default {
     'test/**',
     'src/**',
   ],
-  coverageDirectory: '/results/coverage',
+  coverageDirectory: 'coverage',
   coverageProvider: 'v8',
 }
