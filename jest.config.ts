@@ -6,7 +6,7 @@ export default {
   },
   reporters: [
     'default',
-    ['jest-junit', { outputDirectory: '/results', outputName: 'report.xml' }]
+    ['jest-junit', { outputDirectory: 'results', outputName: 'report.xml' }]
   ],
   testMatch: ['**/*.test.ts'],
   testEnvironment: 'node',
