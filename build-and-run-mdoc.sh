@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Check for exactly one argument
 if [ "$#" -ne 1 ]; then
   echo "Usage: $0 <CREDENTIAL_OFFER_DEEP_LINK>"
   exit 1
