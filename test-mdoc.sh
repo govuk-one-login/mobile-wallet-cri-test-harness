@@ -7,7 +7,7 @@ fi
 
 CREDENTIAL_OFFER_DEEP_LINK="$1"
 
-echo "Credential format: mdoc"
+echo "Credential format: mDoc"
 
 echo "Attempting to build Docker image"
 docker build -t "test-harness" .
