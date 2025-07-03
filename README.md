@@ -1,78 +1,73 @@
-# mobile-wallet-cri-test-harness
+# Wallet Credential Issuer Test Harness
 
 ## Overview
 
-A tool for testing a Wallet credential issuer service.
+This test harness enables GOV.UK Wallet credential issuer services to validate their implementations without requiring access to the mobile app. It acts as a mock wallet client that can test credential issuance flows end-to-end.
 
-## Pre-requisites
+## How It Works
 
-- [Node.js](https://nodejs.org/en/) (>= 20.11.1)
-- [NPM](https://www.npmjs.com/)
-- [Docker](https://docs.docker.com/get-docker/)
-- [Homebrew](https://brew.sh)
+**1. Start the Test Harness**
+- Use the appropriate script for your credential format: either `test-jwt.sh` (for JWT) or `test-mdoc.sh` (for mDoc).
+- Both scripts require a single argument: the `CREDENTIAL_OFFER_DEEP_LINK`.
+- Both scripts set the following environment variables:
+  - `CREDENTIAL_FORMAT`: `"jwt" `or `mdoc`
+  - `CREDENTIAL_OFFER_DEEP_LINK`: your credential offer deep link
+  - `CRI_DOMAIN`: domain of the credential issuer under test
+  - `WALLET_SUBJECT_ID`: dummy wallet identifier
+  - `CLIENT_ID`: dummy test client ID
 
-We recommend using [nvm](https://github.com/nvm-sh/nvm) to install and manage Node.js versions.
+- The script will:
+   - Build a Docker image (`test-harness`) containing all dependencies and test code. 
+   - Run a Docker container, mounting an output directory for test results and passing required configuration via environment variables.
 
-To install nvm, run:
+**2. Test Execution**
+- The container runs the `run-server-and-tests.sh` script, which:
+   - Starts the test server (`run-server.sh`) - a mock of the One Login authorization server. 
+   - Waits 5 seconds for the server to start. 
+   - Executes the test suite (`run-tests.sh`) against the credential issuer. 
+   - Exits when either process completes.
+
+**3. Credential Format-Specific Testing**
+- The test suite uses a helper function to determine which tests to run based on the credential format. This allows the same test suite to be reused for both formats, skipping irrelevant tests automatically.
+
+
+```typescript
+const shouldRun = (types: string[]) => types.includes(getCredentialFormat()); // CREDENTIAL_FORMAT environment variable
+const JWT_ONLY = ['jwt'];
+const MDOC_ONLY = ['mdoc'];
+const JWT_AND_MDOC = ['jwt', 'mdoc'];
+
+(shouldRun(JWT_ONLY) ? describe : describe.skip)("JWT-specific tests", () => {
+  // These tests only run when CREDENTIAL_FORMAT="jwt"
+});
+
+(shouldRun(MDOC_ONLY) ? describe : describe.skip)("mDoc-specific tests", () => {
+  // These tests only run when CREDENTIAL_FORMAT="mdoc"
+});
+
+(shouldRun(JWT_AND_MDOC) ? describe : describe.skip)("JWT and mDoc tests", () => {
+  // These tests run when CREDENTIAL_FORMAT="jwt" or CREDENTIAL_FORMAT="mdoc"
+});
 ```
-brew install nvm
-```
+## Usage
 
-Then, to install and use the required version of node using nvm, run the following commands:
-```
-nvm install
-```
+### Pre-requisites
 
-```
-nvm use
-```
+- [Docker](https://docs.docker.com/get-docker/) installed on your machine.
 
-## Quickstart
+### Running Tests
 
-### Install
-
-Install the dependencies with:
-```
-npm install
-```
-
-### Lint & Format
-
-Lint and format the code with:
-```
-npm run lint --fix
-```
-
-```
-npm run format
-```
-
-### Build
-
-Build the server with:
-```
-npm run build
-```
-
-### Unit Test
-
-Run the helper functions unit tests with:
-```
-npm run test:unit
-```
-
-### Credential Issuer Tests
-To run tests against a credential issuer issuing JWT credentials, run:
+#### For JWT Credential Issuers
 
 ```
-./build-and-run-jwt.sh <credential_offer_deep_link>
+./test-jwt.sh <CREDENTIAL_OFFER_DEEP_LINK>
 ```
 
-To run tests against a credential issuer issuing mdoc credentials, run:
+#### For mDoc Credential Issuers
 
 ```
-./build-and-run-mdoc.sh <credential_offer_deep_link>
+./test-mdoc.sh <CREDENTIAL_OFFER_DEEP_LINK>
 ```
 
-The `<credential_offer_deep_link>` is the credential offer deep link you wish to test with.
-
+- Replace `<CREDENTIAL_OFFER_DEEP_LINK>` with the actual credential offer deep link.
+- Test results will be saved in the `output` directory.
