@@ -40,9 +40,9 @@ import {
 
 // Helper function to determine if a test should run
 const shouldRun = (types: string[]) => types.includes(getCredentialFormat());
-const JWT_ONLY = ['jwt'];
-const MDOC_ONLY = ['mdoc'];
-const JWT_AND_MDOC = ['jwt', 'mdoc'];
+const JWT_ONLY = ["jwt"];
+const MDOC_ONLY = ["mdoc"];
+const JWT_AND_MDOC = ["jwt", "mdoc"];
 
 let CREDENTIAL_OFFER_DEEP_LINK;
 let CRI_URL;
@@ -421,118 +421,115 @@ describe("Credential Issuer Tests", () => {
     });
   });
 
-  (shouldRun(JWT_AND_MDOC) ? describe : describe.skip)(
-    "Notification",
-    () => {
-      beforeEach(() => {
-        if (!NOTIFICATION_ENDPOINT) {
-          pending("Notification endpoint not implemented by this CRI");
+  (shouldRun(JWT_AND_MDOC) ? describe : describe.skip)("Notification", () => {
+    beforeEach(() => {
+      if (!NOTIFICATION_ENDPOINT) {
+        pending("Notification endpoint not implemented by this CRI");
+      }
+    });
+
+    describe("when sending valid notifications", () => {
+      it("should return 204 for credential_accepted event", async () => {
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
+        const notificationResponse = await sendNotification(
+          ACCESS_TOKEN.access_token,
+          notification_id,
+          "credential_accepted",
+          NOTIFICATION_ENDPOINT,
+        );
+        expect(notificationResponse.status).toBe(204);
+      });
+
+      it("should return 204 for credential_deleted event", async () => {
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
+        const notificationResponse = await sendNotification(
+          ACCESS_TOKEN.access_token,
+          notification_id,
+          "credential_deleted",
+          NOTIFICATION_ENDPOINT,
+        );
+
+        expect(notificationResponse.status).toBe(204);
+      });
+
+      it("should return 204 for credential_failure event", async () => {
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
+        const notificationResponse = await sendNotification(
+          ACCESS_TOKEN.access_token,
+          notification_id,
+          "credential_failure",
+          NOTIFICATION_ENDPOINT,
+        );
+
+        expect(notificationResponse.status).toBe(204);
+      });
+    });
+
+    describe("when sending invalid notifications", () => {
+      it("should return 400 for missing notification_id", async () => {
+        try {
+          await sendNotification(
+            ACCESS_TOKEN.access_token,
+            undefined,
+            "credential_failure",
+            NOTIFICATION_ENDPOINT,
+          );
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toEqual(400);
         }
       });
 
-      describe("when sending valid notifications", () => {
-        it("should return 204 for credential_accepted event", async () => {
-          const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
-          const notificationResponse = await sendNotification(
+      it("should return 400 for invalid event type", async () => {
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
+        try {
+          await sendNotification(
             ACCESS_TOKEN.access_token,
+            notification_id,
+            "invalid_event",
+            NOTIFICATION_ENDPOINT,
+          );
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toEqual(400);
+        }
+      });
+    });
+
+    describe("when sending notifications with invalid authentication", () => {
+      it("should return 401 for invalid access token", async () => {
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
+        try {
+          await sendNotification(
+            "INVALID_TOKEN",
             notification_id,
             "credential_accepted",
             NOTIFICATION_ENDPOINT,
           );
-          expect(notificationResponse.status).toBe(204);
-        });
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toEqual(401);
+          expect(
+            (error as AxiosError).response?.headers["www-authenticate"],
+          ).toEqual('Bearer error="invalid_token"');
+        }
+      });
 
-        it("should return 204 for credential_deleted event", async () => {
-          const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
-          const notificationResponse = await sendNotification(
-            ACCESS_TOKEN.access_token,
+      it("should return 401 when no authentication is provided", async () => {
+        const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
+        try {
+          await sendNotification(
+            undefined,
             notification_id,
-            "credential_deleted",
+            "credential_accepted",
             NOTIFICATION_ENDPOINT,
           );
-
-          expect(notificationResponse.status).toBe(204);
-        });
-
-        it("should return 204 for credential_failure event", async () => {
-          const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
-          const notificationResponse = await sendNotification(
-            ACCESS_TOKEN.access_token,
-            notification_id,
-            "credential_failure",
-            NOTIFICATION_ENDPOINT,
-          );
-
-          expect(notificationResponse.status).toBe(204);
-        });
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toEqual(401);
+          expect(
+            (error as AxiosError).response?.headers["www-authenticate"],
+          ).toEqual("Bearer");
+        }
       });
-
-      describe("when sending invalid notifications", () => {
-        it("should return 400 for missing notification_id", async () => {
-          try {
-            await sendNotification(
-              ACCESS_TOKEN.access_token,
-              undefined,
-              "credential_failure",
-              NOTIFICATION_ENDPOINT,
-            );
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(400);
-          }
-        });
-
-        it("should return 400 for invalid event type", async () => {
-          const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
-          try {
-            await sendNotification(
-              ACCESS_TOKEN.access_token,
-              notification_id,
-              "invalid_event",
-              NOTIFICATION_ENDPOINT,
-            );
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(400);
-          }
-        });
-      });
-
-      describe("when sending notifications with invalid authentication", () => {
-        it("should return 401 for invalid access token", async () => {
-          const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
-          try {
-            await sendNotification(
-              "INVALID_TOKEN",
-              notification_id,
-              "credential_accepted",
-              NOTIFICATION_ENDPOINT,
-            );
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(401);
-            expect(
-              (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual('Bearer error="invalid_token"');
-          }
-        });
-
-        it("should return 401 when no authentication is provided", async () => {
-          const notification_id = CREDENTIAL_RESPONSE.data.notification_id;
-          try {
-            await sendNotification(
-              undefined,
-              notification_id,
-              "credential_accepted",
-              NOTIFICATION_ENDPOINT,
-            );
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(401);
-            expect(
-              (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual("Bearer");
-          }
-        });
-      });
-    },
-  );
+    });
+  });
 });
 
 function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
