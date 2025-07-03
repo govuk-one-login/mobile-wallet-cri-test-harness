@@ -32,6 +32,7 @@ export const payloadSchema = {
     type: {
       type: "array",
       minItems: 1,
+      maxItems: 2,
       uniqueItems: true,
       items: {
         type: "string",
