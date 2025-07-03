@@ -36,7 +36,7 @@ import {
   getJwks,
   getMetadata,
   sendNotification,
-} from "./helpers/api";
+} from "./helpers/api/api";
 
 let CREDENTIAL_OFFER_DEEP_LINK;
 let CRI_URL;
