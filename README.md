@@ -62,12 +62,17 @@ npm run test:unit
 ```
 
 ### Credential Issuer Tests
-To run tests against a credential issuer, run:
+To run tests against a credential issuer issuing JWT credentials, run:
 
 ```
-./build-and-run.sh <credential_type> <credential_offer_deep_link>
+./build-and-run-jwt.sh <credential_offer_deep_link>
+```
+
+To run tests against a credential issuer issuing mdoc credentials, run:
+
+```
+./build-and-run-mdoc.sh <credential_offer_deep_link>
 ```
 
 The `<credential_offer_deep_link>` is the credential offer deep link you wish to test with.
-The `<crendeital_type>` is the type of credential issued - it can be either `JWT` or `mDL`.
 
