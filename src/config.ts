@@ -9,7 +9,7 @@ const ENV_VARS = {
   WALLET_SUBJECT_ID: "WALLET_SUBJECT_ID",
   TEST_HARNESS_URL: "TEST_HARNESS_URL",
   CLIENT_ID: "CLIENT_ID",
-  CREDENTIAL_TYPE: "CREDENTIAL_TYPE",
+  CREDENTIAL_FORMAT: "CREDENTIAL_FORMAT",
 } as const;
 
 /**
@@ -66,7 +66,7 @@ export function getClientId(): string {
 }
 
 export function getCredentialFormat(): 'jwt' | 'mdoc' {
-  const credentialFormat = getEnvVarValue(ENV_VARS.CREDENTIAL_TYPE);
+  const credentialFormat = getEnvVarValue(ENV_VARS.CREDENTIAL_FORMAT);
   if (credentialFormat !== 'jwt' && credentialFormat !== 'mdoc') {
     throw new Error(`Invalid credential format: ${credentialFormat}. Must be 'jwt' or 'mdoc'.`);
   }
