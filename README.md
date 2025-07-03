@@ -49,14 +49,14 @@ npm run format
 
 ### Build
 
-Build the assets with:
+Build the server with:
 ```
 npm run build
 ```
 
-### Test
+### Unit Test
 
-Run unit tests with:
+Run the helper functions unit tests with:
 ```
 npm run test:unit
 ```
@@ -65,7 +65,9 @@ npm run test:unit
 To run tests against a credential issuer, run:
 
 ```
-./build-and-run.sh <credential_offer_deep_link>
+./build-and-run.sh <credential_type> <credential_offer_deep_link>
 ```
 
 The `<credential_offer_deep_link>` is the credential offer deep link you wish to test with.
+The `<crendeital_type>` is the type of credential issued - it can be either `JWT` or `mDL`.
+
