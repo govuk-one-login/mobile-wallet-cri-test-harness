@@ -9,9 +9,9 @@ import {
 import Ajv from "ajv";
 import { headerSchema } from "./headerSchema";
 import { payloadSchema } from "./payloadSchema";
-import { VerificationMethod } from "../didDocument/validateDidDocument";
+import { VerificationMethod } from "../didDocument/isValidDidWebDocument";
 
-export async function validateCredential(
+export async function isValidCredential(
   credential: string,
   didKey: string,
   verificationMethods: VerificationMethod[],
@@ -32,8 +32,9 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
   try {
     claims = decodeProtectedHeader(jwt);
   } catch (error) {
-    console.log(`Error decoding header: ${error}`);
-    throw new Error("HEADER_DECODING_ERROR");
+    throw new Error(
+      `INVALID_HEADER: Failed to decode credential header. ${error}`,
+    );
   }
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
@@ -41,10 +42,9 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
   if (rulesValidator(claims)) {
     return claims;
   } else {
-    console.log(
-      `Credential header does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+    throw new Error(
+      `INVALID HEADER: Credential header does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
     );
-    throw new Error("INVALID_HEADER");
   }
 }
 
@@ -57,7 +57,9 @@ async function verifySignature(
     (item) => item.id === header.kid!,
   );
   if (!verificationMethod) {
-    throw new Error("PUBLIC_KEY_NOT_IN_DID");
+    throw new Error(
+      "INVALID_SIGNATURE: No public key found in DID for provided 'kid'",
+    );
   }
   const publicKey = await importJWK(
     verificationMethod.publicKeyJwk,
@@ -66,8 +68,9 @@ async function verifySignature(
   try {
     return await jwtVerify(credential, publicKey);
   } catch (error) {
-    console.log(`Error verifying signature: ${JSON.stringify(error)}`);
-    throw new Error("INVALID_SIGNATURE");
+    throw new Error(
+      `INVALID_SIGNATURE: Credential verification failed. ${JSON.stringify(error)}`,
+    );
   }
 }
 
@@ -79,25 +82,22 @@ function validatePayload(
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.compile(payloadSchema);
   if (!rulesValidator(payload)) {
-    console.log(
-      `Credential payload does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+    throw new Error(
+      `INVALID_PAYLOAD: Credential payload does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
     );
-    throw new Error("INVALID_PAYLOAD");
   }
 
   const iss = payload.iss;
   if (criUrl !== iss) {
-    console.log(
-      `Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
+    throw new Error(
+      `INVALID_PAYLOAD: Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
     );
-    throw new Error("INVALID_PAYLOAD");
   }
 
   const sub = payload.sub;
   if (didKey !== sub) {
-    console.log(
-      `Invalid "sub" value in token. Should be ${didKey} but found ${sub}`,
+    throw new Error(
+      `INVALID_PAYLOAD: Invalid "sub" value in token. Should be ${didKey} but found ${sub}`,
     );
-    throw new Error("INVALID_PAYLOAD");
   }
 }

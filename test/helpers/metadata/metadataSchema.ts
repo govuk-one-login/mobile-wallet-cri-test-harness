@@ -17,12 +17,12 @@ export const metadataSchema = {
       type: "string",
       format: "uri",
     },
-    credential_configurations_supported: {
-      type: "object",
-    },
     notification_endpoint: {
       type: "string",
       format: "uri",
+    },
+    credential_configurations_supported: {
+      type: "object",
     },
   },
   additionalProperties: true,

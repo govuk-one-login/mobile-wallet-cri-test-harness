@@ -1,16 +1,15 @@
-export const didDocumentSchema = {
+export const didWebDocumentSchema = {
   type: "object",
   properties: {
     "@context": {
       type: "array",
-      minItems: 1,
+      minItems: 2,
+      maxItems: 2,
       uniqueItems: true,
-      items: {
-        type: "string",
-      },
-      contains: {
-        const: "https://www.w3.org/ns/did/v1",
-      },
+      allOf: [
+        { contains: { const: "https://www.w3.org/ns/did/v1" } },
+        { contains: { const: "https://w3id.org/security/suites/jws-2020/v1" } },
+      ],
     },
     id: {
       type: "string",

@@ -16,8 +16,8 @@ interface PreAuthorizedCode {
   "pre-authorized_code": string;
 }
 
-export function validateCredentialOffer(credentialOfferDeepLink: string) {
-  const credentialOfferString = getCredentialOffer(credentialOfferDeepLink);
+export function isValidCredentialOffer(credentialOfferDeepLink: string) {
+  const credentialOfferString = extractCredentialOffer(credentialOfferDeepLink);
   const credentialOffer: CredentialOffer = parseAsJson(credentialOfferString);
 
   const ajv = new Ajv({ allErrors: true, verbose: false });
@@ -26,15 +26,11 @@ export function validateCredentialOffer(credentialOfferDeepLink: string) {
   const rulesValidator = ajv
     .addSchema(credentialOfferSchema)
     .compile(credentialOfferSchema);
-
-  const isValidPayload = rulesValidator(credentialOffer);
-  if (!isValidPayload) {
-    console.log(
-      `Credential offer does not comply with the schema: ${JSON.stringify(rulesValidator.errors)}`,
+  if (!rulesValidator(credentialOffer)) {
+    throw new Error(
+      `INVALID_CREDENTIAL_OFFER: ${JSON.stringify(rulesValidator.errors)}`,
     );
-    throw new Error("INVALID_CREDENTIAL_OFFER");
   }
-
   return true;
 }
 
@@ -42,22 +38,22 @@ export function parseAsJson(inputString: string) {
   try {
     return JSON.parse(inputString);
   } catch (error) {
-    console.log(`Failed to parse as JSON: ${JSON.stringify(error)}`);
-    throw new Error("INVALID_JSON");
+    throw new Error(
+      `INVALID_CREDENTIAL_OFFER: Not a valid JSON. ${JSON.stringify(error)}`,
+    );
   }
 }
 
-export function getCredentialOffer(urlString: string) {
+export function extractCredentialOffer(urlString: string) {
   let url: URL;
   try {
     url = new URL(urlString);
   } catch (error) {
-    console.log(`Failed to parse as URL: ${JSON.stringify(error)}`);
-    throw new Error("INVALID_DEEP_LINK");
+    throw new Error(`INVALID_DEEP_LINK: ${JSON.stringify(error)}`);
   }
   const credentialOffer = url.searchParams.get("credential_offer");
   if (credentialOffer == null) {
-    throw new Error("MISSING_CREDENTIAL_OFFER");
+    throw new Error("INVALID_DEEP_LINK: Missing 'credential_offer'");
   } else {
     return credentialOffer;
   }
