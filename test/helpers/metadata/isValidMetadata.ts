@@ -58,6 +58,7 @@ export async function isValidMetadata(
   }
 
   if (credentialFormat === CredentialFormat.MDOC) {
+    // mdoc_iacas_uri is required in mDoc credentials only
     const validIacasEndpoint = criUrl + "/iacas";
     if (
       !metadata.mdoc_iacas_uri ||

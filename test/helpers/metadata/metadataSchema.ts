@@ -21,6 +21,7 @@ export const metadataSchema = {
       type: "string",
       format: "uri",
     },
+    // mdoc_iacas_uri is required in mDoc credentials only
     mdoc_iacas_uri: {
       type: "string",
       format: "uri",
