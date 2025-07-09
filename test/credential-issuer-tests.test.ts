@@ -284,38 +284,6 @@ describe("Credential Issuer Tests", () => {
     });
 
     describe("when requesting a credential with invalid proof JWT", () => {
-      describe("when the proof JWT nonce does not match the access token c_nonce", () => {
-        it("should return 400 with invalid_proof error", async () => {
-          const proofJwtWithMismatchingNonce = await createProofJwt(
-            "not_the_same_nonce",
-            createDidKey(PUBLIC_KEY_JWK),
-            PRE_AUTHORIZED_CODE_PAYLOAD,
-            PRIVATE_KEY_JWK,
-          );
-          const accessToken = (
-            await createAccessToken(
-              NONCE,
-              WALLET_SUBJECT_ID,
-              PRE_AUTHORIZED_CODE_PAYLOAD,
-              PRIVATE_KEY_JWK,
-            )
-          ).access_token;
-
-          try {
-            await getCredential(
-              accessToken,
-              proofJwtWithMismatchingNonce,
-              CREDENTIAL_ENDPOINT,
-            );
-          } catch (error) {
-            expect((error as AxiosError).response?.status).toEqual(400);
-            expect((error as AxiosError).response?.data).toEqual({
-              error: "invalid_proof",
-            });
-          }
-        });
-      });
-
       describe("when the proof JWT signature is invalid", () => {
         it("should return 400 with invalid_proof error", async () => {
           const proofJwt = await createProofJwt(
@@ -344,6 +312,38 @@ describe("Credential Issuer Tests", () => {
             expect((error as AxiosError).response?.status).toEqual(400);
             expect((error as AxiosError).response?.data).toEqual({
               error: "invalid_proof",
+            });
+          }
+        });
+      });
+
+      describe("when the proof JWT nonce does not match the access token c_nonce", () => {
+        it("should return 400 with invalid_nonce error", async () => {
+          const proofJwtWithMismatchingNonce = await createProofJwt(
+            "not_the_same_nonce",
+            createDidKey(PUBLIC_KEY_JWK),
+            PRE_AUTHORIZED_CODE_PAYLOAD,
+            PRIVATE_KEY_JWK,
+          );
+          const accessToken = (
+            await createAccessToken(
+              NONCE,
+              WALLET_SUBJECT_ID,
+              PRE_AUTHORIZED_CODE_PAYLOAD,
+              PRIVATE_KEY_JWK,
+            )
+          ).access_token;
+
+          try {
+            await getCredential(
+              accessToken,
+              proofJwtWithMismatchingNonce,
+              CREDENTIAL_ENDPOINT,
+            );
+          } catch (error) {
+            expect((error as AxiosError).response?.status).toEqual(400);
+            expect((error as AxiosError).response?.data).toEqual({
+              error: "invalid_nonce",
             });
           }
         });
