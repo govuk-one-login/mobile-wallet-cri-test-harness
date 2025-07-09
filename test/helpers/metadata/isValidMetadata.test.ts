@@ -1,4 +1,5 @@
 import { isValidMetadata } from "./isValidMetadata";
+import { CredentialFormat } from "../enums/credentialFormat";
 
 const authServerUrl = "https://test-auth-server.gov.uk";
 const criUrl = "https://test-example-cri.gov.uk";
@@ -6,18 +7,28 @@ const criUrl = "https://test-example-cri.gov.uk";
 describe("isValidMetadata", () => {
   it("returns true when metadata is valid and notification_endpoint is absent", async () => {
     const metadata = metadataBuilder().withDefaults();
-    expect(await isValidMetadata(metadata, criUrl, authServerUrl)).toEqual(
-      true,
-    );
+    expect(
+      await isValidMetadata(
+        metadata,
+        criUrl,
+        authServerUrl,
+        CredentialFormat.JWT,
+      ),
+    ).toEqual(true);
   });
 
   it("returns true when metadata is valid and notification_endpoint is present", async () => {
     const metadata = metadataBuilder().withOverrides({
       notification_endpoint: "https://test-example-cri.gov.uk/notification",
     });
-    expect(await isValidMetadata(metadata, criUrl, authServerUrl)).toEqual(
-      true,
-    );
+    expect(
+      await isValidMetadata(
+        metadata,
+        criUrl,
+        authServerUrl,
+        CredentialFormat.JWT,
+      ),
+    ).toEqual(true);
   });
 
   it("should throw 'INVALID_METADATA' error when 'credential_configurations_supported' is missing", async () => {
@@ -25,7 +36,7 @@ describe("isValidMetadata", () => {
       credential_configurations_supported: false,
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, CredentialFormat.JWT),
     ).rejects.toThrow(
       'INVALID_METADATA: Metadata does not comply with the schema. [{"instancePath":"/credential_configurations_supported","schemaPath":"#/properties/credential_configurations_supported/type","keyword":"type","params":{"type":"object"},"message":"must be object"}]',
     );
@@ -36,7 +47,7 @@ describe("isValidMetadata", () => {
       credential_issuer: "https://something-else.com/",
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, CredentialFormat.JWT),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "credential_issuer" value. Should be https://test-example-cri.gov.uk but found https://something-else.com/',
     );
@@ -47,7 +58,7 @@ describe("isValidMetadata", () => {
       credential_endpoint: "https://something-else.com/something",
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, CredentialFormat.JWT),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "credential_endpoint" value. Should be https://test-example-cri.gov.uk/credential but found https://something-else.com/something',
     );
@@ -58,7 +69,7 @@ describe("isValidMetadata", () => {
       notification_endpoint: "https://something-else.com/something",
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, CredentialFormat.JWT),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "notification_endpoint" value. Should be https://test-example-cri.gov.uk/notification but found https://something-else.com/something',
     );
@@ -69,7 +80,7 @@ describe("isValidMetadata", () => {
       authorization_servers: ["https://something-else.com/"],
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, CredentialFormat.JWT),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "authorization_servers" value. Should contain https://test-auth-server.gov.uk but only contains https://something-else.com/',
     );
