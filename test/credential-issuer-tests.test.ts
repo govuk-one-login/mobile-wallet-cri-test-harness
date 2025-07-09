@@ -174,7 +174,7 @@ describe("credential issuer tests", () => {
     }
   });
 
-  it("should return 400 and 'invalid_proof' when the proof JWT nonce does not match the access token c_nonce", async () => {
+  it("should return 400 and 'invalid_nonce' when the proof JWT nonce does not match the access token c_nonce", async () => {
     const proofJwtWithMismatchingNonce = await createProofJwt(
       "not_the_same_nonce",
       createDidKey(PUBLIC_KEY_JWK),
@@ -199,7 +199,7 @@ describe("credential issuer tests", () => {
     } catch (error) {
       expect((error as AxiosError).response?.status).toEqual(400);
       expect((error as AxiosError).response?.data).toEqual({
-        error: "invalid_proof",
+        error: "invalid_nonce",
       });
     }
   });
