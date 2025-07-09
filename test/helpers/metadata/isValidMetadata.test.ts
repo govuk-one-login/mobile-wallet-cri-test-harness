@@ -5,7 +5,7 @@ const authServerUrl = "https://test-auth-server.gov.uk";
 const criUrl = "https://test-example-cri.gov.uk";
 
 describe("isValidMetadata", () => {
-  it("returns true when metadata is valid and notification_endpoint is absent", async () => {
+  it("should return true when metadata is valid - JWT credential", async () => {
     const metadata = metadataBuilder().withDefaults();
     expect(
       await isValidMetadata(
@@ -17,7 +17,21 @@ describe("isValidMetadata", () => {
     ).toEqual(true);
   });
 
-  it("returns true when metadata is valid and notification_endpoint is present", async () => {
+  it("should return true when metadata is valid - mDoc credential", async () => {
+    const metadata = metadataBuilder().withOverrides({
+      mdoc_iacas_uri: "https://test-example-cri.gov.uk/iacas",
+    });
+    expect(
+      await isValidMetadata(
+        metadata,
+        criUrl,
+        authServerUrl,
+        CredentialFormat.MDOC,
+      ),
+    ).toEqual(true);
+  });
+
+  it("should return true when metadata is valid - notification_endpoint is present", async () => {
     const metadata = metadataBuilder().withOverrides({
       notification_endpoint: "https://test-example-cri.gov.uk/notification",
     });
@@ -83,6 +97,26 @@ describe("isValidMetadata", () => {
       isValidMetadata(metadata, criUrl, authServerUrl, CredentialFormat.JWT),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "authorization_servers" value. Should contain https://test-auth-server.gov.uk but only contains https://something-else.com/',
+    );
+  });
+
+  it("should throw 'INVALID_METADATA' error when 'mdoc_iacas_uri' is missing - mDOC credential", async () => {
+    const metadata = metadataBuilder().withDefaults();
+    await expect(
+      isValidMetadata(metadata, criUrl, authServerUrl, CredentialFormat.MDOC),
+    ).rejects.toThrow(
+      'INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be https://test-example-cri.gov.uk/iacas but found undefined',
+    );
+  });
+
+  it("should throw 'INVALID_METADATA' error when 'mdoc_iacas_uri' does not match CRI's IACAs endpoint - mDOC credential", async () => {
+    const metadata = metadataBuilder().withOverrides({
+      mdoc_iacas_uri: "https://something-else.com/something",
+    });
+    await expect(
+      isValidMetadata(metadata, criUrl, authServerUrl, CredentialFormat.MDOC),
+    ).rejects.toThrow(
+      'INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be https://test-example-cri.gov.uk/iacas but found https://something-else.com/something',
     );
   });
 });
