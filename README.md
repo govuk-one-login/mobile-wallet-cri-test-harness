@@ -32,20 +32,19 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
 
 
 ```typescript
-const shouldRun = (types: string[]) => types.includes(getCredentialFormat()); // CREDENTIAL_FORMAT environment variable
-const JWT_ONLY = ['jwt'];
-const MDOC_ONLY = ['mdoc'];
-const JWT_AND_MDOC = ['jwt', 'mdoc'];
+const CREDENTIAL_FORMAT = getCredentialFormat(); // CREDENTIAL_FORMAT environment variable
+export const shouldRun = (types: readonly CredentialFormat[]) =>
+        types.includes(CREDENTIAL_FORMAT);
 
-(shouldRun(JWT_ONLY) ? describe : describe.skip)("JWT-specific tests", () => {
+(shouldRun(TestTypes.JWT_ONLY) ? describe : describe.skip)("JWT-specific tests", () => {
   // These tests only run when CREDENTIAL_FORMAT="jwt"
 });
 
-(shouldRun(MDOC_ONLY) ? describe : describe.skip)("mDoc-specific tests", () => {
+(shouldRun(TestTypes.MDOC_ONLY) ? describe : describe.skip)("mDoc-specific tests", () => {
   // These tests only run when CREDENTIAL_FORMAT="mdoc"
 });
 
-(shouldRun(JWT_AND_MDOC) ? describe : describe.skip)("JWT and mDoc tests", () => {
+(shouldRun(TestTypes.JWT_AND_MDOC) ? describe : describe.skip)("JWT and mDoc tests", () => {
   // These tests run when CREDENTIAL_FORMAT="jwt" or CREDENTIAL_FORMAT="mdoc"
 });
 ```
