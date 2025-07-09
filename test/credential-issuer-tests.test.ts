@@ -153,9 +153,14 @@ describe("Credential Issuer Tests", () => {
         });
 
         it("should return valid metadata", async () => {
-          expect(await isValidMetadata(response.data, CRI_URL, SELF_URL)).toBe(
-            true,
-          );
+          expect(
+            await isValidMetadata(
+              response.data,
+              CRI_URL,
+              SELF_URL,
+              CREDENTIAL_FORMAT,
+            ),
+          ).toBe(true);
         });
       });
     },
