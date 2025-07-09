@@ -121,7 +121,7 @@ function validatePayload(
   if (actualTokenDurationMinutes !== EXPECTED_TOKEN_DURATION_MINUTES) {
     console.log(
       `Note: If your issuer is configured for the credential offer to be valid for a time other than 
-      ${EXPECTED_TOKEN_DURATION_MINUTES} minutes, update EXPECTED_TOKEN_DURATION_MINUTES in this validation code.`,
+      ${EXPECTED_TOKEN_DURATION_MINUTES} minutes, update EXPECTED_TOKEN_DURATION_MINUTES in isValidPreAuthorizedCode.ts.`,
     );
 
     throw new Error(
