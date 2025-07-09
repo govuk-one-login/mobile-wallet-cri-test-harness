@@ -37,12 +37,13 @@ import {
   getMetadata,
   sendNotification,
 } from "./helpers/api/api";
+import { CredentialFormat } from "./helpers/enums/credentialFormat";
+
+const CREDENTIAL_FORMAT = getCredentialFormat();
 
 // Helper function to determine if a test should run
-const shouldRun = (types: string[]) => types.includes(getCredentialFormat());
-const JWT_ONLY = ["jwt"];
-const MDOC_ONLY = ["mdoc"];
-const JWT_AND_MDOC = ["jwt", "mdoc"];
+export const shouldRun = (types: readonly CredentialFormat[]) =>
+  types.includes(CREDENTIAL_FORMAT);
 
 let CREDENTIAL_OFFER_DEEP_LINK;
 let CRI_URL;
