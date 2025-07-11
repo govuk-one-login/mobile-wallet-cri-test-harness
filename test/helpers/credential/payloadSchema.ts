@@ -80,10 +80,10 @@ export const payloadSchema = {
   required: [
     "iss",
     "sub",
-    "nbf",
     "@context",
     "type",
     "issuer",
+    "validUntil",
     "credentialSubject",
   ],
 };
