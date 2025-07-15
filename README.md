@@ -15,6 +15,7 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
   - `CRI_DOMAIN`: domain of the credential issuer under test
   - `WALLET_SUBJECT_ID`: dummy wallet identifier
   - `CLIENT_ID`: dummy test client ID
+  - `HAS_NOTIFICATION_ENDPOINT`: boolean indicating whether the CRI implements the notification endpoint - defaults to `"true"`
 
 - The script will:
    - Build a Docker image (`test-harness`) containing all dependencies and test code. 
@@ -28,25 +29,24 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
    - Exits when either process completes.
 
 **3. Credential Format-Specific Testing**
-- The test suite uses a helper function to determine which tests to run based on the credential format. This allows the same test suite to be reused for both formats, skipping irrelevant tests automatically.
-
+- The test suite uses a helper function to determine which tests should be skipped based on the credential format and whether the CRI implements the notification endpoint. This allows the same test suite to be reused, skipping irrelevant tests automatically.
 
 ```typescript
-const shouldRun = (types: string[]) => types.includes(getCredentialFormat()); // CREDENTIAL_FORMAT environment variable
-const JWT_ONLY = ['jwt'];
-const MDOC_ONLY = ['mdoc'];
-const JWT_AND_MDOC = ['jwt', 'mdoc'];
+export const isJwt = () => getCredentialFormat() === "jwt";
+export const isMdoc = () => getCredentialFormat() === "mdoc";
+export const hasNotificationEndpoint = () =>
+        getHasNotificationEndpoint() === "true";
 
-(shouldRun(JWT_ONLY) ? describe : describe.skip)("JWT-specific tests", () => {
+describeIf("JWT tests", isMdoc, () => {
   // These tests only run when CREDENTIAL_FORMAT="jwt"
 });
 
-(shouldRun(MDOC_ONLY) ? describe : describe.skip)("mDoc-specific tests", () => {
+describeIf("mDoc tests", isMdoc, () => {
   // These tests only run when CREDENTIAL_FORMAT="mdoc"
 });
 
-(shouldRun(JWT_AND_MDOC) ? describe : describe.skip)("JWT and mDoc tests", () => {
-  // These tests run when CREDENTIAL_FORMAT="jwt" or CREDENTIAL_FORMAT="mdoc"
+itIf("notification endpoint test", hasNotificationEndpoint, () => {
+  // These tests only run when HAS_NOTIFICATION_ENDPOINT="true"
 });
 ```
 ## Usage
