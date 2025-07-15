@@ -380,7 +380,7 @@ describe("Credential Issuer Tests", () => {
           }
         });
 
-        itIf("should return valid credential", isJwt, async () => {
+        itIf("should return valid JWT credential", isJwt, async () => {
           const didDocument: DidDocument = (await getDidDocument(CRI_URL)).data;
           const credential = credentialResponse.data.credentials[0].credential;
           expect(
