@@ -1,50 +1,42 @@
-import { getCredentialFormat } from "../../src/config";
-
-export type CredentialFormat = "jwt" | "mdoc";
+import {
+  getCredentialFormat,
+  getHasNotificationEndpoint,
+} from "../../src/config";
 
 /**
- * Credential format constants for conditional test execution.
- * Tests will only run if the current credential format matches the specified format.
+ * Boolean conditions for running tests
  */
-export const JWT_ONLY: CredentialFormat = "jwt";
-export const MDOC_ONLY: CredentialFormat = "mdoc";
+export const isJwt = () => getCredentialFormat() === "jwt";
+export const isMdoc = () => getCredentialFormat() === "mdoc";
+export const hasNotificationEndpoint = () =>
+  getHasNotificationEndpoint() === "true";
 
 /**
- * Determines if a test should run based on the current credential format.
- * @param format - The credential format string to check against
- * @returns true if the current credential format matches the specified format
- */
-const shouldRun = (format: CredentialFormat) =>
-  getCredentialFormat() === format;
-
-/**
- * Conditional version of Jest's describe() that only runs if the current
- * credential format matches the specified format.
+ * Version of Jest's describe() that runs based on a boolean condition.
  *
- * @param format - Credential format for which this test suite should run
  * @param name - Test suite name
+ * @param condition - Function that returns boolean
  * @param fn - Test suite function
  */
-export const conditionalDescribe = (
-  format: CredentialFormat,
+export const describeIf = (
   name: string,
+  condition: () => boolean,
   fn: () => void,
 ) => {
-  return shouldRun(format) ? describe(name, fn) : describe.skip(name, fn);
+  return condition() ? describe(name, fn) : describe.skip(name, fn);
 };
 
 /**
- * Conditional version of Jest's it() that only runs if the current
- * credential format matches the specified format.
+ * Version of Jest's it() that runs based on a boolean condition.
  *
- * @param format - Credential format for which this test should run
  * @param name - Test name
+ * @param condition - Function that returns boolean
  * @param fn - Test function
  */
-export const conditionalIt = (
-  format: CredentialFormat,
+export const itIf = (
   name: string,
+  condition: () => boolean,
   fn: () => void,
 ) => {
-  return shouldRun(format) ? it(name, fn) : it.skip(name, fn);
+  return condition() ? it(name, fn) : it.skip(name, fn);
 };
