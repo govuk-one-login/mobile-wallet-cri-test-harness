@@ -4,7 +4,7 @@ import {
 } from "../../src/config";
 
 /**
- * Boolean conditions for running tests
+ * Boolean conditions for running tests.
  */
 export const isJwt = () => getCredentialFormat() === "jwt";
 export const isMdoc = () => getCredentialFormat() === "mdoc";
