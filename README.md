@@ -28,26 +28,25 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
    - Executes the test suite (`run-tests.sh`) against the credential issuer. 
    - Exits when either process completes.
 
-**3. Credential Format-Specific Testing**
-- The test suite uses a helper function to determine which tests should be skipped based on the credential format and whether the CRI implements the notification endpoint. This allows the same test suite to be reused, skipping irrelevant tests automatically.
+**3. Conditional Tests**
+- The test suite uses conditional test helpers to run different tests based off the value of `HAS_NOTIFICATION_ENDPOINT` and `CREDENTIAL_FORMAT`:
 
 ```typescript
-export const isJwt = () => getCredentialFormat() === "jwt";
-export const isMdoc = () => getCredentialFormat() === "mdoc";
-export const hasNotificationEndpoint = () =>
-        getHasNotificationEndpoint() === "true";
-
-describeIf("JWT tests", isMdoc, () => {
-  // These tests only run when CREDENTIAL_FORMAT="jwt"
+// JWT credential tests - only run when CREDENTIAL_FORMAT="jwt"
+describeIf("JWT tests", isJwt(), () => {
+  // JWT-specific test cases
 });
 
-describeIf("mDoc tests", isMdoc, () => {
-  // These tests only run when CREDENTIAL_FORMAT="mdoc"
+// mDoc credential tests - only run when CREDENTIAL_FORMAT="mdoc"  
+describeIf("mDoc tests", isMdoc(), () => {
+  // mDoc-specific test cases
 });
 
-itIf("notification endpoint test", hasNotificationEndpoint, () => {
-  // These tests only run when HAS_NOTIFICATION_ENDPOINT="true"
+// Notification tests - only run when HAS_NOTIFICATION_ENDPOINT="true"
+itIf("notification endpoint test", hasNotificationEndpoint(), () => {
+  // Tests that notification endpoint
 });
+
 ```
 ## Usage
 
