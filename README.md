@@ -29,7 +29,7 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
    - Exits when either process completes.
 
 **3. Credential Format-Specific Testing**
-- The test suite uses a helper function to determine which tests should be skipped based on the credential format and whether the CRI implements the notification endpoint. This allows the same test suite to be reused, skipping irrelevant tests automatically.
+- The test suite determines which tests to run based off the value of `HAS_NOTIFICATION_ENDPOINT` and `CREDENTIAL_FORMAT`.
 
 ```typescript
 export const isJwt = () => getCredentialFormat() === "jwt";
