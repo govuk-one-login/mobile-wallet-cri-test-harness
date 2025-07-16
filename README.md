@@ -32,12 +32,7 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
 - The test suite determines which tests to run based off the value of `HAS_NOTIFICATION_ENDPOINT` and `CREDENTIAL_FORMAT`.
 
 ```typescript
-export const isJwt = () => getCredentialFormat() === "jwt";
-export const isMdoc = () => getCredentialFormat() === "mdoc";
-export const hasNotificationEndpoint = () =>
-        getHasNotificationEndpoint() === "true";
-
-describeIf("JWT tests", isMdoc, () => {
+describeIf("JWT tests", isJwt(), () => {
   // These tests only run when CREDENTIAL_FORMAT="jwt"
 });
 
