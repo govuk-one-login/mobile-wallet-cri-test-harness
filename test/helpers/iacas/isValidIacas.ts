@@ -48,9 +48,9 @@ export async function isValidIacas(iacas: Iacas): Promise<boolean> {
   let certificate: X509Certificate;
   try {
     certificate = new X509Certificate(pem);
-  } catch (error) {
+  } catch {
     throw new Error(
-      `INVALID_IACAS: Certificate PEM could not be parsed as X509. ${JSON.stringify(error)}`,
+      "INVALID_IACAS: Certificate PEM could not be parsed as X509",
     );
   }
 
@@ -65,7 +65,6 @@ export async function isValidIacas(iacas: Iacas): Promise<boolean> {
       `INVALID_IACAS: notAfter does not match. Should be "${notAfter}" but found "${certificate.notAfter.toISOString()}"`,
     );
   }
-
   const countryField = certificate.subjectName.getField("C");
   if (!countryField || countryField[0] !== country) {
     throw new Error(
@@ -88,6 +87,10 @@ export async function isValidIacas(iacas: Iacas): Promise<boolean> {
     );
   }
 
+  if (!(await certificate.isSelfSigned())) {
+    throw new Error("INVALID_IACAS: Certificate is not self-signed");
+  }
+
   const jwk = { ...iaca.publicKeyJwk, key_ops: ["verify"] };
   const publicKey = await crypto.subtle.importKey(
     "jwk",
@@ -96,11 +99,6 @@ export async function isValidIacas(iacas: Iacas): Promise<boolean> {
     false,
     ["verify"],
   );
-
-  if (!(await certificate.isSelfSigned())) {
-    throw new Error("INVALID_IACAS: Certificate is not self-signed");
-  }
-
   if (!(await certificate.verify({ publicKey }))) {
     throw new Error(
       "INVALID_IACAS: Signature verification failed with provided JWK",
