@@ -1,7 +1,6 @@
 /**
  * Configuration module for environment variables and application settings
  */
-import { CredentialFormat } from "../test/helpers/enums/credentialFormat";
 
 const ENV_VARS = {
   PORT: "PORT",
@@ -66,16 +65,12 @@ export function getClientId(): string {
   return getEnvVarValue(ENV_VARS.CLIENT_ID);
 }
 
-export function getCredentialFormat(): CredentialFormat {
+export function getCredentialFormat(): "jwt" | "mdoc" {
   const credentialFormat = getEnvVarValue(ENV_VARS.CREDENTIAL_FORMAT);
-  if (
-    !Object.values(CredentialFormat).includes(
-      credentialFormat as CredentialFormat,
-    )
-  ) {
+  if (credentialFormat !== "jwt" && credentialFormat !== "mdoc") {
     throw new Error(
       `Invalid credential format: ${credentialFormat}. Must be 'jwt' or 'mdoc'.`,
     );
   }
-  return credentialFormat as CredentialFormat;
+  return credentialFormat;
 }

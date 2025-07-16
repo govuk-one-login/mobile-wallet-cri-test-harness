@@ -1,7 +1,6 @@
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { metadataSchema } from "./metadataSchema";
-import { CredentialFormat } from "../enums/credentialFormat";
 
 export interface Metadata {
   credential_endpoint: string;
@@ -57,7 +56,7 @@ export async function isValidMetadata(
     );
   }
 
-  if (credentialFormat === CredentialFormat.MDOC) {
+  if (credentialFormat === "mdoc") {
     // mdoc_iacas_uri is required in mDoc credentials only
     const validIacasEndpoint = criUrl + "/iacas";
     if (
