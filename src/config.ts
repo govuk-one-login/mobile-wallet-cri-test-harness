@@ -10,6 +10,7 @@ const ENV_VARS = {
   TEST_HARNESS_URL: "TEST_HARNESS_URL",
   CLIENT_ID: "CLIENT_ID",
   CREDENTIAL_FORMAT: "CREDENTIAL_FORMAT",
+  HAS_NOTIFICATION_ENDPOINT: "HAS_NOTIFICATION_ENDPOINT",
 } as const;
 
 /**
@@ -63,6 +64,10 @@ export function getSelfURL(): string {
 
 export function getClientId(): string {
   return getEnvVarValue(ENV_VARS.CLIENT_ID);
+}
+
+export function getHasNotificationEndpoint(): string {
+  return getEnvVarValue(ENV_VARS.HAS_NOTIFICATION_ENDPOINT);
 }
 
 export function getCredentialFormat(): "jwt" | "mdoc" {
