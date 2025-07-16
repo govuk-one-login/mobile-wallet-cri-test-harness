@@ -1,9 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 
-async function getWellKnown(
-  criUrl: string,
-  path: string,
-): Promise<AxiosResponse> {
+async function get(criUrl: string, path: string): Promise<AxiosResponse> {
   try {
     const url = new URL(path, criUrl).toString();
     return await axios.get(getDockerDnsName(url));
@@ -15,15 +12,19 @@ async function getWellKnown(
 }
 
 export async function getJwks(criUrl: string): Promise<AxiosResponse> {
-  return getWellKnown(criUrl, ".well-known/jwks.json");
+  return get(criUrl, ".well-known/jwks.json");
 }
 
 export async function getMetadata(criUrl: string): Promise<AxiosResponse> {
-  return getWellKnown(criUrl, ".well-known/openid-credential-issuer");
+  return get(criUrl, ".well-known/openid-credential-issuer");
 }
 
 export async function getDidDocument(criUrl: string): Promise<AxiosResponse> {
-  return getWellKnown(criUrl, ".well-known/did.json");
+  return get(criUrl, ".well-known/did.json");
+}
+
+export async function getIacas(criUrl: string): Promise<AxiosResponse> {
+  return get(criUrl, "iacas");
 }
 
 export async function getCredential(
