@@ -34,37 +34,83 @@ export async function isValidIacas(iacas: Iacas) {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   const rulesValidator = ajv.addSchema(iacasSchema).compile(iacasSchema);
   if (!rulesValidator(iacas)) {
-    const message = JSON.stringify(rulesValidator.errors);
+    const errors = JSON.stringify(rulesValidator.errors);
     throw new Error(
-      `INVALID_IACAS: IACAS does not comply with the schema. ${message}`,
+      `INVALID_IACAS: IACAS does not comply with the schema. ${errors}`,
     );
   }
 
-  const pem = iacas.data[0].certificatePem;
-  const pemBody = pem
-    .replace("-----BEGIN CERTIFICATE-----", "")
-    .replace("-----END CERTIFICATE-----", "")
-    .replace(/\s+/g, "");
-  const der = Buffer.from(pemBody, "base64");
-  const cert = new X509Certificate(der);
+  const iaca = iacas.data[0];
 
-  const notBefore = cert.notBefore.toISOString();
-  const notAfter = cert.notAfter.toISOString();
+  let certificate;
+  let der;
+  try {
+    const pem = iaca.certificatePem;
+    const pemBody = pem
+      .replace("-----BEGIN CERTIFICATE-----", "")
+      .replace("-----END CERTIFICATE-----", "")
+      .replace(/\s+/g, "");
+    der = Buffer.from(pemBody, "base64");
+    certificate = new X509Certificate(der);
+  } catch (error) {
+    throw new Error(
+      `INVALID_IACAS: Certificate PEM could not be parsed as X509 certificate. ${JSON.stringify(error)}`,
+    );
+  }
 
-  console.log(cert.subjectName.getThumbprint("sha256"));
-  console.log(cert.subjectName);
+  const certificateData = iaca.certificateData;
+  if (certificateData.notBefore !== certificate.notBefore.toISOString()) {
+    throw new Error(`INVALID_IACAS: notBefore does not match.`);
+  }
+  if (certificateData.notAfter !== certificate.notAfter.toISOString()) {
+    throw new Error(`INVALID_IACAS: notAfter does not match.`);
+  }
+  if (certificateData.country !== certificate.subjectName.getField("C")[0]) {
+    throw new Error(`INVALID_IACAS: country does not match.`);
+  }
+  if (
+    certificateData.commonName !== certificate.subjectName.getField("CN")[0]
+  ) {
+    throw new Error(`INVALID_IACAS: commonName does not match.`);
+  }
 
+  const certificateFingerprint = iaca.certificateFingerprint;
   const fingerprint = createHash("sha256")
     .update(Buffer.from(der))
     .digest("hex");
-  const publicKeyJwk = cert.publicKey;
+  if (certificateFingerprint !== fingerprint) {
+    throw new Error(`INVALID_IACAS: Fingerprint does not match.`);
+  }
 
-  console.log({
-    notBefore,
-    notAfter,
-    certificateFingerprint: fingerprint,
-    publicKeyJwk,
-  });
+  const jwk = {
+    kty: iaca.publicKeyJwk.kty,
+    crv: iaca.publicKeyJwk.crv,
+    x: iaca.publicKeyJwk.x,
+    y: iaca.publicKeyJwk.y,
+    key_ops: ["verify"],
+  };
+  const publicKey = await crypto.subtle.importKey(
+    "jwk",
+    jwk,
+    {
+      name: "ECDSA",
+      namedCurve: iaca.publicKeyJwk.crv,
+    },
+    false,
+    ["verify"],
+  );
+
+  const isSelfSigned = await certificate.isSelfSigned();
+  if (!isSelfSigned) {
+    throw new Error(`INVALID_IACAS: Certificate is not self-signed`);
+  }
+
+  const isValidSignature = await certificate.verify({ publicKey: publicKey });
+  if (!isValidSignature) {
+    throw new Error(
+      `INVALID_IACAS: Certificate signature could not be verified with IACA JWK`,
+    );
+  }
 
   return true;
 }
