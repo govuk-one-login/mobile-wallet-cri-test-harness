@@ -87,6 +87,14 @@ export async function isValidIacas(iacas: Iacas): Promise<boolean> {
     );
   }
 
+  /*
+  A self-signed X.509 certificate is one where the certificate's
+  issuer and subject are the same, and it is signed using its own
+  private key.
+
+  To verify the authenticity of such a certificate, its embedded
+  public key must be able to verify its own digital signature.
+  */
   if (!(await certificate.isSelfSigned())) {
     throw new Error("INVALID_IACAS: Certificate is not self-signed");
   }
@@ -99,6 +107,7 @@ export async function isValidIacas(iacas: Iacas): Promise<boolean> {
     false,
     ["verify"],
   );
+
   if (!(await certificate.verify({ publicKey }))) {
     throw new Error(
       "INVALID_IACAS: Signature verification failed with provided JWK",
