@@ -28,7 +28,7 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
    - Executes the test suite (`run-tests.sh`) against the credential issuer. 
    - Exits when either process completes.
 
-**3. Credential Format-Specific Testing**
+**3. Conditional Tests**
 - The test suite determines which tests to run based off the value of `HAS_NOTIFICATION_ENDPOINT` and `CREDENTIAL_FORMAT`.
 
 ```typescript
