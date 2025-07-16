@@ -56,6 +56,7 @@ let DID_VERIFICATION_METHOD;
 let JWKS;
 let CREDENTIAL_ENDPOINT;
 let NOTIFICATION_ENDPOINT;
+let IACAS_ENDPOINT;
 let PRIVATE_KEY_JWK;
 let PUBLIC_KEY_JWK;
 let NONCE;
@@ -78,6 +79,7 @@ describe("Credential Issuer Tests", () => {
     const metadata: Metadata = (await getMetadata(CRI_URL)).data;
     CREDENTIAL_ENDPOINT = metadata.credential_endpoint;
     NOTIFICATION_ENDPOINT = metadata.notification_endpoint;
+    IACAS_ENDPOINT = metadata.mdoc_iacas_uri;
     PRIVATE_KEY_JWK = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
@@ -185,7 +187,7 @@ describe("Credential Issuer Tests", () => {
     describe("when requesting the credential issuer IACAs", () => {
       let response;
       beforeAll(async () => {
-        response = await getIacas(CRI_URL);
+        response = await getIacas(CRI_URL, IACAS_ENDPOINT);
       });
 
       it("should return 200 status code", () => {

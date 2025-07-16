@@ -23,8 +23,8 @@ export async function getDidDocument(criUrl: string): Promise<AxiosResponse> {
   return get(criUrl, ".well-known/did.json");
 }
 
-export async function getIacas(criUrl: string): Promise<AxiosResponse> {
-  return get(criUrl, "iacas");
+export async function getIacas(criUrl: string, path): Promise<AxiosResponse> {
+  return get(criUrl, path);
 }
 
 export async function getCredential(
