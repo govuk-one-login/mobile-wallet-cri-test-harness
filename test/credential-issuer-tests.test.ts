@@ -33,10 +33,12 @@ import { isValidJwks } from "./helpers/jwks/isValidJwks";
 import {
   getCredential,
   getDidDocument,
+  getIacas,
   getJwks,
   getMetadata,
   sendNotification,
 } from "./helpers/api/api";
+import { isValidIacas } from "./helpers/iacas/isValidIacas";
 
 // Helper function to determine if a test should run
 const shouldRun = (types: string[]) => types.includes(getCredentialFormat());
@@ -181,8 +183,22 @@ describe("Credential Issuer Tests", () => {
 
   (shouldRun(MDOC_ONLY) ? describe : describe.skip)("IACAs", () => {
     describe("when requesting the credential issuer IACAs", () => {
-      it("should be true", () => {
-        expect(true).toBe(true);
+      let response;
+      beforeAll(async () => {
+        response = await getIacas(CRI_URL);
+      });
+
+      it("should return 200 status code", () => {
+        expect(response.status).toBe(200);
+      });
+
+      it("should return JSON content", () => {
+        expect(response.headers["content-type"]).toContain("application/json");
+        expect(response.data).toBeTruthy();
+      });
+
+      it("should return valid IACAs", async () => {
+        expect(await isValidIacas(response.data)).toBe(true);
       });
     });
   });
