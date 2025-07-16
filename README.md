@@ -29,20 +29,24 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
    - Exits when either process completes.
 
 **3. Conditional Tests**
-- The test suite determines which tests to run based off the value of `HAS_NOTIFICATION_ENDPOINT` and `CREDENTIAL_FORMAT`.
+- The test suite uses conditional test helpers to run different tests based off the value of `HAS_NOTIFICATION_ENDPOINT` and `CREDENTIAL_FORMAT`:
 
 ```typescript
+// JWT credential tests - only run when CREDENTIAL_FORMAT="jwt"
 describeIf("JWT tests", isJwt(), () => {
-  // These tests only run when CREDENTIAL_FORMAT="jwt"
+  // JWT-specific test cases
 });
 
-describeIf("mDoc tests", isMdoc, () => {
-  // These tests only run when CREDENTIAL_FORMAT="mdoc"
+// mDoc credential tests - only run when CREDENTIAL_FORMAT="mdoc"  
+describeIf("mDoc tests", isMdoc(), () => {
+  // mDoc-specific test cases
 });
 
-itIf("notification endpoint test", hasNotificationEndpoint, () => {
-  // These tests only run when HAS_NOTIFICATION_ENDPOINT="true"
+// Notification tests - only run when HAS_NOTIFICATION_ENDPOINT="true"
+itIf("notification endpoint test", hasNotificationEndpoint(), () => {
+  // Tests that notification endpoint
 });
+
 ```
 ## Usage
 
