@@ -13,6 +13,8 @@ export interface Payload {
   exp: number;
 }
 
+const EXPECTED_TOKEN_DURATION_MINUTES = 30;
+
 export async function isValidPreAuthorizedCode(
   preAuthorizedCode: string,
   jwks: JWK[],
@@ -103,22 +105,40 @@ function validatePayload(
     );
   }
 
-  const tokenIssuedAt = new Date(payload.iat * 1000);
-  if (tokenIssuedAt > new Date()) {
+  const issuedAt = epochSecondsToDate(payload.iat);
+  const currentTime = new Date();
+  if (issuedAt > currentTime) {
     throw new Error(
       `"INVALID_PAYLOAD: Invalid "iat" value in token. Should be in the past but is in the future`,
     );
   }
 
-  const tokenExpiresAt = new Date(payload.exp * 1000);
-  const expiry = (tokenExpiresAt.getTime() - tokenIssuedAt.getTime()) / 60000;
-  if (expiry !== 30) {
+  const expirationTime = epochSecondsToDate(payload.exp);
+  const actualTokenDurationMinutes = getDurationInMinutes(
+    issuedAt,
+    expirationTime,
+  );
+  if (actualTokenDurationMinutes !== EXPECTED_TOKEN_DURATION_MINUTES) {
     console.log(
-      `Note: if your issuer is configured for the credential offer to be valid for a time 
-      other than 30 minutes then you can change this test expectation in validatePreAuthorizedCode.ts`,
+      `Note: If your issuer is configured for the credential offer to be valid for a time other than 
+      ${EXPECTED_TOKEN_DURATION_MINUTES} minutes, update EXPECTED_TOKEN_DURATION_MINUTES in isValidPreAuthorizedCode.ts.`,
     );
+
     throw new Error(
-      `INVALID_PAYLOAD: Invalid "exp" value in token. Expected 30 minute expiry but found ${expiry} minutes`,
+      `INVALID_PAYLOAD: Invalid "exp" value in token. ` +
+        `Expected ${EXPECTED_TOKEN_DURATION_MINUTES} minute expiry but found ${actualTokenDurationMinutes} minutes`,
     );
   }
+}
+
+// Helper function to convert epoch seconds to Date
+function epochSecondsToDate(epochSeconds) {
+  const millisecondsPerSecond = 1000;
+  return new Date(epochSeconds * millisecondsPerSecond);
+}
+
+// Helper function to calculate duration in minutes between two dates
+function getDurationInMinutes(startDate, endDate) {
+  const millisecondsPerMinute = 60000;
+  return (endDate.getTime() - startDate.getTime()) / millisecondsPerMinute;
 }

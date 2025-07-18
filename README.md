@@ -10,7 +10,7 @@ This test harness enables GOV.UK Wallet credential issuer services to validate t
 - Use the appropriate script for your credential format: either `test-jwt.sh` (for JWT) or `test-mdoc.sh` (for mDoc).
 - Both scripts require a single argument: the `CREDENTIAL_OFFER_DEEP_LINK`.
 - Both scripts set the following environment variables:
-  - `CREDENTIAL_FORMAT`: `"jwt" `or `mdoc`
+  - `CREDENTIAL_FORMAT`: `"jwt" `or `"mdoc"`
   - `CREDENTIAL_OFFER_DEEP_LINK`: your credential offer deep link
   - `CRI_DOMAIN`: domain of the credential issuer under test
   - `WALLET_SUBJECT_ID`: dummy wallet identifier

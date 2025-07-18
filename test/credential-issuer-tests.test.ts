@@ -1,5 +1,6 @@
 import {
   getClientId,
+  getCredentialFormat,
   getCredentialOfferDeepLink,
   getCriDomain,
   getCriUrl,
@@ -56,6 +57,7 @@ let PUBLIC_KEY_JWK;
 let NONCE;
 let CLIENT_ID;
 let SELF_URL;
+let CREDENTIAL_FORMAT;
 
 describe("Credential Issuer Tests", () => {
   beforeAll(async () => {
@@ -79,6 +81,7 @@ describe("Credential Issuer Tests", () => {
     NONCE = randomUUID();
     CLIENT_ID = getClientId();
     SELF_URL = getSelfURL();
+    CREDENTIAL_FORMAT = getCredentialFormat();
   });
 
   describe("Credential Offer", () => {
@@ -123,9 +126,14 @@ describe("Credential Issuer Tests", () => {
       });
 
       it("should return valid metadata", async () => {
-        expect(await isValidMetadata(response.data, CRI_URL, SELF_URL)).toBe(
-          true,
-        );
+        expect(
+          await isValidMetadata(
+            response.data,
+            CRI_URL,
+            SELF_URL,
+            CREDENTIAL_FORMAT,
+          ),
+        ).toBe(true);
       });
     });
   });

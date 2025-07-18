@@ -5,6 +5,7 @@ import { metadataSchema } from "./metadataSchema";
 export interface Metadata {
   credential_endpoint: string;
   notification_endpoint?: string;
+  mdoc_iacas_uri?: string;
   authorization_servers: string[];
   credential_issuer: string;
   credential_configurations_supported: object;
@@ -14,6 +15,7 @@ export async function isValidMetadata(
   metadata: Metadata,
   criUrl: string,
   authServerUrl: string,
+  credentialFormat: string,
 ): Promise<true> {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri"] });
@@ -52,6 +54,19 @@ export async function isValidMetadata(
     throw new Error(
       `INVALID_METADATA: Invalid "notification_endpoint" value. Should be ${validNotificationEndpoint} but found ${metadata.notification_endpoint}`,
     );
+  }
+
+  if (credentialFormat === "mdoc") {
+    // mdoc_iacas_uri is required in mDoc credentials only
+    const validIacasEndpoint = criUrl + "/iacas";
+    if (
+      !metadata.mdoc_iacas_uri ||
+      metadata.mdoc_iacas_uri !== validIacasEndpoint
+    ) {
+      throw new Error(
+        `INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be ${validIacasEndpoint} but found ${metadata.mdoc_iacas_uri}`,
+      );
+    }
   }
 
   return true;
