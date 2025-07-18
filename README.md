@@ -4,7 +4,7 @@
 
 This test harness enables GOV.UK Wallet credential issuer services to validate their implementations without requiring access to the mobile app. It acts as a mock wallet client that can test credential issuance flows end-to-end.
 
-## How to use it - Running the test suite against a credential issuer
+## How to run the test suite against a credential issuer
 
 ### Pre-requisites
 
