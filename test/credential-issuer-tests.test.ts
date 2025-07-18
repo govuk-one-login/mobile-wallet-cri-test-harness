@@ -33,10 +33,12 @@ import { isValidJwks } from "./helpers/jwks/isValidJwks";
 import {
   getCredential,
   getDidDocument,
+  getIacas,
   getJwks,
   getMetadata,
   sendNotification,
 } from "./helpers/api/api";
+import { isValidIacas } from "./helpers/iacas/isValidIacas";
 import {
   describeIf,
   itIf,
@@ -52,6 +54,7 @@ let WALLET_SUBJECT_ID;
 let PRE_AUTHORIZED_CODE_PAYLOAD;
 let CREDENTIAL_ENDPOINT;
 let NOTIFICATION_ENDPOINT;
+let IACAS_ENDPOINT;
 let PRIVATE_KEY_JWK;
 let PUBLIC_KEY_JWK;
 let NONCE;
@@ -72,6 +75,7 @@ describe("Credential Issuer Tests", () => {
     const metadata = (await getMetadata(CRI_URL)).data;
     CREDENTIAL_ENDPOINT = metadata.credential_endpoint;
     NOTIFICATION_ENDPOINT = metadata.notification_endpoint;
+    IACAS_ENDPOINT = metadata.mdoc_iacas_uri;
     PRIVATE_KEY_JWK = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
@@ -164,8 +168,22 @@ describe("Credential Issuer Tests", () => {
 
   describeIf("IACAs", isMdoc, () => {
     describe("when requesting the credential issuer IACAs", () => {
-      it("should be true", () => {
-        expect(true).toBe(true);
+      let response;
+      beforeAll(async () => {
+        response = await getIacas(CRI_URL, IACAS_ENDPOINT);
+      });
+
+      it("should return 200 status code", () => {
+        expect(response.status).toBe(200);
+      });
+
+      it("should return JSON content", () => {
+        expect(response.headers["content-type"]).toContain("application/json");
+        expect(response.data).toBeTruthy();
+      });
+
+      it("should return valid IACAs", async () => {
+        expect(await isValidIacas(response.data)).toBe(true);
       });
     });
   });

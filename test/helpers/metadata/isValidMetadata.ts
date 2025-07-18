@@ -9,6 +9,7 @@ export interface Metadata {
   authorization_servers: string[];
   credential_issuer: string;
   credential_configurations_supported: object;
+  mdoc_iacas_uri?: string;
 }
 
 export async function isValidMetadata(
