@@ -1,5 +1,6 @@
 import {
   getClientId,
+  getCredentialFormat,
   getCredentialOfferDeepLink,
   getCriDomain,
   getCriUrl,
@@ -32,10 +33,12 @@ import { isValidJwks } from "./helpers/jwks/isValidJwks";
 import {
   getCredential,
   getDidDocument,
+  getIacas,
   getJwks,
   getMetadata,
   sendNotification,
 } from "./helpers/api/api";
+import { isValidIacas } from "./helpers/iacas/isValidIacas";
 import {
   describeIf,
   itIf,
@@ -51,11 +54,13 @@ let WALLET_SUBJECT_ID;
 let PRE_AUTHORIZED_CODE_PAYLOAD;
 let CREDENTIAL_ENDPOINT;
 let NOTIFICATION_ENDPOINT;
+let IACAS_ENDPOINT;
 let PRIVATE_KEY_JWK;
 let PUBLIC_KEY_JWK;
 let NONCE;
 let CLIENT_ID;
 let SELF_URL;
+let CREDENTIAL_FORMAT;
 
 describe("Credential Issuer Tests", () => {
   beforeAll(async () => {
@@ -70,6 +75,7 @@ describe("Credential Issuer Tests", () => {
     const metadata = (await getMetadata(CRI_URL)).data;
     CREDENTIAL_ENDPOINT = metadata.credential_endpoint;
     NOTIFICATION_ENDPOINT = metadata.notification_endpoint;
+    IACAS_ENDPOINT = metadata.mdoc_iacas_uri;
     PRIVATE_KEY_JWK = JSON.parse(
       readFileSync("test/helpers/credential/privateKey", "utf8"),
     ) as JWK;
@@ -79,6 +85,7 @@ describe("Credential Issuer Tests", () => {
     NONCE = randomUUID();
     CLIENT_ID = getClientId();
     SELF_URL = getSelfURL();
+    CREDENTIAL_FORMAT = getCredentialFormat();
   });
 
   describe("Credential Offer", () => {
@@ -123,9 +130,14 @@ describe("Credential Issuer Tests", () => {
       });
 
       it("should return valid metadata", async () => {
-        expect(await isValidMetadata(response.data, CRI_URL, SELF_URL)).toBe(
-          true,
-        );
+        expect(
+          await isValidMetadata(
+            response.data,
+            CRI_URL,
+            SELF_URL,
+            CREDENTIAL_FORMAT,
+          ),
+        ).toBe(true);
       });
     });
   });
@@ -156,8 +168,22 @@ describe("Credential Issuer Tests", () => {
 
   describeIf("IACAs", isMdoc, () => {
     describe("when requesting the credential issuer IACAs", () => {
-      it("should be true", () => {
-        expect(true).toBe(true);
+      let response;
+      beforeAll(async () => {
+        response = await getIacas(CRI_URL, IACAS_ENDPOINT);
+      });
+
+      it("should return 200 status code", () => {
+        expect(response.status).toBe(200);
+      });
+
+      it("should return JSON content", () => {
+        expect(response.headers["content-type"]).toContain("application/json");
+        expect(response.data).toBeTruthy();
+      });
+
+      it("should return valid IACAs", async () => {
+        expect(await isValidIacas(response.data)).toBe(true);
       });
     });
   });
@@ -369,9 +395,15 @@ describe("Credential Issuer Tests", () => {
           ).toBeTruthy();
         });
 
+        it("should return response body with 'credentials' and 'credential' claims ", () => {
+          expect(credentialResponse.data).toHaveProperty("credentials");
+          expect(credentialResponse.data.credentials[0]).toHaveProperty("credential");
+        });
+
         itIf("should return notification_id", hasNotificationEndpoint, () => {
           if (NOTIFICATION_ENDPOINT) {
             expect(credentialResponse.data.notification_id).toBeTruthy();
+            expect(credentialResponse.data).toHaveProperty("notification_id");
             expect(typeof credentialResponse.data.notification_id).toBe(
               "string",
             );

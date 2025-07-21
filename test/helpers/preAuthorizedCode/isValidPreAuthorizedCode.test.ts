@@ -196,10 +196,6 @@ describe("isValidPreAuthorizedCode", () => {
     ).rejects.toThrow(
       'INVALID_PAYLOAD: Invalid "exp" value in token. Expected 30 minute expiry but found 10 minutes',
     );
-    expect(console.log).toHaveBeenCalledWith(
-      `Note: if your issuer is configured for the credential offer to be valid for a time 
-      other than 30 minutes then you can change this test expectation in validatePreAuthorizedCode.ts`,
-    );
   });
 
   it("should throw 'INVALID_PAYLOAD' error when token issuer is not 'https://test-example-cri.gov.uk'", async () => {

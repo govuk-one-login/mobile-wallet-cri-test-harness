@@ -4,20 +4,29 @@ const authServerUrl = "https://test-auth-server.gov.uk";
 const criUrl = "https://test-example-cri.gov.uk";
 
 describe("isValidMetadata", () => {
-  it("returns true when metadata is valid and notification_endpoint is absent", async () => {
+  it("should return true when metadata is valid - JWT credential", async () => {
     const metadata = metadataBuilder().withDefaults();
-    expect(await isValidMetadata(metadata, criUrl, authServerUrl)).toEqual(
-      true,
-    );
+    expect(
+      await isValidMetadata(metadata, criUrl, authServerUrl, "jwt"),
+    ).toEqual(true);
   });
 
-  it("returns true when metadata is valid and notification_endpoint is present", async () => {
+  it("should return true when metadata is valid - mDoc credential", async () => {
+    const metadata = metadataBuilder().withOverrides({
+      mdoc_iacas_uri: "https://test-example-cri.gov.uk/iacas",
+    });
+    expect(
+      await isValidMetadata(metadata, criUrl, authServerUrl, "mdoc"),
+    ).toEqual(true);
+  });
+
+  it("should return true when metadata is valid - notification_endpoint is present", async () => {
     const metadata = metadataBuilder().withOverrides({
       notification_endpoint: "https://test-example-cri.gov.uk/notification",
     });
-    expect(await isValidMetadata(metadata, criUrl, authServerUrl)).toEqual(
-      true,
-    );
+    expect(
+      await isValidMetadata(metadata, criUrl, authServerUrl, "jwt"),
+    ).toEqual(true);
   });
 
   it("should throw 'INVALID_METADATA' error when 'credential_configurations_supported' is missing", async () => {
@@ -25,7 +34,7 @@ describe("isValidMetadata", () => {
       credential_configurations_supported: false,
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, "jwt"),
     ).rejects.toThrow(
       'INVALID_METADATA: Metadata does not comply with the schema. [{"instancePath":"/credential_configurations_supported","schemaPath":"#/properties/credential_configurations_supported/type","keyword":"type","params":{"type":"object"},"message":"must be object"}]',
     );
@@ -36,7 +45,7 @@ describe("isValidMetadata", () => {
       credential_issuer: "https://something-else.com/",
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, "jwt"),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "credential_issuer" value. Should be https://test-example-cri.gov.uk but found https://something-else.com/',
     );
@@ -47,7 +56,7 @@ describe("isValidMetadata", () => {
       credential_endpoint: "https://something-else.com/something",
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, "jwt"),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "credential_endpoint" value. Should be https://test-example-cri.gov.uk/credential but found https://something-else.com/something',
     );
@@ -58,7 +67,7 @@ describe("isValidMetadata", () => {
       notification_endpoint: "https://something-else.com/something",
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, "jwt"),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "notification_endpoint" value. Should be https://test-example-cri.gov.uk/notification but found https://something-else.com/something',
     );
@@ -69,9 +78,29 @@ describe("isValidMetadata", () => {
       authorization_servers: ["https://something-else.com/"],
     });
     await expect(
-      isValidMetadata(metadata, criUrl, authServerUrl),
+      isValidMetadata(metadata, criUrl, authServerUrl, "jwt"),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "authorization_servers" value. Should contain https://test-auth-server.gov.uk but only contains https://something-else.com/',
+    );
+  });
+
+  it("should throw 'INVALID_METADATA' error when 'mdoc_iacas_uri' is missing - mDOC credential", async () => {
+    const metadata = metadataBuilder().withDefaults();
+    await expect(
+      isValidMetadata(metadata, criUrl, authServerUrl, "mdoc"),
+    ).rejects.toThrow(
+      'INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be https://test-example-cri.gov.uk/iacas but found undefined',
+    );
+  });
+
+  it("should throw 'INVALID_METADATA' error when 'mdoc_iacas_uri' does not match CRI's IACAs endpoint - mDOC credential", async () => {
+    const metadata = metadataBuilder().withOverrides({
+      mdoc_iacas_uri: "https://something-else.com/something",
+    });
+    await expect(
+      isValidMetadata(metadata, criUrl, authServerUrl, "mdoc"),
+    ).rejects.toThrow(
+      'INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be https://test-example-cri.gov.uk/iacas but found https://something-else.com/something',
     );
   });
 });
