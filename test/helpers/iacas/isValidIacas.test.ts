@@ -72,6 +72,7 @@ describe("isValidIacas", () => {
       crv: "P-256",
       x: "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
       y: "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+      alg: "ES256",
     }; // Different public key JWK
 
     await expect(isValidIacas(iacas)).rejects.toThrow(
@@ -112,6 +113,7 @@ function getIacas(): Iacas {
           crv: "P-256",
           x: "yvGaxE2exUF8N_sY-3y1dsr9bxSzpWRNK9jENMrATms",
           y: "-5nt1SU4K9E5O3l-kNH174d2rSH22tnDAFjYc4MBZVs",
+          alg: "ES256",
         },
       },
     ],

@@ -15,6 +15,7 @@ export interface PublicKeyJwk {
   crv: string;
   x: string;
   y: string;
+  alg: string;
 }
 
 export interface CertificateItem {

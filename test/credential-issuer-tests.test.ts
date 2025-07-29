@@ -397,7 +397,9 @@ describe("Credential Issuer Tests", () => {
 
         it("should return response body with 'credentials' and 'credential' claims ", () => {
           expect(credentialResponse.data).toHaveProperty("credentials");
-          expect(credentialResponse.data.credentials[0]).toHaveProperty("credential");
+          expect(credentialResponse.data.credentials[0]).toHaveProperty(
+            "credential",
+          );
         });
 
         itIf("should return notification_id", hasNotificationEndpoint, () => {
