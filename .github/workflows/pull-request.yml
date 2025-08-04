@@ -4,8 +4,8 @@ on:
   pull_request:
 
 jobs:
-  build-lint-and-test:
-    name: Build, lint and test
+  validate-build-lint-and-test:
+    name: Validate, build, lint and test
     runs-on: ubuntu-24.04
     steps:
       - name: Validate pull request name
