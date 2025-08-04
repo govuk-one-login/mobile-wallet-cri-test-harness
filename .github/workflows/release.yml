@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: Create release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      version-changed: ${{ steps.release.outputs.version != '' }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Create semantic release
+        uses: cocogitto/cocogitto-action@c7a74f5406bab86da17da0f0e460a69f8219a68c # v3.11
+        id: release
+        with:
+          release: true
+          git-user: 'github-actions[bot]'
+          git-user-email: 'github-actions[bot]@users.noreply.github.com'
+          check-latest-tag-only: true
+
+      - name: Log release info
+        if: steps.release.outputs.version != ''
+        run: |
+          echo "New release created: ${{ steps.release.outputs.version }}"
+          echo "View the release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.release.outputs.version }}"
