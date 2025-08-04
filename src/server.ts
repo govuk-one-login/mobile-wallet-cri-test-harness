@@ -16,8 +16,6 @@ app.get("/.well-known/jwks.json", async (_req: Request, res: Response) => {
   res.status(200).json(response);
 });
 
-console.log("This is a test release")
-
 const server = app
   .listen(port, async () => {
     console.log(`Server is running on port ${port}`);
