@@ -35,10 +35,3 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:unit
-
-      - name: Increment Version
-        id: versioning
-        uses: Oliver-Binns/Versioning@main
-        with:
-          ACTION_TYPE: 'Release'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
