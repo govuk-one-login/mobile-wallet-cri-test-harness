@@ -1,4 +1,4 @@
-name: Nightly Build
+name: Nightly Quality Analysis & Docker Image Vulnerability Scan
 
 on:
   schedule:
