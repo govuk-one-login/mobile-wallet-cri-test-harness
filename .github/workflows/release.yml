@@ -11,14 +11,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  release:
+  create-release:
     name: Create release
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     outputs:
       version: ${{ steps.release.outputs.version }}
-      version-changed: ${{ steps.release.outputs.version != '' }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -34,8 +33,18 @@ jobs:
           git-user-email: 'github-actions[bot]@users.noreply.github.com'
           check-latest-tag-only: true
 
+      - name: Push semantic version tag
+        run: git push --follow-tags && git push --tags
+        shell: bash
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
+        with:
+          tag_name: ${{ steps.release.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
       - name: Log release info
-        if: steps.release.outputs.version != ''
         run: |
           echo "New release created: ${{ steps.release.outputs.version }}"
-          echo "View the release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.release.outputs.version }}"
