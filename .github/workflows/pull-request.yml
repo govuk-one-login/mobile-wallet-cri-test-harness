@@ -1,4 +1,4 @@
-name: Pull-Request Checks
+name: Pull-Request
 
 on:
   pull_request:
@@ -6,8 +6,14 @@ on:
 jobs:
   build-lint-and-test:
     name: Build, lint and test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
+      - name: Validate pull request name
+        id: versioning
+        uses: Oliver-Binns/Versioning@b6152639f8a9674571ba9794e27a47e2593ceb43 # pin@v1.3.3
+        with:
+          ACTION_TYPE: 'Validate'
+
       - name: Check out repository code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -29,3 +35,10 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:unit
+
+      - name: Increment Version
+        id: versioning
+        uses: Oliver-Binns/Versioning@main
+        with:
+          ACTION_TYPE: 'Release'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
