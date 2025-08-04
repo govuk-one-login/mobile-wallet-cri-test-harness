@@ -1,0 +1,24 @@
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  increment-version:
+    name: Increment version
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Add path globally
+        run: echo "/usr/local/bin" >> $GITHUB_PATH
+
+      - name: Increment version
+        id: versioning
+        uses: Oliver-Binns/Versioning@4695fba9f63bed5b557094f9a64f7a2b1a7639e8 # pin@v1.1.0
+        with:
+          ACTION_TYPE: 'Release'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

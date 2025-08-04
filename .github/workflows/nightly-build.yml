@@ -1,4 +1,4 @@
-name: Code Quality Analysis & Docker Image Scan
+name: Nightly Quality Analysis & Docker Image Vulnerability Scan
 
 on:
   schedule:
@@ -11,8 +11,8 @@ permissions:
 
 jobs:
   sonarqube-scan:
-    name: SonarQube
-    runs-on: ubuntu-latest
+    name: SonarQube scan
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
