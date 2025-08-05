@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -16,13 +16,15 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-    outputs:
-      version: ${{ steps.release.outputs.version }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_tag
+        run: echo "version=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
 
       - name: Create semantic release
         uses: cocogitto/cocogitto-action@c7a74f5406bab86da17da0f0e460a69f8219a68c # v3.11
@@ -33,11 +35,25 @@ jobs:
           git-user-email: 'github-actions[bot]@users.noreply.github.com'
           check-latest-tag-only: true
 
+      - name: Check if version was bumped
+        id: created
+        run: |
+          prev=${{ steps.get_tag.outputs.version }}
+          new=${{ steps.release.outputs.version }}
+          
+          if [ "$prev" = "$new" ]; then
+            echo "bump=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "bump=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Push semantic version tag
+        if: steps.created.outputs.bump == 'true'
         run: git push --follow-tags && git push --tags
         shell: bash
 
       - name: Create GitHub release
+        if: steps.created.outputs.bump == 'true'
         uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         with:
           tag_name: ${{ steps.release.outputs.version }}
@@ -46,5 +62,6 @@ jobs:
           generate_release_notes: true
 
       - name: Log release info
+        if: steps.created.outputs.bump == 'true'
         run: |
           echo "New release created: ${{ steps.release.outputs.version }}"
