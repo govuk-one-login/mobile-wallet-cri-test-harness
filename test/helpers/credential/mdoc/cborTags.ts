@@ -1,0 +1,5 @@
+export const CBOR_TAGS = {
+  ENCODED_CBOR: 24,
+  FULL_DATE_STRING: 1004,
+  DATE_TIME_STRING: 0,
+};
