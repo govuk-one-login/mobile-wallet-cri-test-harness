@@ -12,9 +12,9 @@ function createAjvInstance(): Ajv {
     keyword: "instanceof",
     type: "object",
     schemaType: "string",
-    compile: function (schemaVal) {
+    compile: function (schemaValue) {
       return function validate(data) {
-        if (schemaVal === "Buffer") return Buffer.isBuffer(data);
+        if (schemaValue === "Buffer") return Buffer.isBuffer(data);
         return false;
       };
     },
