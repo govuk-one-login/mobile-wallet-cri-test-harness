@@ -21,14 +21,17 @@ import {
 import { isValidPreAuthorizedCode } from "./helpers/preAuthorizedCode/isValidPreAuthorizedCode";
 import { isValidCredential } from "./helpers/credential/isValidCredential";
 import { readFileSync } from "fs";
-import { decodeJwt, JWK } from "jose";
-import { createAccessToken } from "./helpers/credential/createAccessToken";
-import { randomUUID } from "node:crypto";
+import { decodeJwt, JWK, JWTPayload } from "jose";
+import {
+  AccessToken,
+  createAccessToken,
+} from "./helpers/credential/createAccessToken";
+import { randomUUID, UUID } from "node:crypto";
 import {
   createDidKey,
   createProofJwt,
 } from "./helpers/credential/createProofJwt";
-import { AxiosError } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { isValidJwks } from "./helpers/jwks/isValidJwks";
 import {
   getCredential,
@@ -47,20 +50,20 @@ import {
   hasNotificationEndpoint,
 } from "./helpers/testConditions";
 
-let CREDENTIAL_OFFER_DEEP_LINK;
-let CRI_URL;
-let CRI_DOMAIN;
-let WALLET_SUBJECT_ID;
-let PRE_AUTHORIZED_CODE_PAYLOAD;
-let CREDENTIAL_ENDPOINT;
-let NOTIFICATION_ENDPOINT;
-let IACAS_ENDPOINT;
-let PRIVATE_KEY_JWK;
-let PUBLIC_KEY_JWK;
-let NONCE;
-let CLIENT_ID;
-let SELF_URL;
-let CREDENTIAL_FORMAT;
+let CREDENTIAL_OFFER_DEEP_LINK: string;
+let CRI_URL: string;
+let CRI_DOMAIN: string;
+let WALLET_SUBJECT_ID: string;
+let PRE_AUTHORIZED_CODE_PAYLOAD: JWTPayload;
+let CREDENTIAL_ENDPOINT: string;
+let NOTIFICATION_ENDPOINT: string | undefined;
+let IACAS_ENDPOINT: string | undefined;
+let PRIVATE_KEY_JWK: JWK;
+let PUBLIC_KEY_JWK: JWK;
+let NONCE: UUID;
+let CLIENT_ID: string;
+let SELF_URL: string;
+let CREDENTIAL_FORMAT: string;
 
 describe("Credential Issuer Tests", () => {
   beforeAll(async () => {
@@ -114,7 +117,7 @@ describe("Credential Issuer Tests", () => {
   });
 
   describe("Metadata", () => {
-    let response;
+    let response: AxiosResponse;
     beforeAll(async () => {
       response = await getMetadata(CRI_URL);
     });
@@ -143,7 +146,7 @@ describe("Credential Issuer Tests", () => {
   });
 
   describeIf("did:web Document", isJwt, () => {
-    let response;
+    let response: AxiosResponse;
     beforeAll(async () => {
       response = await getDidDocument(CRI_URL);
     });
@@ -168,7 +171,7 @@ describe("Credential Issuer Tests", () => {
 
   describeIf("IACAs", isMdoc, () => {
     describe("when requesting the credential issuer IACAs", () => {
-      let response;
+      let response: AxiosResponse;
       beforeAll(async () => {
         response = await getIacas(CRI_URL, IACAS_ENDPOINT);
       });
@@ -189,7 +192,7 @@ describe("Credential Issuer Tests", () => {
   });
 
   describe("JWKS", () => {
-    let response;
+    let response: AxiosResponse;
     beforeAll(async () => {
       response = await getJwks(CRI_URL);
     });
@@ -350,9 +353,9 @@ describe("Credential Issuer Tests", () => {
   });
 
   describe("Credential (Happy Path) & Notification", () => {
-    let credentialResponse;
-    let accessToken;
-    let didKey;
+    let credentialResponse: AxiosResponse;
+    let accessToken: AccessToken;
+    let didKey: string;
     beforeAll(async () => {
       accessToken = await createAccessToken(
         NONCE,
@@ -395,8 +398,9 @@ describe("Credential Issuer Tests", () => {
           ).toBeTruthy();
         });
 
-        it("should return response body with 'credentials' and 'credential' claims ", () => {
+        it("should return valid response body", () => {
           expect(credentialResponse.data).toHaveProperty("credentials");
+          expect(credentialResponse.data.credentials.length).toEqual(1);
           expect(credentialResponse.data.credentials[0]).toHaveProperty(
             "credential",
           );
@@ -437,7 +441,7 @@ describe("Credential Issuer Tests", () => {
             accessToken.access_token,
             notification_id,
             "credential_accepted",
-            NOTIFICATION_ENDPOINT,
+            NOTIFICATION_ENDPOINT!,
           );
           expect(notificationResponse.status).toBe(204);
         });
@@ -448,7 +452,7 @@ describe("Credential Issuer Tests", () => {
             accessToken.access_token,
             notification_id,
             "credential_deleted",
-            NOTIFICATION_ENDPOINT,
+            NOTIFICATION_ENDPOINT!,
           );
 
           expect(notificationResponse.status).toBe(204);
@@ -460,7 +464,7 @@ describe("Credential Issuer Tests", () => {
             accessToken.access_token,
             notification_id,
             "credential_failure",
-            NOTIFICATION_ENDPOINT,
+            NOTIFICATION_ENDPOINT!,
           );
 
           expect(notificationResponse.status).toBe(204);
@@ -474,7 +478,7 @@ describe("Credential Issuer Tests", () => {
               accessToken.access_token,
               undefined,
               "credential_failure",
-              NOTIFICATION_ENDPOINT,
+              NOTIFICATION_ENDPOINT!,
             );
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(400);
@@ -488,7 +492,7 @@ describe("Credential Issuer Tests", () => {
               accessToken.access_token,
               notification_id,
               "invalid_event",
-              NOTIFICATION_ENDPOINT,
+              NOTIFICATION_ENDPOINT!,
             );
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(400);
@@ -504,7 +508,7 @@ describe("Credential Issuer Tests", () => {
               "INVALID_TOKEN",
               notification_id,
               "credential_accepted",
-              NOTIFICATION_ENDPOINT,
+              NOTIFICATION_ENDPOINT!,
             );
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(401);
@@ -521,7 +525,7 @@ describe("Credential Issuer Tests", () => {
               undefined,
               notification_id,
               "credential_accepted",
-              NOTIFICATION_ENDPOINT,
+              NOTIFICATION_ENDPOINT!,
             );
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(401);
