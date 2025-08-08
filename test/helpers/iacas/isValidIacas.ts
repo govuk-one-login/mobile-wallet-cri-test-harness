@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { iacasSchema } from "./iacasSchema";
-import Ajv from "ajv";
 import { X509Certificate } from "@peculiar/x509";
+import { getAjvInstance } from "../ajv/ajvInstance";
 
 export interface CertificateData {
   notAfter: string;
@@ -32,7 +32,7 @@ export interface Iacas {
 }
 
 export async function isValidIacas(iacas: Iacas): Promise<boolean> {
-  const ajv = new Ajv({ allErrors: true, verbose: false });
+  const ajv = getAjvInstance();
   const rulesValidator = ajv.compile(iacasSchema);
   if (!rulesValidator(iacas)) {
     throw new Error(

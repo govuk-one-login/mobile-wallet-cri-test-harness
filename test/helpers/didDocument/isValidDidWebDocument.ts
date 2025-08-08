@@ -1,6 +1,6 @@
-import Ajv from "ajv";
 import { didWebDocumentSchema } from "./didWebDocumentSchema";
 import { JWK } from "jose";
+import { getAjvInstance } from "../ajv/ajvInstance";
 
 export interface DidDocument {
   "@context": string[];
@@ -20,10 +20,8 @@ export async function isValidDidWebDocument(
   didWebDocument: DidDocument,
   criDomain: string,
 ) {
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  const rulesValidator = ajv
-    .addSchema(didWebDocumentSchema)
-    .compile(didWebDocumentSchema);
+  const ajv = getAjvInstance();
+  const rulesValidator = ajv.compile(didWebDocumentSchema);
 
   if (!rulesValidator(didWebDocument)) {
     const validationErrors = rulesValidator.errors;

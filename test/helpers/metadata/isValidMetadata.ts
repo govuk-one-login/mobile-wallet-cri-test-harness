@@ -1,6 +1,5 @@
-import Ajv from "ajv";
-import addFormats from "ajv-formats";
 import { metadataSchema } from "./metadataSchema";
+import { getAjvInstance } from "../ajv/ajvInstance";
 
 export interface Metadata {
   credential_endpoint: string;
@@ -17,9 +16,8 @@ export async function isValidMetadata(
   authServerUrl: string,
   credentialFormat: string,
 ): Promise<true> {
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uri"] });
-  const rulesValidator = ajv.addSchema(metadataSchema).compile(metadataSchema);
+  const ajv = getAjvInstance();
+  const rulesValidator = ajv.compile(metadataSchema);
   if (!rulesValidator(metadata)) {
     const validationErrors = rulesValidator.errors;
     throw new Error(
