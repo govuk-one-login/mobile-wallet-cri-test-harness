@@ -1,6 +1,5 @@
-import Ajv from "ajv";
-import addFormats from "ajv-formats";
 import { credentialOfferSchema } from "./credentialOfferSchema";
+import { getAjvInstance } from "../ajv/ajvInstance";
 
 export interface CredentialOffer {
   credential_issuer: string;
@@ -20,12 +19,8 @@ export function isValidCredentialOffer(credentialOfferDeepLink: string) {
   const credentialOfferString = extractCredentialOffer(credentialOfferDeepLink);
   const credentialOffer: CredentialOffer = parseAsJson(credentialOfferString);
 
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uri"] });
-
-  const rulesValidator = ajv
-    .addSchema(credentialOfferSchema)
-    .compile(credentialOfferSchema);
+  const ajv = getAjvInstance();
+  const rulesValidator = ajv.compile(credentialOfferSchema);
   if (!rulesValidator(credentialOffer)) {
     throw new Error(
       `INVALID_CREDENTIAL_OFFER: ${JSON.stringify(rulesValidator.errors)}`,

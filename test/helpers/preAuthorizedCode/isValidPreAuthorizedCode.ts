@@ -1,8 +1,8 @@
-import Ajv from "ajv";
 import * as jose from "jose";
 import { headerSchema } from "./headerSchema";
 import { JWK, ProtectedHeaderParameters } from "jose";
 import { payloadSchema } from "./payloadSchema";
+import { getAjvInstance } from "../ajv/ajvInstance";
 
 export interface Payload {
   aud: string;
@@ -39,8 +39,8 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
     );
   }
 
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  const rulesValidator = ajv.addSchema(headerSchema).compile(headerSchema);
+  const ajv = getAjvInstance();
+  const rulesValidator = ajv.compile(headerSchema);
   if (!rulesValidator(claims)) {
     throw new Error(
       `INVALID_HEADER: Pre-authorized code header does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
@@ -77,8 +77,8 @@ function validatePayload(
   authorizationServerUrl: string,
   clientId: string,
 ): void {
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  const rulesValidator = ajv.addSchema(payloadSchema).compile(payloadSchema);
+  const ajv = getAjvInstance();
+  const rulesValidator = ajv.compile(payloadSchema);
   if (!rulesValidator(payload)) {
     throw new Error(
       `INVALID_PAYLOAD: Pre-authorized code payload does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,

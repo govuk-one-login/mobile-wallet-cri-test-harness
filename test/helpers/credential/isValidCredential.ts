@@ -6,10 +6,10 @@ import {
   JWTVerifyResult,
   ProtectedHeaderParameters,
 } from "jose";
-import Ajv from "ajv";
 import { headerSchema } from "./headerSchema";
 import { payloadSchema } from "./payloadSchema";
 import { VerificationMethod } from "../didDocument/isValidDidWebDocument";
+import { getAjvInstance } from "../ajv/ajvInstance";
 
 export async function isValidCredential(
   credential: string,
@@ -37,7 +37,7 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
     );
   }
 
-  const ajv = new Ajv({ allErrors: true, verbose: false });
+  const ajv = getAjvInstance();
   const rulesValidator = ajv.compile(headerSchema);
   if (rulesValidator(claims)) {
     return claims;
@@ -79,7 +79,7 @@ function validatePayload(
   didKey: string,
   criUrl: string,
 ): void {
-  const ajv = new Ajv({ allErrors: true, verbose: false });
+  const ajv = getAjvInstance();
   const rulesValidator = ajv.compile(payloadSchema);
   if (!rulesValidator(payload)) {
     throw new Error(

@@ -1,14 +1,14 @@
 import { JWK } from "jose";
-import Ajv from "ajv";
 import { jwksSchema } from "./jwksSchema";
+import { getAjvInstance } from "../ajv/ajvInstance";
 
 export interface JWKS {
   keys: JWK[];
 }
 
 export async function isValidJwks(jwks: JWKS) {
-  const ajv = new Ajv({ allErrors: true, verbose: false });
-  const rulesValidator = ajv.addSchema(jwksSchema).compile(jwksSchema);
+  const ajv = getAjvInstance();
+  const rulesValidator = ajv.compile(jwksSchema);
   if (!rulesValidator(jwks)) {
     const message = JSON.stringify(rulesValidator.errors);
     throw new Error(
