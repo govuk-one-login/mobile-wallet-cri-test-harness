@@ -17,4 +17,5 @@ export default {
   ],
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
+  transformIgnorePatterns: ['/node_modules/(?!cbor2)'],
 }

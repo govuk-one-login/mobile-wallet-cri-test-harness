@@ -5,6 +5,7 @@
   "author": "",
   "license": "MIT",
   "main": "src/server.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "execute": "node ./dist/src/server.js",
@@ -21,6 +22,7 @@
     "ajv-formats": "^3.0.1",
     "axios": "^1.11.0",
     "bs58": "^6.0.0",
+    "cbor2": "^2.0.1",
     "express": "^5.1.0",
     "jose": "^5.10.0"
   },
