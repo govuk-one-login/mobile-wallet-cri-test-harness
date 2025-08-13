@@ -1,5 +1,5 @@
 import express, { Application, Request, Response } from "express";
-import { getKeyId, getPortNumber } from "./config";
+import { getKeyId, getPortNumber } from "./config.js";
 import { generateKeyPair, exportJWK, JWK } from "jose";
 import { writeFileSync } from "fs";
 
@@ -16,7 +16,7 @@ app.get("/.well-known/jwks.json", async (_req: Request, res: Response) => {
   res.status(200).json(response);
 });
 
-const server = app
+export const server = app
   .listen(port, async () => {
     console.log(`Server is running on port ${port}`);
 
@@ -41,5 +41,3 @@ const server = app
   .on("error", (error: Error) => {
     console.log(error, "Unable to start server");
   });
-
-module.exports = server;
