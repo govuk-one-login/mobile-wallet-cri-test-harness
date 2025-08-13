@@ -1,5 +1,5 @@
-import {importJWK, JWK, JWTPayload, SignJWT} from "jose";
-import bs58 from 'bs58'
+import { importJWK, JWK, JWTPayload, SignJWT } from "jose";
+import bs58 from "bs58";
 
 const SIGNING_ALGORITHM = "ES256";
 const PROOF_JWT_ISSUER = "urn:fdc:gov:uk:wallet";
