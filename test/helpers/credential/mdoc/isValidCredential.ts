@@ -4,7 +4,21 @@ import { domesticNamespaceSchema } from "./domesticNamespaceSchema";
 import { issuerSignedSchema } from "./issuedSignedSchema";
 import { isoNamespaceSchema } from "./isoNamespaceSchema";
 
-const REQUIRED_ELEMENTS = [
+export const NAMESPACES = {
+  /** ISO 18013-5 standard namespace */
+  ISO: "org.iso.18013.5.1",
+  /** UK domestic namespace */
+  GB: "org.iso.18013.5.1.GB",
+} as const;
+
+export const CBOR_TAGS = {
+  /** Tag for CBOR-encoded data */
+  ENCODED_CBOR: 24,
+  /** Tag for full-date strings */
+  FULL_DATE: 1004,
+} as const;
+
+const REQUIRED_MDL_ELEMENTS = [
   "welsh_licence",
   "title",
   "family_name",
@@ -25,181 +39,239 @@ const REQUIRED_ELEMENTS = [
   "resident_city",
   "driving_privileges",
   "un_distinguishing_sign",
-];
+] as const;
+
+const FULL_DATE_ELEMENTS = ["birth_date", "issue_date", "expiry_date"] as const;
+
+const DRIVING_PRIVILEGES_ELEMENTS = ["driving_privileges", "provisional_driving_privileges"] as const;
+
+interface DrivingPrivilegesWithTags {
+  vehicleCategoryCode: string;
+  issueDate?: Tag;
+  expiryDate?: Tag;
+}
+
+interface DrivingPrivileges {
+  vehicleCategoryCode: string;
+  issueDate?: string;
+  expiryDate?: string;
+}
+
+interface IssuerSignedItemWithTags {
+  digestId: number;
+  elementIdentifier: string;
+  elementValue: string | boolean | Uint8Array | DrivingPrivilegesWithTags[] | Tag;
+  random: Uint8Array;
+}
+
+interface IssuerSignedItem {
+  digestId: number;
+  elementIdentifier: string;
+  elementValue: string | boolean | Uint8Array | DrivingPrivileges[];
+  random: Uint8Array;
+}
+
+type NameSpace = typeof NAMESPACES.ISO | typeof NAMESPACES.GB;
+
+type IssuerAuth = [Uint8Array, Map<33, Uint8Array>, Uint8Array, Uint8Array];
 
 export interface IssuerSigned {
   issuerAuth: IssuerAuth;
   nameSpaces: Record<NameSpace, IssuerSignedItem[]>;
 }
 
-export type NameSpace = "org.iso.18013.5.1" | "org.iso.18013.5.1.GB";
+export class MDLValidationError extends Error {
+  public readonly code: string;
 
-type IssuerAuth = [Uint8Array, Map<33, Uint8Array>, Uint8Array, Uint8Array];
-
-export interface DrivingPrivileges {
-  vehicleCategoryCode: string;
-  issueDate: Tag;
-  expiryDate: Tag;
+  constructor(message: string, code = "VALIDATION_FAILED") {
+    super(`INVALID_MDL: ${message}`);
+    this.name = "MDLValidationError";
+    this.code = code;
+  }
 }
 
-export interface IssuerSignedItemWithTags {
-  digestId: number;
-  elementIdentifier: string;
-  elementValue: string | boolean | DrivingPrivileges[] | Uint8Array | Tag;
-  random: Uint8Array;
+function isValidBase64Url(input: string): boolean {
+  if (!input) {
+    return false;
+  }
+  const base64UrlPattern = /^[A-Za-z0-9_-]+$/;
+  return base64UrlPattern.test(input);
 }
 
-export interface IssuerSignedItem {
-  digestId: number;
-  elementIdentifier: string;
-  elementValue: string | boolean | DrivingPrivileges[] | Uint8Array;
-  random: Uint8Array;
+function base64UrlToUint8Array(base64url: string): Uint8Array {
+  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64 + '==='.slice((base64.length + 3) % 4);
+  return new Uint8Array(Buffer.from(padded, 'base64'));
 }
 
-function decodeCredential(credential: string): IssuerSigned {
+function decodeCredential(credential: Uint8Array<ArrayBufferLike>): IssuerSigned {
   try {
     const tags = new Map([
       [
-        24,
-        ({ contents }) => {
-          return decode(contents, { tags });
-        },
+        CBOR_TAGS.ENCODED_CBOR,
+        ({ contents }: { contents: any }) => decode(contents, { tags }),
       ],
-      [1004, ({ contents }) => contents],
+      [
+        CBOR_TAGS.FULL_DATE,
+        ({ contents }: { contents: any }) => contents
+      ],
     ]);
-
-    return decode(credential, { tags });
+    return decode(credential, { tags }) as IssuerSigned;
   } catch (error) {
-    throw new Error(`INVALID_MDL: Invalid CBOR encoding - ${error}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new MDLValidationError(
+      `Failed to decode CBOR data - ${errorMessage}`,
+      "CBOR_DECODE_ERROR"
+    );
   }
-
 }
 
-function isBase64UrlNoPadding(string: string): boolean {
-  const base64UrlNoPaddingRegex = /^[A-Za-z0-9_-]+$/;
-
-  return base64UrlNoPaddingRegex.test(string) && string.length > 0;
-}
-
-export function isValidCredential(credential: string): boolean {
-
-  if (!isBase64UrlNoPadding(credential)) {
-    throw new Error("INVALID_MDL: Invalid base64url encoding");
-  }
-
-  const issuerSigned = decodeCredential(credential);
-
-  validateTags(credential);
-
-  validateIssuerSigned(issuerSigned);
-
-  validateRequiredElements(issuerSigned);
-
-  return true;
-}
-
-function validateTags(credential: string): void {
+function validateCborTags(credential: Uint8Array<ArrayBufferLike>): void {
   try {
     const issuerSigned: {
       issuerAuth: IssuerAuth;
       nameSpaces: Record<NameSpace, Tag[]>;
     } = decode(credential);
 
-    for (const elements of Object.values(issuerSigned.nameSpaces)) {
-      for (const element of elements) {
-        if (element.tag !== 24) {
-          throw new Error(
-            "One or more IssuerSignedItem objects are not CBOR encoded - missing CBOR tag 24 is missing",
-          );
-        }
-
-        const decodedIssuerSignedItem = decode(
-          element.contents as string,
-        ) as IssuerSignedItemWithTags;
-
-        if (
-          decodedIssuerSignedItem.elementIdentifier === "birth_date" ||
-          decodedIssuerSignedItem.elementIdentifier === "issue_date" ||
-          decodedIssuerSignedItem.elementIdentifier === "expiry_date"
-        ) {
-          if (
-            !(decodedIssuerSignedItem.elementValue instanceof Tag) ||
-            decodedIssuerSignedItem.elementValue.tag !== 1004
-          ) {
-            throw new Error("Date not tagged (CBOR tag 1004)");
-          }
-        }
-
-        if (
-          decodedIssuerSignedItem.elementIdentifier === "driving_privileges" ||
-          decodedIssuerSignedItem.elementIdentifier ===
-            "provisional_driving_privileges"
-        ) {
-          const privileges =
-            decodedIssuerSignedItem.elementValue as DrivingPrivileges[];
-
-          for (const item of privileges) {
-            if (item.issueDate) {
-              const tag = item.issueDate.tag;
-              if (!tag || tag !== 1004) {
-                throw new Error(
-                  `Date not tagged (CBOR tag 1004) for issueDate in ${decodedIssuerSignedItem.elementIdentifier}`,
-                );
-              }
-            }
-
-            if (item.expiryDate) {
-              const tag = item.expiryDate.tag;
-              if (!tag || tag !== 1004) {
-                throw new Error(
-                  `Date not tagged (CBOR tag 1004) for expiryDate in ${decodedIssuerSignedItem.elementIdentifier}`,
-                );
-              }
-            }
-          }
-        }
+    for (const [namespaceName, elements] of Object.entries(issuerSigned.nameSpaces)) {
+          for (const element of elements) {
+        validateEncodedCborTags(element, namespaceName);
       }
     }
   } catch (error) {
-    throw new Error(
-      `INVALID_MDL: Failed to decode CBOR data - ${error instanceof Error ? error.message : String(error)}`,
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new MDLValidationError(
+      `Failed to decode CBOR data - ${errorMessage}`,
+      "CBOR_TAG_VALIDATION_ERROR"
     );
   }
 }
 
-function validateIssuerSigned(issuerSigned: IssuerSigned): void {
-  const ajv = getAjvInstance();
-  const rulesValidator = ajv
-    .addSchema(isoNamespaceSchema)
-    .addSchema(domesticNamespaceSchema)
-    .compile(issuerSignedSchema);
-  if (!rulesValidator(issuerSigned)) {
-    const errors = rulesValidator.errors!.map((error) => ({
-      path: error.instancePath,
-      message: error.message,
-      value: error.data,
-    }));
+function validateEncodedCborTags(element: Tag, namespaceName: string): void {
+  if (element.tag !== CBOR_TAGS.ENCODED_CBOR) {
+    throw new MDLValidationError(
+      `IssuerSignedItem in namespace '${namespaceName}' is not CBOR encoded - missing tag ${CBOR_TAGS.ENCODED_CBOR}`,
+      "MISSING_CBOR_TAG"
+    );
+  }
 
-    throw new Error(
-      `INVALID_MDL: IssuerSigned does not comply with the schema. ${JSON.stringify(errors)}`,
+  const decodedItem = decode(element.contents as string) as IssuerSignedItemWithTags;
+
+  if (FULL_DATE_ELEMENTS.includes(decodedItem.elementIdentifier as any)) {
+    validateFullDateTag(decodedItem);
+  }
+
+  if (DRIVING_PRIVILEGES_ELEMENTS.includes(decodedItem.elementIdentifier as any)) {
+    validateDrivingPrivilegeTags(decodedItem);
+  }
+}
+
+function validateFullDateTag(item: IssuerSignedItemWithTags): void {
+  if (!(item.elementValue instanceof Tag) || item.elementValue.tag !== CBOR_TAGS.FULL_DATE) {
+    throw new MDLValidationError(
+      `Date element '${item.elementIdentifier}' not properly tagged (CBOR tag ${CBOR_TAGS.FULL_DATE})`,
+      "INVALID_DATE_TAG"
+    );
+  }
+}
+
+function validateDrivingPrivilegeTags(item: IssuerSignedItemWithTags): void {
+  const privileges = item.elementValue as DrivingPrivilegesWithTags[];
+
+  for (const privilege of privileges) {
+    if (privilege.issueDate && privilege.issueDate.tag !== CBOR_TAGS.FULL_DATE) {
+      throw new MDLValidationError(
+        `Date not tagged (CBOR tag ${CBOR_TAGS.FULL_DATE}) for issueDate in ${item.elementIdentifier}`,
+        "INVALID_PRIVILEGE_DATE_TAG"
+      );
+    }
+
+    if (privilege.expiryDate && privilege.expiryDate.tag !== CBOR_TAGS.FULL_DATE) {
+      throw new MDLValidationError(
+        `Date not tagged (CBOR tag ${CBOR_TAGS.FULL_DATE}) for expiryDate in ${item.elementIdentifier}`,
+        "INVALID_PRIVILEGE_DATE_TAG"
+      );
+    }
+  }
+}
+
+/**
+ * Validates IssuerSigned structure against JSON schemas
+ * @param issuerSigned - Decoded IssuerSigned structure
+ * @throws {MDLValidationError} If schema validation fails
+ */
+function validateIssuerSignedSchema(issuerSigned: IssuerSigned): void {
+  const ajv = getAjvInstance();
+
+  const validator = ajv
+    .addSchema(isoNamespaceSchema, "isoNamespace")
+    .addSchema(domesticNamespaceSchema, "domesticNamespace")
+    .compile(issuerSignedSchema);
+
+  if (!validator(issuerSigned)) {
+    const errors = validator.errors?.map((error) => ({
+      path: error.instancePath || "root",
+      message: error.message || "Unknown validation error",
+      value: error.data,
+      keyword: error.keyword,
+    })) || [];
+
+    const errorDetails = errors
+      .map(err => `${err.path}: ${err.message}`)
+      .join("; ");
+
+    throw new MDLValidationError(
+      `IssuerSigned does not comply with schema - ${errorDetails}`,
+      "SCHEMA_VALIDATION_ERROR"
     );
   }
 }
 
 function validateRequiredElements(issuerSigned: IssuerSigned): void {
-  const allItems = [
-    ...issuerSigned.nameSpaces["org.iso.18013.5.1"],
-    ...issuerSigned.nameSpaces["org.iso.18013.5.1.GB"],
+  const allItems: IssuerSignedItem[] = [
+    ...(issuerSigned.nameSpaces[NAMESPACES.ISO] || []),
+    ...(issuerSigned.nameSpaces[NAMESPACES.GB] || []),
   ];
 
-  const presentElements = allItems.map((item) => item.elementIdentifier);
-  const missingElements = REQUIRED_ELEMENTS.filter(
-    (el) => !presentElements.includes(el),
+  const presentElements = new Set(
+    allItems.map((item) => item.elementIdentifier)
+  );
+
+  const missingElements = REQUIRED_MDL_ELEMENTS.filter(
+    (element) => !presentElements.has(element)
   );
 
   if (missingElements.length > 0) {
-    throw new Error(
-      `INVALID_MDL: Missing required elements - ${missingElements.join(", ")}`,
+    throw new MDLValidationError(
+      `Missing required elements: ${missingElements.join(", ")}`,
+      "MISSING_REQUIRED_ELEMENTS"
     );
   }
+}
+
+/**
+ * Main validation function for mDL credentials
+ * @param credential - Base64url encoded CBOR credential
+ * @returns True if credential is valid
+ * @throws {MDLValidationError} If validation fails
+ */
+export function isValidCredential(credential: string): boolean {
+  if (!isValidBase64Url(credential)) {
+    throw new MDLValidationError(
+      "Invalid base64url encoding",
+      "INVALID_BASE64URL"
+    );
+  }
+
+  const cborBytes = base64UrlToUint8Array(credential);
+
+  const issuerSigned = decodeCredential(cborBytes);
+
+  validateCborTags(cborBytes);
+
+  validateIssuerSignedSchema(issuerSigned);
+
+  validateRequiredElements(issuerSigned);
+
+  return true;
 }
