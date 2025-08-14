@@ -14,6 +14,8 @@ export const issuerSignedSchema = {
     },
     issuerAuth: {
       type: "array",
+      minItems: 4,
+      maxItems: 4,
     },
   },
   additionalProperties: false,

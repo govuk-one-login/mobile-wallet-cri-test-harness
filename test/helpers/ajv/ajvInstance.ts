@@ -5,7 +5,7 @@ let ajvInstance: Ajv;
 
 function createAjvInstance(): Ajv {
   const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uri"] });
+  addFormats(ajv, { formats: ["uri", "date-time", "date"] });
 
   // Custom keyword for Buffer validation
   ajv.addKeyword({
@@ -14,7 +14,9 @@ function createAjvInstance(): Ajv {
     schemaType: "string",
     compile: function (schemaValue) {
       return function validate(data) {
-        if (schemaValue === "Buffer") return Buffer.isBuffer(data);
+        if (schemaValue === "Uint8Array") {
+          return data instanceof Uint8Array;
+        }
         return false;
       };
     },

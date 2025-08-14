@@ -1,14 +1,8 @@
 import { getAjvInstance } from "../../ajv/ajvInstance";
-import cbor from "cbor";
+import { decode, Tag } from "cbor2";
 import { domesticNamespaceSchema } from "./domesticNamespaceSchema";
 import { issuerSignedSchema } from "./issuedSignedSchema";
 import { isoNamespaceSchema } from "./isoNamespaceSchema";
-import { CBOR_TAGS } from "./cborTags";
-
-const MDL_NAMESPACES = {
-  GB: "org.iso.18013.5.1.GB",
-  ISO: "org.iso.18013.5.1",
-} as const;
 
 const REQUIRED_ELEMENTS = [
   "welsh_licence",
@@ -33,46 +27,123 @@ const REQUIRED_ELEMENTS = [
   "un_distinguishing_sign",
 ];
 
-export async function isValidCredential(
-  issuerSigned: string,
-): Promise<boolean> {
-  // Decode CBOR data
-  const decodedData = decodeIssuerSigned(issuerSigned);
-  console.log("Decoded mDL data:", JSON.stringify(decodedData));
+export interface IssuerSigned {
+  issuerAuth: IssuerAuth;
+  nameSpaces: Record<NameSpace, IssuerSignedItem[]>;
+}
 
-  // Validate against JSON schemas
-  await validateIssuerSigned(decodedData);
+export type NameSpace = "org.iso.18013.5.1" | "org.iso.18013.5.1.GB";
 
-  // Verify required elements are present
-  validateRequiredElements(decodedData);
+type IssuerAuth = [Uint8Array, Map<33, Uint8Array>, Uint8Array, Uint8Array];
+
+export interface DrivingPrivileges {
+  vehicleCategoryCode: string;
+  issueDate: Tag;
+  expiryDate: Tag;
+}
+
+export interface IssuerSignedItemWithTags {
+  digestId: number;
+  elementIdentifier: string;
+  elementValue: string | boolean | DrivingPrivileges[] | Uint8Array | Tag;
+  random: Uint8Array;
+}
+
+export interface IssuerSignedItem {
+  digestId: number;
+  elementIdentifier: string;
+  elementValue: string | boolean | DrivingPrivileges[] | Uint8Array;
+  random: Uint8Array;
+}
+
+function decodeCredential(credential: string): IssuerSigned {
+  const tags = new Map([
+    [
+      24,
+      ({ contents }) => {
+        return decode(contents, { tags });
+      },
+    ],
+    [1004, ({ contents }) => contents],
+  ]);
+
+  return decode(credential, { tags });
+}
+
+export function isValidCredential(credential: string): boolean {
+  const issuerSigned = decodeCredential(credential);
+
+  validateTags(credential);
+
+  validateIssuerSigned(issuerSigned);
+
+  validateRequiredElements(issuerSigned);
 
   return true;
 }
 
-/**
- * Decodes CBOR data while preserving tag information and handling nested decoding.
- * This function handles CBOR tag 24 (encoded CBOR data item) by recursively
- * decoding nested CBOR structures.
- */
-function decodeIssuerSigned(issuerSigned: string) {
+function validateTags(credential: string): void {
   try {
-    const buffer = Buffer.from(issuerSigned, "hex");
-    const options = {
-      mapAsObject: false,
-      tags: {
-        // Handle CBOR tag 24 (encoded CBOR data item)
-        [CBOR_TAGS.ENCODED_CBOR]: (val: Buffer) => {
-          // Recursively decode the nested CBOR data
-          const nestedDecoded = cbor.decodeFirstSync(val);
+    const issuerSigned: {
+      issuerAuth: IssuerAuth;
+      nameSpaces: Record<NameSpace, Tag[]>;
+    } = decode(credential);
 
-          return {
-            tag: CBOR_TAGS.ENCODED_CBOR,
-            value: nestedDecoded,
-          };
-        },
-      },
-    };
-    return cbor.decodeFirstSync(buffer, options);
+    for (const elements of Object.values(issuerSigned.nameSpaces)) {
+      for (const element of elements) {
+        if (element.tag !== 24) {
+          throw new Error(
+            "One or more IssuerSignedItem objects are not CBOR encoded - missing CBOR tag 24 is missing",
+          );
+        }
+
+        const decodedIssuerSignedItem = decode(
+          element.contents as string,
+        ) as IssuerSignedItemWithTags;
+
+        if (
+          decodedIssuerSignedItem.elementIdentifier === "birth_date" ||
+          decodedIssuerSignedItem.elementIdentifier === "issue_date" ||
+          decodedIssuerSignedItem.elementIdentifier === "expiry_date"
+        ) {
+          if (
+            !(decodedIssuerSignedItem.elementValue instanceof Tag) ||
+            decodedIssuerSignedItem.elementValue.tag !== 1004
+          ) {
+            throw new Error("Date not tagged (CBOR tag 1004)");
+          }
+        }
+
+        if (
+          decodedIssuerSignedItem.elementIdentifier === "driving_privileges" ||
+          decodedIssuerSignedItem.elementIdentifier ===
+            "provisional_driving_privileges"
+        ) {
+          const privileges =
+            decodedIssuerSignedItem.elementValue as DrivingPrivileges[];
+
+          for (const item of privileges) {
+            if (item.issueDate) {
+              const tag = item.issueDate.tag;
+              if (!tag || tag !== 1004) {
+                throw new Error(
+                  `Date not tagged (CBOR tag 1004) for issueDate in ${decodedIssuerSignedItem.elementIdentifier}`,
+                );
+              }
+            }
+
+            if (item.expiryDate) {
+              const tag = item.expiryDate.tag;
+              if (!tag || tag !== 1004) {
+                throw new Error(
+                  `Date not tagged (CBOR tag 1004) for expiryDate in ${decodedIssuerSignedItem.elementIdentifier}`,
+                );
+              }
+            }
+          }
+        }
+      }
+    }
   } catch (error) {
     throw new Error(
       `INVALID_MDL: Failed to decode CBOR data - ${error instanceof Error ? error.message : String(error)}`,
@@ -80,13 +151,13 @@ function decodeIssuerSigned(issuerSigned: string) {
   }
 }
 
-async function validateIssuerSigned(decodedData): Promise<void> {
+function validateIssuerSigned(issuerSigned: IssuerSigned): void {
   const ajv = getAjvInstance();
   const rulesValidator = ajv
     .addSchema(isoNamespaceSchema)
     .addSchema(domesticNamespaceSchema)
     .compile(issuerSignedSchema);
-  if (!rulesValidator(decodedData)) {
+  if (!rulesValidator(issuerSigned)) {
     const errors = rulesValidator.errors!.map((error) => ({
       path: error.instancePath,
       message: error.message,
@@ -99,13 +170,13 @@ async function validateIssuerSigned(decodedData): Promise<void> {
   }
 }
 
-function validateRequiredElements(decodedData): void {
+function validateRequiredElements(issuerSigned: IssuerSigned): void {
   const allItems = [
-    ...decodedData.nameSpaces[MDL_NAMESPACES.GB],
-    ...decodedData.nameSpaces[MDL_NAMESPACES.ISO],
+    ...issuerSigned.nameSpaces["org.iso.18013.5.1"],
+    ...issuerSigned.nameSpaces["org.iso.18013.5.1.GB"],
   ];
 
-  const presentElements = allItems.map((item) => item.value.elementIdentifier);
+  const presentElements = allItems.map((item) => item.elementIdentifier);
   const missingElements = REQUIRED_ELEMENTS.filter(
     (el) => !presentElements.includes(el),
   );
