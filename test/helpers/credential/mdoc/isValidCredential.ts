@@ -57,20 +57,36 @@ export interface IssuerSignedItem {
 }
 
 function decodeCredential(credential: string): IssuerSigned {
-  const tags = new Map([
-    [
-      24,
-      ({ contents }) => {
-        return decode(contents, { tags });
-      },
-    ],
-    [1004, ({ contents }) => contents],
-  ]);
+  try {
+    const tags = new Map([
+      [
+        24,
+        ({ contents }) => {
+          return decode(contents, { tags });
+        },
+      ],
+      [1004, ({ contents }) => contents],
+    ]);
 
-  return decode(credential, { tags });
+    return decode(credential, { tags });
+  } catch (error) {
+    throw new Error(`INVALID_MDL: Invalid CBOR encoding - ${error}`);
+  }
+
+}
+
+function isBase64UrlNoPadding(string: string): boolean {
+  const base64UrlNoPaddingRegex = /^[A-Za-z0-9_-]+$/;
+
+  return base64UrlNoPaddingRegex.test(string) && string.length > 0;
 }
 
 export function isValidCredential(credential: string): boolean {
+
+  if (!isBase64UrlNoPadding(credential)) {
+    throw new Error("INVALID_MDL: Invalid base64url encoding");
+  }
+
   const issuerSigned = decodeCredential(credential);
 
   validateTags(credential);
