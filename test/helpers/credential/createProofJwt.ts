@@ -1,5 +1,5 @@
 import { importJWK, JWK, JWTPayload, SignJWT } from "jose";
-import bs58 = require("bs58");
+import bs58 from "bs58";
 
 const SIGNING_ALGORITHM = "ES256";
 const PROOF_JWT_ISSUER = "urn:fdc:gov:uk:wallet";
@@ -30,7 +30,7 @@ export function createDidKey(publicKeyJwk: JWK): string {
   bytes[1] = 0x24;
   bytes.set(compressedPublicKey, 2);
 
-  const base58EncodedKey = bs58.default.encode(bytes);
+  const base58EncodedKey = bs58.encode(bytes);
   return `did:key:z${base58EncodedKey}`;
 }
 
