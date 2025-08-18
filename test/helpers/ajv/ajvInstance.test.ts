@@ -53,23 +53,23 @@ describe("getAjvInstance", () => {
     expect(validate({ url: "" })).toBe(false);
   });
 
-  it("should support custom instanceof keyword for Buffer validation", () => {
+  it("should support custom instanceof keyword for Uint8Array validation", () => {
     const ajv = getAjvInstance();
     const schema = {
       type: "object",
       properties: {
         data: {
           type: "object",
-          instanceof: "Buffer",
+          instanceof: "Uint8Array",
         },
       },
     };
     const validate = ajv.compile(schema);
 
-    // Valid Buffer
+    // Valid Buffer/Uint8Array
     const buffer = Buffer.from("test data");
     expect(validate({ data: buffer })).toBe(true);
-    // Invalid non-Buffer values
+    // Invalid non-Buffer/Uint8Array values
     expect(validate({ data: "string" })).toBe(false);
     expect(validate({ data: [1, 2, 3] })).toBe(false);
     expect(validate({ data: { length: 4 } })).toBe(false);

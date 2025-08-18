@@ -7,7 +7,7 @@ function createAjvInstance(): Ajv {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri", "date-time", "date"] });
 
-  // Custom keyword for Buffer validation
+  // Custom keyword for Uint8Array validation
   ajv.addKeyword({
     keyword: "instanceof",
     type: "object",
