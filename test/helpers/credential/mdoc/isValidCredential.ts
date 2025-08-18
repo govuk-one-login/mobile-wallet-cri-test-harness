@@ -92,7 +92,7 @@ export class MDLValidationError extends Error {
   public readonly code: string;
 
   constructor(message: string, code = "VALIDATION_FAILED") {
-    super(`INVALID_MDL: ${message}`);
+    super(message);
     this.name = "MDLValidationError";
     this.code = code;
   }
@@ -174,7 +174,7 @@ function validateEncodedCbor(element: Tag, namespaceName: string): void {
       decodedItem.elementValue.tag !== CBOR_TAGS.FULL_DATE
     ) {
       throw new MDLValidationError(
-        `'${decodedItem.elementIdentifier}' not properly tagged - missing tag ${CBOR_TAGS.FULL_DATE}`,
+        `'${decodedItem.elementIdentifier}' missing tag ${CBOR_TAGS.FULL_DATE}`,
         "INVALID_DATE_TAG",
       );
     }
@@ -191,7 +191,7 @@ function validateEncodedCbor(element: Tag, namespaceName: string): void {
         privilege.issue_date.tag !== CBOR_TAGS.FULL_DATE
       ) {
         throw new MDLValidationError(
-          `'issue_date' in '${decodedItem.elementIdentifier}' not properly tagged - missing tag ${CBOR_TAGS.FULL_DATE}`,
+          `'issue_date' in '${decodedItem.elementIdentifier}' missing tag ${CBOR_TAGS.FULL_DATE}`,
           "INVALID_DATE_TAG",
         );
       }
@@ -201,7 +201,7 @@ function validateEncodedCbor(element: Tag, namespaceName: string): void {
         privilege.expiry_date.tag !== CBOR_TAGS.FULL_DATE
       ) {
         throw new MDLValidationError(
-          `'expiry_date' in '${decodedItem.elementIdentifier}' not properly tagged - missing tag ${CBOR_TAGS.FULL_DATE}`,
+          `'expiry_date' in '${decodedItem.elementIdentifier}' missing tag ${CBOR_TAGS.FULL_DATE}`,
           "INVALID_DATE_TAG",
         );
       }
