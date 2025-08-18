@@ -293,6 +293,25 @@ function validatePortrait(data: Uint8Array): void {
   }
 }
 
+function validateDigestIds(namespaces: Record<NameSpace, IssuerSignedItem[]>) {
+  const namespacesToCheck = [NAMESPACES.ISO, NAMESPACES.GB];
+
+  namespacesToCheck.forEach((namespace) => {
+    const digestIds = namespaces[namespace]?.map((item) => item.digestId);
+
+    if (!checkUnique(digestIds)) {
+      throw new MDLValidationError(
+        `Digest IDs are not unique for namespace ${namespace}`,
+        "INVALID_DIGEST_IDS",
+      );
+    }
+  });
+}
+
+function checkUnique(digestIds: number[]): boolean {
+  return new Set(digestIds).size === digestIds.length;
+}
+
 export function isValidCredential(credential: string): boolean {
   if (!isValidBase64Url(credential)) {
     throw new MDLValidationError(
@@ -316,6 +335,8 @@ export function isValidCredential(credential: string): boolean {
   )!.elementValue as Uint8Array<ArrayBufferLike>;
 
   validatePortrait(portrait);
+
+  validateDigestIds(issuerSigned.nameSpaces);
 
   return true;
 }
