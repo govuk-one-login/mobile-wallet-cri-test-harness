@@ -73,7 +73,7 @@ interface IssuerSignedItemWithTags {
 }
 
 interface IssuerSignedItem {
-  digestId: number;
+  digestID: number;
   elementIdentifier: string;
   elementValue: string | boolean | Uint8Array | DrivingPrivileges[];
   random: Uint8Array;
@@ -297,7 +297,7 @@ function validateDigestIds(namespaces: Record<NameSpace, IssuerSignedItem[]>) {
   const namespacesToCheck = [NAMESPACES.ISO, NAMESPACES.GB];
 
   namespacesToCheck.forEach((namespace) => {
-    const digestIds = namespaces[namespace]?.map((item) => item.digestId);
+    const digestIds = namespaces[namespace]?.map((item) => item.digestID);
 
     if (!checkUnique(digestIds)) {
       throw new MDLValidationError(
