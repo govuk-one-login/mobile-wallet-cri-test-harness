@@ -1,12 +1,11 @@
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 
-let ajvInstance: Ajv;
+let ajvInstance: Ajv | null = null;
 
 function createAjvInstance(): Ajv {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri", "date-time", "date"] });
-
   // Custom keyword for Uint8Array validation
   ajv.addKeyword({
     keyword: "instanceof",
@@ -21,7 +20,6 @@ function createAjvInstance(): Ajv {
       };
     },
   });
-
   return ajv;
 }
 
@@ -30,4 +28,9 @@ export function getAjvInstance(): Ajv {
     ajvInstance = createAjvInstance();
   }
   return ajvInstance;
+}
+
+// Function required to reset AJV instances between unit tests
+export function resetAjvInstance(): void {
+  ajvInstance = null;
 }
