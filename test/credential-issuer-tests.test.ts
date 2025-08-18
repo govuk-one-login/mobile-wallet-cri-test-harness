@@ -432,7 +432,7 @@ describe("Credential Issuer Tests", () => {
           ).toBe(true);
         });
 
-        itIf("should return valid mDoc credential", isMdoc, async () => {
+        itIf("should return valid mdoc credential", isMdoc, async () => {
           const credential = credentialResponse.data.credentials[0].credential;
           expect(await isValidMdocCredential(credential)).toBe(true);
         });
