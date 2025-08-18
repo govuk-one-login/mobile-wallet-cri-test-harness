@@ -116,18 +116,22 @@ export const isoNamespaceSchema = {
         then: {
           properties: {
             elementValue: {
-              type: "object",
-              required: ["vehicle_category_code"],
-              properties: {
-                vehicle_category_code: { type: "string" },
-                issue_date: {
-                  type: "string",
-                  pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+              type: "array",
+              items: {
+                type: "object",
+                required: ["vehicle_category_code"],
+                properties: {
+                  vehicle_category_code: { type: "string" },
+                  issue_date: {
+                    type: "string",
+                    pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+                  },
+                  expiry_date: {
+                    type: "string",
+                    pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+                  },
                 },
-                expiry_date: {
-                  type: "string",
-                  pattern: "^\\d{4}-\\d{2}-\\d{2}$",
-                },
+                additionalProperties: false,
               },
             },
           },

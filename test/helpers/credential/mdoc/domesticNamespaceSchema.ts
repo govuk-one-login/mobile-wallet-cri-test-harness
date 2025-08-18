@@ -23,7 +23,7 @@ export const domesticNamespaceSchema = {
         enum: ["title", "welsh_licence", "provisional_driving_privileges"],
       },
       elementValue: {
-        anyOf: [{ type: "boolean" }, { type: "string" }, { type: "object" }],
+        anyOf: [{ type: "boolean" }, { type: "string" }, { type: "array" }],
       },
     },
     allOf: [
@@ -56,18 +56,22 @@ export const domesticNamespaceSchema = {
         then: {
           properties: {
             elementValue: {
-              type: "object",
-              required: ["vehicle_category_code"],
-              properties: {
-                vehicle_category_code: { type: "string" },
-                issue_date: {
-                  type: "string",
-                  pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+              type: "array",
+              items: {
+                type: "object",
+                required: ["vehicle_category_code"],
+                properties: {
+                  vehicle_category_code: { type: "string" },
+                  issue_date: {
+                    type: "string",
+                    pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+                  },
+                  expiry_date: {
+                    type: "string",
+                    pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+                  },
                 },
-                expiry_date: {
-                  type: "string",
-                  pattern: "^\\d{4}-\\d{2}-\\d{2}$",
-                },
+                additionalProperties: false,
               },
             },
           },
