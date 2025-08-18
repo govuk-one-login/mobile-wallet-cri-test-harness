@@ -119,8 +119,10 @@ function decodeCredential(
     const tags = new Map([
       [
         CBOR_TAGS.ENCODED_CBOR,
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         ({ contents }: { contents: any }) => decode(contents, { tags }),
       ],
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       [CBOR_TAGS.FULL_DATE, ({ contents }: { contents: any }) => contents],
     ]);
     return decode(credential, { tags }) as IssuerSigned;
@@ -168,6 +170,7 @@ function validateEncodedCbor(element: Tag, namespaceName: string): void {
     element.contents as string,
   ) as IssuerSignedItemWithTags;
 
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   if (FULL_DATE_ELEMENTS.includes(decodedItem.elementIdentifier as any)) {
     if (
       !(decodedItem.elementValue instanceof Tag) ||
@@ -181,6 +184,7 @@ function validateEncodedCbor(element: Tag, namespaceName: string): void {
   }
 
   if (
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     DRIVING_PRIVILEGES_ELEMENTS.includes(decodedItem.elementIdentifier as any)
   ) {
     const privileges = decodedItem.elementValue as DrivingPrivilegesWithTags[];
