@@ -2,7 +2,7 @@
 
 ## Overview
 
-The GOV.UK Wallet test harness lets you validate your credential issuance implementation without using the mobile app.
+The GOV.UK Wallet test harness lets you validate your credential issuance implementation without using the GOV.UK One Login app. 
 
 There is more guidance on GOV.UK Wallet in the [technical documentation](https://docs.wallet.service.gov.uk/).
 
