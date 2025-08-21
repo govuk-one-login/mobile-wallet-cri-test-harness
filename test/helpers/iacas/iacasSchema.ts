@@ -27,7 +27,7 @@ export const iacasSchema = {
               },
               country: {
                 type: "string",
-                const: "UK",
+                const: "GB",
               },
               commonName: {
                 type: "string",

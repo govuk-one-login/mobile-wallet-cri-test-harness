@@ -10,12 +10,12 @@ describe("isValidIacas", () => {
     expect(result).toBe(true);
   });
 
-  it("should throw an error when country is not UK", async () => {
+  it("should throw an error when country is not GB", async () => {
     const iacas = getIacas();
-    iacas.data[0].certificateData.country = "DE"; // Not the value expected by the schema ("UK")
+    iacas.data[0].certificateData.country = "DE"; // Not the value expected by the schema ("GB")
 
     await expect(isValidIacas(iacas)).rejects.toThrow(
-      'INVALID_IACAS: Schema validation failed. [{"instancePath":"/data/0/certificateData/country","schemaPath":"#/properties/data/items/properties/certificateData/properties/country/const","keyword":"const","params":{"allowedValue":"UK"},"message":"must be equal to constant"}]',
+      'INVALID_IACAS: Schema validation failed. [{"instancePath":"/data/0/certificateData/country","schemaPath":"#/properties/data/items/properties/certificateData/properties/country/const","keyword":"const","params":{"allowedValue":"GB"},"message":"must be equal to constant"}]',
     );
   });
 
@@ -103,7 +103,7 @@ function getIacas(): Iacas {
         certificateData: {
           notAfter: "2035-06-17T11:08:51.000Z",
           notBefore: "2025-06-19T11:08:51.000Z",
-          country: "UK",
+          country: "GB",
           commonName: "mDL Example IACA Root - LOCAL environment",
         },
         certificateFingerprint:
