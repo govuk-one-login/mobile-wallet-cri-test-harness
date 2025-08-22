@@ -1,5 +1,6 @@
 import { isValidCredential, MDLValidationError } from "./isValidCredential";
 import { resetAjvInstance } from "../../ajv/ajvInstance";
+import { base64url } from "jose";
 
 describe("isValidCredential", () => {
   beforeEach(() => {
@@ -11,26 +12,21 @@ describe("isValidCredential", () => {
   });
 
   it("should throw MDLValidationError for invalid base64url encoding", () => {
-    const invalidCredential = "invalid@base64url!";
-
-    expect(() => isValidCredential(invalidCredential)).toThrow(
-      MDLValidationError,
-    );
-    expect(() => isValidCredential(invalidCredential)).toThrow(
-      "Invalid base64url encoding",
-    );
+    expect.assertions(2);
+    try {
+      isValidCredential("invalid@base64url!");
+    } catch (error) {
+      expect(error).toBeInstanceOf(MDLValidationError);
+      expect((error as Error).message).toBe(
+        "Invalid base64url encoding - The input to be decoded is not correctly encoded.",
+      );
+    }
   });
 
   it("should throw MDLValidationError for invalid CBOR data", () => {
-    const invalidCbor = Buffer.from("invalid cbor data")
-      .toString("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=/g, "");
-
     expect.assertions(2);
     try {
-      isValidCredential(invalidCbor);
+      isValidCredential(base64url.encode("invalidCbor"));
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(

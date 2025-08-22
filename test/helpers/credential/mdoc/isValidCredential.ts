@@ -3,6 +3,47 @@ import { decode, Tag } from "cbor2";
 import { domesticNamespaceSchema } from "./domesticNamespaceSchema";
 import { issuerSignedSchema } from "./issuedSignedSchema";
 import { isoNamespaceSchema } from "./isoNamespaceSchema";
+import { base64url } from "jose";
+
+type NameSpace = typeof NAMESPACES.ISO | typeof NAMESPACES.GB;
+
+type IssuerAuth = [Uint8Array, Map<33, Uint8Array>, Uint8Array, Uint8Array];
+
+interface IssuerSigned {
+  issuerAuth: IssuerAuth;
+  nameSpaces: Record<NameSpace, IssuerSignedItem[]>;
+}
+
+interface IssuerSignedItem {
+  digestID: number;
+  elementIdentifier: string;
+  elementValue: string | boolean | Uint8Array | DrivingPrivileges[];
+  random: Uint8Array;
+}
+
+interface DrivingPrivileges {
+  vehicleCategoryCode: string;
+  issue_date?: string;
+  expiry_date?: string;
+}
+
+interface TaggedIssuerSignedItem {
+  digestId: number;
+  elementIdentifier: string;
+  elementValue: string | boolean | Uint8Array | TaggedDrivingPrivileges[] | Tag;
+  random: Uint8Array;
+}
+
+interface TaggedIssuerSigned {
+  issuerAuth: IssuerAuth;
+  nameSpaces: Record<NameSpace, Tag[]>;
+}
+
+interface TaggedDrivingPrivileges {
+  vehicleCategoryCode: string;
+  issue_date?: Tag;
+  expiry_date?: Tag;
+}
 
 export const NAMESPACES = {
   /** ISO 18013-5 standard namespace */
@@ -13,7 +54,7 @@ export const NAMESPACES = {
 
 export const CBOR_TAGS = {
   /** Tag for CBOR-encoded data */
-  ENCODED_CBOR: 24,
+  ENCODED_CBOR_DATA: 24,
   /** Tag for full-date strings */
   FULL_DATE: 1004,
 } as const;
@@ -48,45 +89,15 @@ const DRIVING_PRIVILEGES_ELEMENTS = [
   "provisional_driving_privileges",
 ] as const;
 
-interface DrivingPrivilegesWithTags {
-  vehicleCategoryCode: string;
-  issue_date?: Tag;
-  expiry_date?: Tag;
-}
-
-interface DrivingPrivileges {
-  vehicleCategoryCode: string;
-  issue_date?: string;
-  expiry_date?: string;
-}
-
-interface IssuerSignedItemWithTags {
-  digestId: number;
-  elementIdentifier: string;
-  elementValue:
-    | string
-    | boolean
-    | Uint8Array
-    | DrivingPrivilegesWithTags[]
-    | Tag;
-  random: Uint8Array;
-}
-
-interface IssuerSignedItem {
-  digestID: number;
-  elementIdentifier: string;
-  elementValue: string | boolean | Uint8Array | DrivingPrivileges[];
-  random: Uint8Array;
-}
-
-type NameSpace = typeof NAMESPACES.ISO | typeof NAMESPACES.GB;
-
-type IssuerAuth = [Uint8Array, Map<33, Uint8Array>, Uint8Array, Uint8Array];
-
-export interface IssuerSigned {
-  issuerAuth: IssuerAuth;
-  nameSpaces: Record<NameSpace, IssuerSignedItem[]>;
-}
+const TAGS = new Map([
+  [
+    CBOR_TAGS.ENCODED_CBOR_DATA,
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    ({ contents }: { contents: any }) => decode(contents, { tags: TAGS }),
+  ],
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  [CBOR_TAGS.FULL_DATE, ({ contents }: { contents: any }) => contents],
+]);
 
 export class MDLValidationError extends Error {
   public readonly code: string;
@@ -98,34 +109,74 @@ export class MDLValidationError extends Error {
   }
 }
 
-function isValidBase64Url(input: string): boolean {
-  if (!input) {
-    return false;
-  }
-  const base64UrlPattern = /^[A-Za-z0-9_-]+$/;
-  return base64UrlPattern.test(input);
+/**
+ * Validates a base64url-encoded mDL credential string.
+ *
+ * This includes decoding the credential from base64url, validating its
+ *  CBOR tags, schema, required elements, image format, and digest IDs.
+ *
+ * @param credential - The base64url-encoded credential string.
+ * @returns true if the credential is valid; otherwise, throws an error.
+ */
+export function isValidCredential(credential: string): boolean {
+  const cborBytes = base64UrlToUint8Array(credential);
+
+  /*
+  We intentionally decode the SAME CBOR payload twice.
+  1. decodeCredential(cborBytes)         → preserves CBOR tags
+  (used in validateCborTags to check correct tagging compliance)
+
+  2. decodeCredential(cborBytes, TAGS)   → normalises/removes CBOR tags
+  (used in decodeCredential to produce a usable IssuerSigned object)
+
+  This may seem redundant, but it's required:
+  - The first decode ensures that required CBOR tags are present and valid.
+  - The second decode converts tagged structures into plain JavaScript values.
+
+  Skipping either step would either leave tag data unchecked, or produce objects that are harder to validate.
+  */
+  const taggedIssuerSigned = decodeCredential(cborBytes);
+  validateCborTags(taggedIssuerSigned);
+
+  const issuerSigned = decodeCredential(cborBytes, TAGS);
+  validateIssuerSignedSchema(issuerSigned);
+  validateRequiredElements(issuerSigned);
+
+  const portrait = extractPortrait(issuerSigned);
+  validatePortrait(portrait);
+
+  validateDigestIds(issuerSigned.nameSpaces);
+
+  return true;
 }
 
-function base64UrlToUint8Array(base64url: string): Uint8Array {
-  const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64 + "===".slice((base64.length + 3) % 4);
-  return new Uint8Array(Buffer.from(padded, "base64"));
+function base64UrlToUint8Array(data: string): Uint8Array {
+  try {
+    return new Uint8Array(base64url.decode(data));
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new MDLValidationError(
+      `Invalid base64url encoding - ${errorMessage}`,
+      "INVALID_BASE64URL",
+    );
+  }
 }
 
 function decodeCredential(
   credential: Uint8Array<ArrayBufferLike>,
-): IssuerSigned {
+): TaggedIssuerSigned;
+
+function decodeCredential(
+  credential: Uint8Array<ArrayBufferLike>,
+  tags: Map<number, (value: any) => any>,
+): IssuerSigned;
+
+function decodeCredential(
+  credential: Uint8Array<ArrayBufferLike>,
+  tags?: Map<number, (value: any) => any>,
+): unknown | IssuerSigned {
   try {
-    const tags = new Map([
-      [
-        CBOR_TAGS.ENCODED_CBOR,
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        ({ contents }: { contents: any }) => decode(contents, { tags }),
-      ],
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      [CBOR_TAGS.FULL_DATE, ({ contents }: { contents: any }) => contents],
-    ]);
-    return decode(credential, { tags }) as IssuerSigned;
+    return decode(credential, tags ? { tags } : undefined);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new MDLValidationError(
@@ -135,18 +186,22 @@ function decodeCredential(
   }
 }
 
-function validateCborTags(credential: Uint8Array<ArrayBufferLike>): void {
+/**
+ * Decode the credential with tags preserved in order to validate the tags.
+ *
+ * We do NOT strip tags here — we want to keep the CBOR tagging so we can
+ * confirm the credential is tagged according to the mDL specification.
+ *
+ * This does not produce a usable IssuerSigned object — we only inspect
+ * the tags, then discard the result.
+ */
+function validateCborTags(taggedIssuerSigned: TaggedIssuerSigned): void {
   try {
-    const issuerSigned: {
-      issuerAuth: IssuerAuth;
-      nameSpaces: Record<NameSpace, Tag[]>;
-    } = decode(credential);
-
     for (const [namespaceName, elements] of Object.entries(
-      issuerSigned.nameSpaces,
+      taggedIssuerSigned.nameSpaces,
     )) {
       for (const element of elements) {
-        validateEncodedCbor(element, namespaceName);
+        validateEncodedCborData(element, namespaceName);
       }
     }
   } catch (error) {
@@ -158,19 +213,18 @@ function validateCborTags(credential: Uint8Array<ArrayBufferLike>): void {
   }
 }
 
-function validateEncodedCbor(element: Tag, namespaceName: string): void {
-  if (element.tag !== CBOR_TAGS.ENCODED_CBOR) {
+function validateEncodedCborData(element: Tag, namespaceName: string): void {
+  if (element.tag !== CBOR_TAGS.ENCODED_CBOR_DATA) {
     throw new MDLValidationError(
-      `IssuerSignedItem in namespace '${namespaceName}' is not CBOR encoded - missing tag ${CBOR_TAGS.ENCODED_CBOR}`,
+      `IssuerSignedItem in namespace '${namespaceName}' is not CBOR encoded - missing tag ${CBOR_TAGS.ENCODED_CBOR_DATA}`,
       "MISSING_CBOR_TAG",
     );
   }
 
   const decodedItem = decode(
     element.contents as string,
-  ) as IssuerSignedItemWithTags;
+  ) as TaggedIssuerSignedItem;
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   if (FULL_DATE_ELEMENTS.includes(decodedItem.elementIdentifier as any)) {
     if (
       !(decodedItem.elementValue instanceof Tag) ||
@@ -184,10 +238,9 @@ function validateEncodedCbor(element: Tag, namespaceName: string): void {
   }
 
   if (
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     DRIVING_PRIVILEGES_ELEMENTS.includes(decodedItem.elementIdentifier as any)
   ) {
-    const privileges = decodedItem.elementValue as DrivingPrivilegesWithTags[];
+    const privileges = decodedItem.elementValue as TaggedDrivingPrivileges[];
 
     for (const privilege of privileges) {
       if (
@@ -263,6 +316,15 @@ function validateRequiredElements(issuerSigned: IssuerSigned): void {
   }
 }
 
+function extractPortrait(
+  issuerSigned: IssuerSigned,
+): Uint8Array<ArrayBufferLike> {
+  const portraitIssuerSignedItem = issuerSigned.nameSpaces[NAMESPACES.ISO].find(
+    (item) => item.elementIdentifier === "portrait",
+  )!;
+  return portraitIssuerSignedItem.elementValue as Uint8Array<ArrayBufferLike>;
+}
+
 function validatePortrait(data: Uint8Array): void {
   // Check for SOI (Start of Image) marker: 0xFF 0xD8 0xE0 (or 0xEE or 0xDB)
   const byte1 = data[0];
@@ -310,33 +372,4 @@ function validateDigestIds(namespaces: Record<NameSpace, IssuerSignedItem[]>) {
 
 function checkUnique(digestIds: number[]): boolean {
   return new Set(digestIds).size === digestIds.length;
-}
-
-export function isValidCredential(credential: string): boolean {
-  if (!isValidBase64Url(credential)) {
-    throw new MDLValidationError(
-      "Invalid base64url encoding",
-      "INVALID_BASE64URL",
-    );
-  }
-
-  const cborBytes = base64UrlToUint8Array(credential);
-
-  validateCborTags(cborBytes);
-
-  const issuerSigned = decodeCredential(cborBytes);
-
-  validateIssuerSignedSchema(issuerSigned);
-
-  validateRequiredElements(issuerSigned);
-
-  const portrait = issuerSigned.nameSpaces[NAMESPACES.ISO].find(
-    (item) => item.elementIdentifier === "portrait",
-  )!.elementValue as Uint8Array<ArrayBufferLike>;
-
-  validatePortrait(portrait);
-
-  validateDigestIds(issuerSigned.nameSpaces);
-
-  return true;
 }

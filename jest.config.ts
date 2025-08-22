@@ -21,7 +21,7 @@ export default {
   // This line makes an exception for certain modern packages that ship only ESM
   // so ts-jest will transpile them to CommonJS for Jest to run.
   transformIgnorePatterns: [
-    '/node_modules/(?!cbor2|@cto.af/wtf8)'
+    '/node_modules/(?!cbor2|@cto.af/wtf8|jose)'
   ],
   // Use ts-jest preset for mixed JS/TS in ESM mode
   preset: 'ts-jest/presets/js-with-ts-esm',
