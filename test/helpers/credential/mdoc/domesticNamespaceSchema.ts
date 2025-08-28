@@ -15,8 +15,7 @@ export const domesticNamespaceSchema = {
       },
       random: {
         type: "object",
-        instanceof: "Uint8Array",
-        description: "Binary data stored as a Uint8Array",
+        instanceofUint8Array: true,
       },
       elementIdentifier: {
         type: "string",
@@ -69,6 +68,19 @@ export const domesticNamespaceSchema = {
                   expiry_date: {
                     type: "string",
                     pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+                  },
+                  codes: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      required: ["code"],
+                      properties: {
+                        code: {
+                          type: "string",
+                        },
+                      },
+                      additionalProperties: false,
+                    },
                   },
                 },
                 additionalProperties: false,

@@ -6,20 +6,25 @@ let ajvInstance: Ajv | null = null;
 function createAjvInstance(): Ajv {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri", "date-time", "date"] });
-  // Custom keyword for Uint8Array validation
-  ajv.addKeyword({
-    keyword: "instanceof",
-    type: "object",
-    schemaType: "string",
-    compile: function (schemaValue) {
-      return function validate(data) {
-        if (schemaValue === "Uint8Array") {
-          return data instanceof Uint8Array;
-        }
-        return false;
-      };
-    },
-  });
+  ajv
+    .addKeyword({
+      keyword: "instanceofUint8Array",
+      validate: function (schema: any, data: any) {
+        if (!schema) return true;
+        return data instanceof Uint8Array;
+      },
+      errors: false,
+      type: "object",
+    })
+    .addKeyword({
+      keyword: "instanceofMap",
+      validate: function (schema: any, data: any) {
+        if (!schema) return true;
+        return data instanceof Map;
+      },
+      errors: false,
+      type: "object",
+    });
   return ajv;
 }
 
