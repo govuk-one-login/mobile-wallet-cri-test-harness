@@ -7,9 +7,9 @@ import {
   ProtectedHeaderParameters,
 } from "jose";
 import { headerSchema } from "./headerSchema";
+import { VerificationMethod } from "../../didDocument/isValidDidWebDocument";
 import { payloadSchema } from "./payloadSchema";
-import { VerificationMethod } from "../didDocument/isValidDidWebDocument";
-import { getAjvInstance } from "../ajv/ajvInstance";
+import { getAjvInstance } from "../../ajv/ajvInstance";
 
 export async function isValidCredential(
   credential: string,
@@ -43,7 +43,7 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
     return claims;
   } else {
     throw new Error(
-      `INVALID HEADER: Credential header does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
+      `INVALID_HEADER: Credential header does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
     );
   }
 }

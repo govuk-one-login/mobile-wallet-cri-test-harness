@@ -1,12 +1,12 @@
 import { isValidCredential } from "./isValidCredential";
-import * as createProofJwtModule from "./createProofJwt";
+import * as createProofJwtModule from "../createProofJwt";
 import { importJWK, SignJWT } from "jose";
 
-jest.mock("./createProofJwt", () => ({
+jest.mock("../createProofJwt", () => ({
   createProofJwt: jest.fn(),
   createDidKey: jest.fn(),
 }));
-jest.mock("./createAccessToken", () => ({
+jest.mock("../createAccessToken", () => ({
   createAccessToken: jest.fn(),
 }));
 
@@ -67,7 +67,7 @@ describe("isValidCredential", () => {
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow(
-      'INVALID HEADER: Credential header does not comply with the schema. [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"kid"},"message":"must have required property \'kid\'"}]',
+      'INVALID_HEADER: Credential header does not comply with the schema. [{"instancePath":"","schemaPath":"#/required","keyword":"required","params":{"missingProperty":"kid"},"message":"must have required property \'kid\'"}]',
     );
   });
 

@@ -1,25 +1,25 @@
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 
-let ajvInstance: Ajv;
+let ajvInstance: Ajv | null = null;
 
 function createAjvInstance(): Ajv {
   const ajv = new Ajv({ allErrors: true, verbose: false });
-  addFormats(ajv, { formats: ["uri"] });
-
-  // Custom keyword for Buffer validation
+  addFormats(ajv, { formats: ["uri", "date-time", "date"] });
+  // Custom keyword for Uint8Array validation
   ajv.addKeyword({
     keyword: "instanceof",
     type: "object",
     schemaType: "string",
     compile: function (schemaValue) {
       return function validate(data) {
-        if (schemaValue === "Buffer") return Buffer.isBuffer(data);
+        if (schemaValue === "Uint8Array") {
+          return data instanceof Uint8Array;
+        }
         return false;
       };
     },
   });
-
   return ajv;
 }
 
@@ -28,4 +28,9 @@ export function getAjvInstance(): Ajv {
     ajvInstance = createAjvInstance();
   }
   return ajvInstance;
+}
+
+// Function required to reset AJV instances between unit tests
+export function resetAjvInstance(): void {
+  ajvInstance = null;
 }

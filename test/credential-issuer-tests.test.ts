@@ -19,7 +19,6 @@ import {
   isValidDidWebDocument,
 } from "./helpers/didDocument/isValidDidWebDocument";
 import { isValidPreAuthorizedCode } from "./helpers/preAuthorizedCode/isValidPreAuthorizedCode";
-import { isValidCredential } from "./helpers/credential/isValidCredential";
 import { readFileSync } from "fs";
 import { decodeJwt, JWK, JWTPayload } from "jose";
 import {
@@ -49,6 +48,8 @@ import {
   isMdoc,
   hasNotificationEndpoint,
 } from "./helpers/testConditions";
+import { isValidCredential as isValidJwtCredential } from "./helpers/credential/jwt/isValidCredential";
+import { isValidCredential as isValidMdocCredential } from "./helpers/credential/mdoc/isValidCredential";
 
 let CREDENTIAL_OFFER_DEEP_LINK: string;
 let CRI_URL: string;
@@ -422,13 +423,18 @@ describe("Credential Issuer Tests", () => {
           const didDocument: DidDocument = (await getDidDocument(CRI_URL)).data;
           const credential = credentialResponse.data.credentials[0].credential;
           expect(
-            await isValidCredential(
+            await isValidJwtCredential(
               credential,
               didKey,
               didDocument.verificationMethod,
               CRI_URL,
             ),
           ).toBe(true);
+        });
+
+        itIf("should return valid mdoc credential", isMdoc, async () => {
+          const credential = credentialResponse.data.credentials[0].credential;
+          expect(await isValidMdocCredential(credential)).toBe(true);
         });
       });
     });
