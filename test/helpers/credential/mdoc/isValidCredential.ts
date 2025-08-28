@@ -145,6 +145,9 @@ export function isValidCredential(credential: string): boolean {
   const portrait = extractPortrait(issuerSigned);
   validatePortraitFormat(portrait);
 
+  const protectedHeader = decode(issuerSigned.issuerAuth[0]);
+  validateCoseProtectedHeader(protectedHeader);
+
   return true;
 }
 
@@ -372,4 +375,28 @@ function validateDigestIdsUnique(
 
 function checkUnique(digestIds: number[]): boolean {
   return new Set(digestIds).size === digestIds.length;
+}
+
+function validateCoseProtectedHeader(protectedHeader: unknown): void {
+  if (!(protectedHeader instanceof Map)) {
+    throw new MDLValidationError(
+      "Protected header is not a Map",
+      "INVALID_PROTECTED_HEADER",
+    );
+  }
+  if (protectedHeader.size !== 1) {
+    throw new Error("Protected header contains unexpected extra parameters.");
+  }
+  if (!protectedHeader.has(1)) {
+    throw new MDLValidationError(
+      'Protected header missing required "alg" (key 1)',
+      "INVALID_PROTECTED_HEADER",
+    );
+  }
+  if (protectedHeader.get(1) !== -7) {
+    throw new MDLValidationError(
+      'Protected header "alg" must be -7 (ES256)',
+      "INVALID_PROTECTED_HEADER",
+    );
+  }
 }
