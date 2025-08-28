@@ -141,11 +141,9 @@ export function isValidCredential(credential: string): boolean {
   const issuerSigned = decodeCredential(cborBytes, TAGS);
   validateIssuerSignedSchema(issuerSigned);
   validateRequiredElements(issuerSigned);
-
+  validateDigestIdsUnique(issuerSigned.nameSpaces);
   const portrait = extractPortrait(issuerSigned);
-  validatePortrait(portrait);
-
-  validateDigestIds(issuerSigned.nameSpaces);
+  validatePortraitFormat(portrait);
 
   return true;
 }
@@ -325,7 +323,7 @@ function extractPortrait(
   return portraitIssuerSignedItem.elementValue as Uint8Array<ArrayBufferLike>;
 }
 
-function validatePortrait(data: Uint8Array): void {
+function validatePortraitFormat(data: Uint8Array): void {
   // Check for SOI (Start of Image) marker: 0xFF 0xD8 0xE0 (or 0xEE or 0xDB)
   const byte1 = data[0];
   const byte2 = data[1];
@@ -355,7 +353,9 @@ function validatePortrait(data: Uint8Array): void {
   }
 }
 
-function validateDigestIds(namespaces: Record<NameSpace, IssuerSignedItem[]>) {
+function validateDigestIdsUnique(
+  namespaces: Record<NameSpace, IssuerSignedItem[]>,
+) {
   const namespacesToCheck = [NAMESPACES.ISO, NAMESPACES.GB];
 
   namespacesToCheck.forEach((namespace) => {
