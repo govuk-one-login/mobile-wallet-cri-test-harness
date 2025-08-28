@@ -4,6 +4,7 @@ import { domesticNamespaceSchema } from "./domesticNamespaceSchema";
 import { issuerSignedSchema } from "./issuedSignedSchema";
 import { isoNamespaceSchema } from "./isoNamespaceSchema";
 import { base64url } from "jose";
+const { X509Certificate } = require("node:crypto");
 
 type NameSpace = typeof NAMESPACES.ISO | typeof NAMESPACES.GB;
 
@@ -147,6 +148,10 @@ export function isValidCredential(credential: string): boolean {
 
   const protectedHeader = decode(issuerSigned.issuerAuth[0]);
   validateCoseProtectedHeader(protectedHeader);
+
+  const unprotectedHeader = issuerSigned.issuerAuth[1];
+  console.log(unprotectedHeader);
+  validateCoseUnprotectedHeader(unprotectedHeader);
 
   return true;
 }
@@ -397,6 +402,33 @@ function validateCoseProtectedHeader(protectedHeader: unknown): void {
     throw new MDLValidationError(
       'Protected header "alg" must be -7 (ES256)',
       "INVALID_PROTECTED_HEADER",
+    );
+  }
+}
+
+function validateCoseUnprotectedHeader(unprotectedHeader: unknown): void {
+  if (!(unprotectedHeader instanceof Map)) {
+    throw new MDLValidationError(
+      "Unprotected header is not a Map",
+      "INVALID_UNPROTECTED_HEADER",
+    );
+  }
+  if (!unprotectedHeader.has(33)) {
+    throw new MDLValidationError(
+      'Protected header missing required "x5chain" (key 33)',
+      "INVALID_UNPROTECTED_HEADER",
+    );
+  }
+
+  const certificateBytes = unprotectedHeader.get(33);
+
+  try {
+    new X509Certificate(certificateBytes);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new MDLValidationError(
+      `Failed to parse X509Certificate - ${errorMessage}`,
+      "INVALID_UNPROTECTED_HEADER",
     );
   }
 }
