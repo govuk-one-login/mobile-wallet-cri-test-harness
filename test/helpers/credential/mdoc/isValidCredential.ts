@@ -150,7 +150,6 @@ export function isValidCredential(credential: string): boolean {
   validateCoseProtectedHeader(protectedHeader);
 
   const unprotectedHeader = issuerSigned.issuerAuth[1];
-  console.log(unprotectedHeader);
   validateCoseUnprotectedHeader(unprotectedHeader);
 
   return true;
@@ -415,19 +414,49 @@ function validateCoseUnprotectedHeader(unprotectedHeader: unknown): void {
   }
   if (!unprotectedHeader.has(33)) {
     throw new MDLValidationError(
-      'Protected header missing required "x5chain" (key 33)',
+      'Unprotected header missing required "x5chain" (key 33)',
       "INVALID_UNPROTECTED_HEADER",
     );
   }
 
-  const certificateBytes = unprotectedHeader.get(33);
+  const x5chain = unprotectedHeader.get(33);
 
-  try {
-    new X509Certificate(certificateBytes);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  if (x5chain instanceof Uint8Array || Buffer.isBuffer(x5chain)) {
+    try {
+      new X509Certificate(x5chain);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new MDLValidationError(
+        `Failed to parse X509Certificate - ${errorMessage}`,
+        "INVALID_UNPROTECTED_HEADER",
+      );
+    }
+  } else if (Array.isArray(x5chain)) {
+    for (const certificateBytes of x5chain) {
+      if (
+        !(certificateBytes instanceof Uint8Array) &&
+        !Buffer.isBuffer(certificateBytes)
+      ) {
+        throw new MDLValidationError(
+          "Certificate in x5chain array is not a byte string",
+          "INVALID_UNPROTECTED_HEADER",
+        );
+      }
+      try {
+        new X509Certificate(certificateBytes);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        throw new MDLValidationError(
+          `Failed to parse X509Certificate in array - ${errorMessage}`,
+          "INVALID_UNPROTECTED_HEADER",
+        );
+      }
+    }
+  } else {
     throw new MDLValidationError(
-      `Failed to parse X509Certificate - ${errorMessage}`,
+      'The "x5chain" field must be a byte string or an array of byte strings',
       "INVALID_UNPROTECTED_HEADER",
     );
   }
