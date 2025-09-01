@@ -1,20 +1,21 @@
-import { isValidCredential, MDLValidationError } from "./isValidCredential";
+import { isValidCredential } from "./isValidCredential";
 import { resetAjvInstance } from "../../ajv/ajvInstance";
 import { base64url } from "jose";
+import { MDLValidationError } from "./MDLValidationError";
 
 describe("isValidCredential", () => {
   beforeEach(() => {
     resetAjvInstance();
   });
 
-  it("should return true for a valid credential", () => {
-    expect(isValidCredential(credential_valid)).toBe(true);
+  it("should return true for a valid credential", async () => {
+    expect(await isValidCredential(credential_valid)).toBe(true);
   });
 
-  it("should throw MDLValidationError for invalid base64url encoding", () => {
+  it("should throw MDLValidationError for invalid base64url encoding", async () => {
     expect.assertions(2);
     try {
-      isValidCredential("invalid@base64url!");
+      await isValidCredential("invalid@base64url!");
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
@@ -23,10 +24,10 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError for invalid CBOR data", () => {
+  it("should throw MDLValidationError for invalid CBOR data", async () => {
     expect.assertions(2);
     try {
-      isValidCredential(base64url.encode("invalidCbor"));
+      await isValidCredential(base64url.encode("invalidCbor"));
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
@@ -35,10 +36,10 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when IssuerSignedItem is not tagged with tag 24", () => {
+  it("should throw MDLValidationError when IssuerSignedItem is not tagged with tag 24", async () => {
     expect.assertions(2);
     try {
-      isValidCredential(credentialMissingTag24_title);
+      await isValidCredential(credentialMissingTag24_title);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
@@ -47,10 +48,10 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when date element is not tagged with tag 1004", () => {
+  it("should throw MDLValidationError when date element is not tagged with tag 1004", async () => {
     expect.assertions(2);
     try {
-      isValidCredential(credentialMissingTag1004_expiryDate);
+      await isValidCredential(credentialMissingTag1004_expiryDate);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
@@ -59,10 +60,10 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when issue_date in driving privileges is not tagged with tag 1004", () => {
+  it("should throw MDLValidationError when issue_date in driving privileges is not tagged with tag 1004", async () => {
     expect.assertions(2);
     try {
-      isValidCredential(
+      await isValidCredential(
         credentialMissingTag1004_issueDateInProvisionalDrivingPrivilege,
       );
     } catch (error) {
@@ -73,10 +74,10 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when ISO schema does not contain 18 items (missing family_name)", () => {
+  it("should throw MDLValidationError when ISO schema does not contain 18 items (missing family_name)", async () => {
     expect.assertions(2);
     try {
-      isValidCredential(credentialMissingRequiredElement_familyName);
+      await isValidCredential(credentialMissingRequiredElement_familyName);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
@@ -85,10 +86,10 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError for invalid portrait - wrong first byte", () => {
+  it("should throw MDLValidationError for invalid portrait - wrong first byte", async () => {
     expect.assertions(2);
     try {
-      isValidCredential(credential_invalidFirstPortraitByte);
+      await isValidCredential(credential_invalidFirstPortraitByte);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
@@ -97,10 +98,10 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError for invalid portrait - wrong last byte", () => {
+  it("should throw MDLValidationError for invalid portrait - wrong last byte", async () => {
     expect.assertions(2);
     try {
-      isValidCredential(credential_invalidLastPortraitByte);
+      await isValidCredential(credential_invalidLastPortraitByte);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
@@ -109,10 +110,10 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when digest IDs within a namespace are not unique", () => {
+  it("should throw MDLValidationError when digest IDs within a namespace are not unique", async () => {
     expect.assertions(2);
     try {
-      isValidCredential(credential_nonUniqueDigestId);
+      await isValidCredential(credential_nonUniqueDigestId);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
