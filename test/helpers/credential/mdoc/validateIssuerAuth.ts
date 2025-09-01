@@ -236,33 +236,31 @@ function validateDigests(
     NameSpace,
     Tag[],
   ][]) {
-    const expectedDigests = valueDigests[namespace] as Map<number, Uint8Array>;
     for (const taggedIssuerSignedItemBytes of items) {
-      const encodedIssuerSignedItemBytes = encode(taggedIssuerSignedItemBytes);
+      const encodedTaggedIssuerSignedItemBytes = encode(
+        taggedIssuerSignedItemBytes,
+      );
       const calculatedDigest = createHash("sha256")
-        .update(encodedIssuerSignedItemBytes)
+        .update(encodedTaggedIssuerSignedItemBytes)
         .digest();
 
       const issuerSignedItemBytes =
         taggedIssuerSignedItemBytes.contents as Uint8Array;
-      const decodedItem = decode(
+      const issuedSignedItem = decode(
         issuerSignedItemBytes,
       ) as TaggedIssuerSignedItem;
-      const digestID = decodedItem.digestID;
+      const digestID = issuedSignedItem.digestID;
 
-      const expectedDigest = expectedDigests.get(digestID);
+      const msoDigests = valueDigests[namespace] as Map<number, Uint8Array>;
+      const expectedDigest = msoDigests.get(digestID);
       if (!expectedDigest) {
         throw new MDLValidationError(
-          `No expected digest found for digestID "${digestID}" in namespace "${namespace}"`,
-          "INVALID_DIGESTS",
+          `No digest found for digestID ${digestID} in MSO namespace ${namespace}: ${[...msoDigests.keys()]}`,
         );
       }
-
       if (!calculatedDigest.equals(expectedDigest)) {
         throw new MDLValidationError(
-          `Digest mismatch for "${decodedItem.elementIdentifier}" (digestID: ${digestID}) in namespace "${namespace}"\n` +
-            `Expected: ${Buffer.from(expectedDigest).toString("hex")}\n` +
-            `Calculated: ${calculatedDigest.toString("hex")}`,
+          `Digest mismatch for element identifier "${issuedSignedItem.elementIdentifier} with digest ID ${digestID} in namespace ${namespace} - Expected ${Buffer.from(expectedDigest).toString("hex")} but calculated ${calculatedDigest.toString("hex")}`,
           "INVALID_DIGESTS",
         );
       }
