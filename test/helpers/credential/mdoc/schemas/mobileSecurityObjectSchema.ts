@@ -57,23 +57,11 @@ export const mobileSecurityObjectSchema = {
         "org.iso.18013.5.1.GB": {
           type: "object",
           instanceofMap: true,
-          patternProperties: {
-            "^\\d+$": {
-              type: "object",
-              instanceofUint8Array: true,
-            },
-          },
           additionalProperties: false,
         },
         "org.iso.18013.5.1": {
           type: "object",
           instanceofMap: true,
-          patternProperties: {
-            "^\\d+$": {
-              type: "object",
-              instanceofUint8Array: true,
-            },
-          },
           additionalProperties: false,
         },
       },
