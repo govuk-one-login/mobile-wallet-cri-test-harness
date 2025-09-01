@@ -1,4 +1,4 @@
-export const CBOR_TAGS = {
+export const TAGS = {
   /** Tag for CBOR-encoded data */
   ENCODED_CBOR_DATA: 24,
   /** Tag for full-date strings */

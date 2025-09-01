@@ -1,10 +1,7 @@
-import {
-  IssuerSigned,
-  IssuerSignedItem,
-  MDLValidationError,
-  NameSpace,
-  NAMESPACES,
-} from "./isValidCredential";
+import { NAMESPACES } from "./constants/namespaces";
+import { IssuerSigned, IssuerSignedItem } from "./types/issuerSigned";
+import { NameSpace } from "./types/namespaces";
+import { MDLValidationError } from "./MDLValidationError";
 
 const REQUIRED_MDL_ELEMENTS = [
   "welsh_licence",
@@ -27,12 +24,12 @@ const REQUIRED_MDL_ELEMENTS = [
   "resident_city",
   "driving_privileges",
   "un_distinguishing_sign",
-] as const;
+];
 
 export function validaNamespaces(issuerSigned: IssuerSigned) {
   validateRequiredElements(issuerSigned.nameSpaces);
 
-  validateDigestIdsUnique(issuerSigned.nameSpaces);
+  validateDigestIds(issuerSigned.nameSpaces);
 
   const portrait = extractPortrait(issuerSigned);
   validatePortraitFormat(portrait);
@@ -68,7 +65,7 @@ function extractPortrait(
   const portraitIssuerSignedItem = issuerSigned.nameSpaces[NAMESPACES.ISO].find(
     (item) => item.elementIdentifier === "portrait",
   )!;
-  return portraitIssuerSignedItem.elementValue as Uint8Array<ArrayBufferLike>;
+  return portraitIssuerSignedItem.elementValue as Uint8Array;
 }
 
 function validatePortraitFormat(data: Uint8Array): void {
@@ -101,9 +98,7 @@ function validatePortraitFormat(data: Uint8Array): void {
   }
 }
 
-function validateDigestIdsUnique(
-  namespaces: Record<NameSpace, IssuerSignedItem[]>,
-) {
+function validateDigestIds(namespaces: Record<NameSpace, IssuerSignedItem[]>) {
   const namespacesToCheck = [NAMESPACES.ISO, NAMESPACES.GB];
 
   namespacesToCheck.forEach((namespace) => {

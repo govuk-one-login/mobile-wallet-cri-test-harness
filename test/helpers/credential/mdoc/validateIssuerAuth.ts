@@ -1,25 +1,25 @@
 import { decode, encode, Tag } from "cbor2";
-import {
-  IssuerAuth,
-  MDLValidationError,
-  MobileSecurityObject,
-  NameSpace,
-  TaggedIssuerSignedItem,
-  ValueDigests,
-} from "./isValidCredential";
+
 import { createHash, KeyObject, verify, X509Certificate } from "node:crypto";
 import { getAjvInstance } from "../../ajv/ajvInstance";
-import { mobileSecurityObjectSchema } from "./mobileSecurityObjectSchema";
-import { CBOR_TAGS } from "./tags";
+import { mobileSecurityObjectSchema } from "./schemas/mobileSecurityObjectSchema";
+import { TAGS } from "./constants/tags";
+import { errorMessage, MDLValidationError } from "./MDLValidationError";
+import { IssuerAuth, TaggedIssuerSignedItem } from "./types/issuerSigned";
+import { NameSpace } from "./types/namespaces";
+import {
+  MobileSecurityObject,
+  ValueDigests,
+} from "./types/mobileSecurityObject";
 
-const TAGS = new Map([
+const tags = new Map([
   [
-    CBOR_TAGS.ENCODED_CBOR_DATA,
+    TAGS.ENCODED_CBOR_DATA,
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    ({ contents }: { contents: any }) => decode(contents, { tags: TAGS }),
+    ({ contents }: { contents: any }) => decode(contents, { tags: tags }),
   ],
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  [CBOR_TAGS.DATE_TIME, ({ contents }: { contents: any }) => contents],
+  [TAGS.DATE_TIME, ({ contents }: { contents: any }) => contents],
 ]);
 
 export async function validateIssuerAuth(
@@ -35,26 +35,36 @@ export async function validateIssuerAuth(
   const payload = issuerAuth[2];
   await validatePayload(payload, namespaces);
 
-  verifySignature(
-    certificate.publicKey,
-    protectedHeader,
-    payload,
-    issuerAuth[3],
-  );
+  try {
+    const outcome = verifySignature(
+      certificate.publicKey,
+      protectedHeader,
+      payload,
+      issuerAuth[3],
+    );
+    if (!outcome) {
+      throw new MDLValidationError(
+        "Signature not verified",
+        "INVALID_SIGNATURE",
+      );
+    }
+  } catch (error) {
+    if (error instanceof MDLValidationError) {
+      throw error;
+    }
+    throw new MDLValidationError(
+      `Signature could not be verified - ${errorMessage(error)} `,
+      "INVALID_SIGNATURE",
+    );
+  }
 }
 
 function validateProtectedHeader(protectedHeader: Uint8Array): void {
-  const protectedHeaderDecoded = decode(protectedHeader);
+  const protectedHeaderDecoded = decode(protectedHeader) as Map<number, number>;
 
-  if (!(protectedHeaderDecoded instanceof Map)) {
-    throw new MDLValidationError(
-      "Protected header is not a Map",
-      "INVALID_PROTECTED_HEADER",
-    );
-  }
   if (protectedHeaderDecoded.size !== 1) {
     throw new MDLValidationError(
-      "Protected header contains unexpected extra parameters",
+      "Protected header contains unexpected extra parameters - must contain only one",
       "INVALID_PROTECTED_HEADER",
     );
   }
@@ -73,11 +83,11 @@ function validateProtectedHeader(protectedHeader: Uint8Array): void {
 }
 
 function validateUnprotectedHeader(
-  unprotectedHeader: Map<any, any>,
+  unprotectedHeader: Map<number, Uint8Array | Uint8Array[]>,
 ): X509Certificate {
   if (unprotectedHeader.size !== 1) {
     throw new MDLValidationError(
-      "Unprotected header contains unexpected extra parameters",
+      "Unprotected header contains unexpected extra parameters - must contain only one",
       "INVALID_UNPROTECTED_HEADER",
     );
   }
@@ -88,46 +98,17 @@ function validateUnprotectedHeader(
     );
   }
 
-  const x5chain = unprotectedHeader.get(33);
-  if (x5chain instanceof Uint8Array || Buffer.isBuffer(x5chain)) {
-    try {
-      return new X509Certificate(x5chain);
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      throw new MDLValidationError(
-        `Failed to parse X509Certificate - ${errorMessage}`,
-        "INVALID_UNPROTECTED_HEADER",
-      );
-    }
+  const x5chain = unprotectedHeader.get(33)!;
+  const certificate = Array.isArray(x5chain) ? x5chain[0] : x5chain;
+
+  try {
+    return new X509Certificate(certificate);
+  } catch (error) {
+    throw new MDLValidationError(
+      `Failed to parse X509Certificate- ${errorMessage(error)}`,
+      "INVALID_UNPROTECTED_HEADER",
+    );
   }
-
-  if (Array.isArray(x5chain)) {
-    // TODO: Extracting the first certificate for now but this logic can be updated to extract all
-    const certificate = x5chain[0];
-    if (!(certificate instanceof Uint8Array) && !Buffer.isBuffer(certificate)) {
-      throw new MDLValidationError(
-        "Certificate in x5chain array is not a byte string",
-        "INVALID_UNPROTECTED_HEADER",
-      );
-    }
-
-    try {
-      return new X509Certificate(certificate);
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      throw new MDLValidationError(
-        `Failed to parse X509Certificate in array - ${errorMessage}`,
-        "INVALID_UNPROTECTED_HEADER",
-      );
-    }
-  }
-
-  throw new MDLValidationError(
-    'The "x5chain" field must be a byte string or an array of byte strings',
-    "INVALID_UNPROTECTED_HEADER",
-  );
 }
 
 async function validatePayload(
@@ -135,14 +116,13 @@ async function validatePayload(
   nameSpaces: Record<NameSpace, Tag[]>,
 ) {
   const mobileSecurityObject: MobileSecurityObject = decode(payload, {
-    tags: TAGS,
+    tags: tags,
   });
-  console.log(mobileSecurityObject);
   validateMobileSecurityObject(mobileSecurityObject);
 
-  await validateDeviceKey(mobileSecurityObject.deviceKeyInfo.deviceKey);
-
   validateDigests(mobileSecurityObject.valueDigests, nameSpaces);
+
+  await validateDeviceKey(mobileSecurityObject.deviceKeyInfo.deviceKey);
 }
 
 function validateMobileSecurityObject(
@@ -167,12 +147,14 @@ function validateMobileSecurityObject(
 
     throw new MDLValidationError(
       `MobileSecurityObject does not comply with schema - ${errorDetails}`,
-      "SCHEMA_VALIDATION_ERROR",
+      "INVALID_SCHEMA",
     );
   }
 }
 
-async function validateDeviceKey(deviceKey: Map<any, any>): Promise<void> {
+async function validateDeviceKey(
+  deviceKey: Map<unknown, unknown>,
+): Promise<void> {
   if (deviceKey.size !== 4) {
     throw new MDLValidationError(
       "deviceKey contains unexpected extra parameters",
@@ -221,8 +203,8 @@ async function validateDeviceKey(deviceKey: Map<any, any>): Promise<void> {
     const jwk = {
       kty: "EC",
       crv: "P-256",
-      x: Buffer.from(deviceKey.get(-2)).toString("base64url"),
-      y: Buffer.from(deviceKey.get(-3)).toString("base64url"),
+      x: Buffer.from(deviceKey.get(-2) as Uint8Array).toString("base64url"),
+      y: Buffer.from(deviceKey.get(-3) as Uint8Array).toString("base64url"),
     };
 
     await crypto.subtle.importKey(
@@ -261,6 +243,7 @@ function validateDigests(
       const calculatedDigest = createHash("sha256")
         .update(encodedIssuerSignedItemBytes)
         .digest();
+
       const issuerSignedItemBytes =
         taggedIssuerSignedItemBytes.contents as Uint8Array;
       const decodedItem = decode(
@@ -288,7 +271,7 @@ function validateDigests(
   }
 }
 
-function areAllKeysAreIntegers(map: Map<any, any>): boolean {
+function areAllKeysAreIntegers(map: Map<unknown, Uint8Array>): boolean {
   return Array.from(map.keys()).every((key) => Number.isInteger(key));
 }
 
@@ -300,12 +283,7 @@ function verifySignature(
 ): boolean {
   const sigStructure = createSigStructure(protectedHeader, payload);
 
-  try {
-    return verify("sha256", sigStructure, publicKey, signature);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new MDLValidationError(`A - ${errorMessage}`, "INVALID_SIGNATURE");
-  }
+  return verify("sha256", sigStructure, publicKey, signature);
 }
 
 function createSigStructure(
