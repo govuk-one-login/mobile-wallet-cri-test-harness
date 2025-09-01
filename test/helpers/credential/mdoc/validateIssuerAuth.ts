@@ -236,14 +236,7 @@ function validateDigests(
     NameSpace,
     Tag[],
   ][]) {
-    const expectedDigests = valueDigests[namespace] as Map<unknown, Uint8Array>;
-    if (!areAllKeysAreIntegers(expectedDigests)) {
-      throw new MDLValidationError(
-        "Digest IDs must be integers",
-        "INVALID_DIGESTS",
-      );
-    }
-
+    const expectedDigests = valueDigests[namespace] as Map<number, Uint8Array>;
     for (const taggedIssuerSignedItemBytes of items) {
       const encodedIssuerSignedItemBytes = encode(taggedIssuerSignedItemBytes);
       const calculatedDigest = createHash("sha256")
@@ -275,10 +268,6 @@ function validateDigests(
       }
     }
   }
-}
-
-function areAllKeysAreIntegers(map: Map<unknown, Uint8Array>): boolean {
-  return Array.from(map.keys()).every((key) => Number.isInteger(key));
 }
 
 function verifySignature(
