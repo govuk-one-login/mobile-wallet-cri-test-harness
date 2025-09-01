@@ -36,7 +36,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when IssuerSignedItem is not tagged with tag 24", async () => {
+  it("should throw MDLValidationError when an IssuerSignedItem is not tagged with tag 24", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingTag24InTitle);
@@ -48,7 +48,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when expiry_date is not tagged with tag 1004", async () => {
+  it("should throw MDLValidationError when 'expiry_date' is not tagged with tag 1004", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingTag1004InExpiryDate);
@@ -60,7 +60,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when issue_date in driving privileges is not tagged with tag 1004", async () => {
+  it("should throw MDLValidationError when 'issue_date' in driving privileges is not tagged with tag 1004", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingTag1004InDrivingPrivilegeIssueDate);
@@ -72,7 +72,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when signed in validity info is not tagged with tag 0", async () => {
+  it("should throw MDLValidationError when 'signed' in validity info is not tagged with tag 0", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingTag0InValidityInfo);
@@ -84,7 +84,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when the number of IssuerSignedItem elements is not 18 (missing family_name)", async () => {
+  it("should throw MDLValidationError when the number of IssuerSignedItem elements is not 18 (missing 'family_name')", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingFamilyName);
@@ -96,7 +96,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when one of the IssuerSignedItem elements has an unknown identifier (first_name instead of given_name)", async () => {
+  it("should throw MDLValidationError when one of the IssuerSignedItem contains an unknown element identifier (identifier is 'first_name' instead of 'given_name')", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(hasUnknownProperty);
@@ -132,7 +132,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError for invalid portrait - wrong first byte", async () => {
+  it("should throw MDLValidationError when portrait first byte is invalid", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(invalidFirstPortraitByte);
@@ -144,7 +144,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError for invalid portrait - wrong last byte", async () => {
+  it("should throw MDLValidationError when portrait last byte is invalid", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(invalidLastPortraitByte);
