@@ -84,6 +84,18 @@ describe("isValidCredential", () => {
     }
   });
 
+  it("should throw MDLValidationError when digest IDs within a namespace are not unique", async () => {
+    expect.assertions(2);
+    try {
+      await isValidCredential(nonUniqueDigestIdInISONamespace);
+    } catch (error) {
+      expect(error).toBeInstanceOf(MDLValidationError);
+      expect((error as Error).message).toBe(
+        "Digest IDs are not unique for namespace org.iso.18013.5.1",
+      );
+    }
+  });
+
   it("should throw MDLValidationError for invalid portrait - wrong first byte", async () => {
     expect.assertions(2);
     try {
@@ -91,7 +103,7 @@ describe("isValidCredential", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Invalid SOI - JPEG should start with ffd8ffe0 or ffd8ffee or ffd8ffdb for JPEG but found 00d8e000",
+        "Invalid SOI - JPEG should start with ffd8ffe0 or ffd8ffee or ffd8ffdb for JPEG but found ffd8ffe1",
       );
     }
   });
@@ -103,19 +115,7 @@ describe("isValidCredential", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Invalid SOI - JPEG should start with ffd8ffe0 or ffd8ffee or ffd8ffdb for JPEG but found ffd8e000",
-      );
-    }
-  });
-
-  it("should throw MDLValidationError when digest IDs within a namespace are not unique", async () => {
-    expect.assertions(2);
-    try {
-      await isValidCredential(nonUniqueDigestIdInISONamespace);
-    } catch (error) {
-      expect(error).toBeInstanceOf(MDLValidationError);
-      expect((error as Error).message).toBe(
-        "Digest IDs are not unique for namespace org.iso.18013.5.1",
+        "Invalid EOI - JPEG should end with ffd9 but found e000",
       );
     }
   });
