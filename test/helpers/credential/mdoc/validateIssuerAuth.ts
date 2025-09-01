@@ -111,7 +111,7 @@ function validateUnprotectedHeader(
     return new X509Certificate(certificate);
   } catch (error) {
     throw new MDLValidationError(
-      `Failed to parse X509Certificate- ${errorMessage(error)}`,
+      `Failed to parse as X509Certificate - ${errorMessage(error)}`,
       "INVALID_UNPROTECTED_HEADER",
     );
   }
