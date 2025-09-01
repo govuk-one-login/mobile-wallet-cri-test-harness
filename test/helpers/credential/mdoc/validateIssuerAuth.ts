@@ -158,76 +158,6 @@ function validateMobileSecurityObject(
   }
 }
 
-async function validateDeviceKey(
-  deviceKey: Map<unknown, unknown>,
-): Promise<void> {
-  if (deviceKey.size !== 4) {
-    throw new MDLValidationError(
-      "deviceKey contains unexpected extra parameters",
-      "INVALID_DEVICE_KEY",
-    );
-  }
-
-  const requiredKeys = [1, -1, -2, -3];
-  for (const key of requiredKeys) {
-    if (!deviceKey.has(key)) {
-      throw new MDLValidationError(
-        `deviceKey missing required key ${key}`,
-        "INVALID_DEVICE_KEY",
-      );
-    }
-  }
-
-  if (deviceKey.get(1) !== 2) {
-    throw new MDLValidationError(
-      "deviceKey key type (1) must be EC2 (Elliptic Curve) (2)",
-      "INVALID_DEVICE_KEY",
-    );
-  }
-
-  if (deviceKey.get(-1) !== 1) {
-    throw new MDLValidationError(
-      "deviceKey curve (-1) must be P-256 (1)",
-      "INVALID_DEVICE_KEY",
-    );
-  }
-
-  if (!(deviceKey.get(-2) instanceof Uint8Array)) {
-    throw new MDLValidationError(
-      "deviceKey x-coordinate (-2) must be a Uint8Array",
-      "INVALID_DEVICE_KEY",
-    );
-  }
-  if (!(deviceKey.get(-3) instanceof Uint8Array)) {
-    throw new MDLValidationError(
-      "deviceKey y-coordinate (-3) must be a Uint8Array",
-      "INVALID_DEVICE_KEY",
-    );
-  }
-
-  try {
-    const jwk = {
-      kty: "EC",
-      crv: "P-256",
-      x: Buffer.from(deviceKey.get(-2) as Uint8Array).toString("base64url"),
-      y: Buffer.from(deviceKey.get(-3) as Uint8Array).toString("base64url"),
-    };
-
-    await crypto.subtle.importKey(
-      "jwk",
-      jwk,
-      { name: "ECDSA", namedCurve: "P-256" },
-      false,
-      ["verify"],
-    );
-  } catch {
-    throw new MDLValidationError(
-      `Invalid elliptic curve key`,
-      "INVALID_DEVICE_KEY",
-    );
-  }
-}
-
 function validateDigests(
   valueDigests: ValueDigests,
   nameSpaces: Record<NameSpace, Tag[]>,
@@ -265,6 +195,76 @@ function validateDigests(
         );
       }
     }
+  }
+}
+
+async function validateDeviceKey(
+  deviceKey: Map<unknown, unknown>,
+): Promise<void> {
+  if (deviceKey.size !== 4) {
+    throw new MDLValidationError(
+      "Device key contains unexpected extra parameters - must contain only four",
+      "INVALID_DEVICE_KEY",
+    );
+  }
+
+  const requiredKeys = [1, -1, -2, -3];
+  for (const key of requiredKeys) {
+    if (!deviceKey.has(key)) {
+      throw new MDLValidationError(
+        `Device key missing required key '${key}'`,
+        "INVALID_DEVICE_KEY",
+      );
+    }
+  }
+
+  if (deviceKey.get(1) !== 2) {
+    throw new MDLValidationError(
+      "Device key key type (1) must be EC2 (Elliptic Curve) (2)",
+      "INVALID_DEVICE_KEY",
+    );
+  }
+
+  if (deviceKey.get(-1) !== 1) {
+    throw new MDLValidationError(
+      "Device key curve (-1) must be P-256 (1)",
+      "INVALID_DEVICE_KEY",
+    );
+  }
+
+  if (!(deviceKey.get(-2) instanceof Uint8Array)) {
+    throw new MDLValidationError(
+      "Device key x-coordinate (-2) must be a Uint8Array",
+      "INVALID_DEVICE_KEY",
+    );
+  }
+  if (!(deviceKey.get(-3) instanceof Uint8Array)) {
+    throw new MDLValidationError(
+      "Device key y-coordinate (-3) must be a Uint8Array",
+      "INVALID_DEVICE_KEY",
+    );
+  }
+
+  try {
+    const jwk = {
+      kty: "EC",
+      crv: "P-256",
+      x: Buffer.from(deviceKey.get(-2) as Uint8Array).toString("base64url"),
+      y: Buffer.from(deviceKey.get(-3) as Uint8Array).toString("base64url"),
+    };
+
+    await crypto.subtle.importKey(
+      "jwk",
+      jwk,
+      { name: "ECDSA", namedCurve: "P-256" },
+      false,
+      ["verify"],
+    );
+  } catch {
+    throw new MDLValidationError(
+      `Invalid elliptic curve key`,
+      "INVALID_DEVICE_KEY",
+    );
   }
 }
 
