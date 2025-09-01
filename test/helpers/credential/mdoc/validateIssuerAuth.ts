@@ -60,7 +60,13 @@ export async function validateIssuerAuth(
 }
 
 function validateProtectedHeader(protectedHeader: Uint8Array): void {
-  const protectedHeaderDecoded = decode(protectedHeader) as Map<number, number>;
+  const protectedHeaderDecoded = decode(protectedHeader);
+  if (!(protectedHeaderDecoded instanceof Map)) {
+    throw new MDLValidationError(
+      "Protected header is not a Map",
+      "INVALID_PROTECTED_HEADER",
+    );
+  }
 
   if (protectedHeaderDecoded.size !== 1) {
     throw new MDLValidationError(
