@@ -19,19 +19,19 @@ describe("isValidCredential", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Invalid base64url encoding - The input to be decoded is not correctly encoded.",
+        "Failed to decode base64url encoded credential - The input to be decoded is not correctly encoded.",
       );
     }
   });
 
-  it("should throw MDLValidationError for invalid CBOR data", async () => {
+  it("should throw MDLValidationError for invalid CBOR encoding", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(base64url.encode("invalidCbor"));
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Failed to decode CBOR data - Extra data in input",
+        "Failed to decode CBOR encoded credential - Extra data in input",
       );
     }
   });
@@ -43,19 +43,19 @@ describe("isValidCredential", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Failed to decode CBOR data - IssuerSignedItem in namespace 'org.iso.18013.5.1.GB' is not CBOR encoded - missing tag 24",
+        "Failed to validate tags - IssuerSignedItem in namespace 'org.iso.18013.5.1.GB' missing tag '24'",
       );
     }
   });
 
-  it("should throw MDLValidationError when date element is not tagged with tag 1004", async () => {
+  it("should throw MDLValidationError when expiry_date is not tagged with tag 1004", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(credentialMissingTag1004_expiryDate);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Failed to decode CBOR data - 'expiry_date' missing tag 1004",
+        "Failed to validate tags - 'expiry_date' missing tag '1004'",
       );
     }
   });
@@ -69,7 +69,7 @@ describe("isValidCredential", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Failed to decode CBOR data - 'issue_date' in 'provisional_driving_privileges' missing tag 1004",
+        "Failed to validate tags - 'issue_date' in 'provisional_driving_privileges' missing tag '1004'",
       );
     }
   });
