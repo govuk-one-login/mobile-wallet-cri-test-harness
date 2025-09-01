@@ -3,60 +3,11 @@ import { IssuerSigned, IssuerSignedItem } from "./types/issuerSigned";
 import { NameSpace } from "./types/namespaces";
 import { MDLValidationError } from "./MDLValidationError";
 
-const REQUIRED_MDL_ELEMENTS = [
-  "welsh_licence",
-  "title",
-  "family_name",
-  "given_name",
-  "portrait",
-  "birth_date",
-  "age_over_18",
-  "age_over_21",
-  "age_over_25",
-  "birth_place",
-  "issue_date",
-  "expiry_date",
-  "issuing_authority",
-  "issuing_country",
-  "document_number",
-  "resident_address",
-  "resident_postal_code",
-  "resident_city",
-  "driving_privileges",
-  "un_distinguishing_sign",
-];
-
 export function validaNamespaces(issuerSigned: IssuerSigned) {
-  validateRequiredElements(issuerSigned.nameSpaces);
-
   validateDigestIds(issuerSigned.nameSpaces);
 
   const portrait = extractPortrait(issuerSigned);
   validatePortraitFormat(portrait);
-}
-
-function validateRequiredElements(
-  namespaces: Record<NameSpace, IssuerSignedItem[]>,
-): void {
-  const allItems: IssuerSignedItem[] = [
-    ...(namespaces[NAMESPACES.ISO] || []),
-    ...(namespaces[NAMESPACES.GB] || []),
-  ];
-
-  const presentElements = new Set(
-    allItems.map((item) => item.elementIdentifier),
-  );
-
-  const missingElements = REQUIRED_MDL_ELEMENTS.filter(
-    (element) => !presentElements.has(element),
-  );
-
-  if (missingElements.length > 0) {
-    throw new MDLValidationError(
-      `Missing required elements: ${missingElements.join(", ")}`,
-      "MISSING_REQUIRED_ELEMENTS",
-    );
-  }
 }
 
 function extractPortrait(
