@@ -15,7 +15,10 @@ import { validateIssuerSignedSchema } from "./validateIssuerSigned";
  * @param credential - The base64url-encoded credential string.
  * @returns true if the credential is valid; otherwise, throws an error.
  */
-export async function isValidCredential(credential: string): Promise<boolean> {
+export async function isValidCredential(
+  credential: string,
+  rootCertificatePem: string,
+): Promise<boolean> {
   const cborBytes = base64UrlToUint8Array(credential);
 
   /*
@@ -44,6 +47,7 @@ export async function isValidCredential(credential: string): Promise<boolean> {
   await validateIssuerAuth(
     issuerSigned.issuerAuth,
     taggedIssuerSigned.nameSpaces,
+    rootCertificatePem,
   );
 
   return true;

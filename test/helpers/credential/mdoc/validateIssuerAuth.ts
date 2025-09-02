@@ -1,5 +1,4 @@
 import { decode, encode, Tag } from "cbor2";
-
 import { createHash, KeyObject, verify, X509Certificate } from "node:crypto";
 import { getAjvInstance } from "../../ajv/ajvInstance";
 import { mobileSecurityObjectSchema } from "./schemas/mobileSecurityObjectSchema";
@@ -25,38 +24,26 @@ const tags = new Map([
 export async function validateIssuerAuth(
   issuerAuth: IssuerAuth,
   namespaces: Record<NameSpace, Tag[]>,
+  rootCertificatePem: string,
 ) {
   const protectedHeader = issuerAuth[0];
   validateProtectedHeader(protectedHeader);
 
   const unprotectedHeader = issuerAuth[1];
-  const certificate = validateUnprotectedHeader(unprotectedHeader);
+  const certificate = await validateUnprotectedHeader(
+    unprotectedHeader,
+    rootCertificatePem,
+  );
 
   const payload = issuerAuth[2];
   await validatePayload(payload, namespaces);
 
-  try {
-    const outcome = verifySignature(
-      certificate.publicKey,
-      protectedHeader,
-      payload,
-      issuerAuth[3],
-    );
-    if (!outcome) {
-      throw new MDLValidationError(
-        "Signature not verified",
-        "INVALID_SIGNATURE",
-      );
-    }
-  } catch (error) {
-    if (error instanceof MDLValidationError) {
-      throw error;
-    }
-    throw new MDLValidationError(
-      `Signature could not be verified - ${errorMessage(error)} `,
-      "INVALID_SIGNATURE",
-    );
-  }
+  verifySignature(
+    certificate.publicKey,
+    protectedHeader,
+    payload,
+    issuerAuth[3],
+  );
 }
 
 function validateProtectedHeader(protectedHeader: Uint8Array): void {
@@ -88,9 +75,10 @@ function validateProtectedHeader(protectedHeader: Uint8Array): void {
   }
 }
 
-function validateUnprotectedHeader(
+async function validateUnprotectedHeader(
   unprotectedHeader: Map<number, Uint8Array | Uint8Array[]>,
-): X509Certificate {
+  rootCertificatePem: string,
+): Promise<X509Certificate> {
   if (unprotectedHeader.size !== 1) {
     throw new MDLValidationError(
       "Unprotected header contains unexpected extra parameters - must contain only one",
@@ -105,16 +93,38 @@ function validateUnprotectedHeader(
   }
 
   const x5chain = unprotectedHeader.get(33)!;
-  const certificate = Array.isArray(x5chain) ? x5chain[0] : x5chain;
+  const certificateBytes = Array.isArray(x5chain) ? x5chain[0] : x5chain;
 
+  let certificate: X509Certificate;
   try {
-    return new X509Certificate(certificate);
+    certificate = new X509Certificate(certificateBytes);
   } catch (error) {
     throw new MDLValidationError(
-      `Failed to parse as X509Certificate - ${errorMessage(error)}`,
+      `Failed to parse document signing certificate as X509Certificate - ${errorMessage(error)}`,
       "INVALID_UNPROTECTED_HEADER",
     );
   }
+
+  const rootCertificate = new X509Certificate(rootCertificatePem);
+  try {
+    const outcome = certificate.verify(rootCertificate.publicKey);
+    if (!outcome) {
+      throw new MDLValidationError(
+        "Document signing certificate signature not verified",
+        "INVALID_UNPROTECTED_HEADER",
+      );
+    }
+  } catch (error) {
+    if (error instanceof MDLValidationError) {
+      throw error;
+    }
+    throw new MDLValidationError(
+      `Signature could not be verified - ${errorMessage(error)} `,
+      "INVALID_UNPROTECTED_HEADER",
+    );
+  }
+
+  return certificate;
 }
 
 async function validatePayload(
@@ -273,10 +283,26 @@ function verifySignature(
   protectedHeader: Uint8Array,
   payload: Uint8Array,
   signature: Uint8Array,
-): boolean {
+): void {
   const sigStructure = createSigStructure(protectedHeader, payload);
 
-  return verify("sha256", sigStructure, publicKey, signature);
+  try {
+    const outcome = verify("sha256", sigStructure, publicKey, signature);
+    if (!outcome) {
+      throw new MDLValidationError(
+        "Signature not verified",
+        "INVALID_SIGNATURE",
+      );
+    }
+  } catch (error) {
+    if (error instanceof MDLValidationError) {
+      throw error;
+    }
+    throw new MDLValidationError(
+      `Signature could not be verified - ${errorMessage(error)} `,
+      "INVALID_SIGNATURE",
+    );
+  }
 }
 
 function createSigStructure(
