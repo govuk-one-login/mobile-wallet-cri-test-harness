@@ -3,6 +3,7 @@ import addFormats from "ajv-formats";
 
 let ajvInstance: Ajv | null = null;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function createAjvInstance(): Ajv {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri", "date-time", "date"] });
