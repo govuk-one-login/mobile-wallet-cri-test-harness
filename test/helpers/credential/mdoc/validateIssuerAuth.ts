@@ -8,6 +8,7 @@ import { IssuerAuth, TaggedIssuerSignedItem } from "./types/issuerSigned";
 import { NameSpace } from "./types/namespaces";
 import {
   MobileSecurityObject,
+  ValidityInfo,
   ValueDigests,
 } from "./types/mobileSecurityObject";
 
@@ -139,6 +140,8 @@ async function validatePayload(
   validateDigests(mobileSecurityObject.valueDigests, nameSpaces);
 
   await validateDeviceKey(mobileSecurityObject.deviceKeyInfo.deviceKey);
+
+  validateValidityInfo(mobileSecurityObject.validityInfo);
 }
 
 function validateMobileSecurityObject(
@@ -211,21 +214,17 @@ function validateDigests(
 async function validateDeviceKey(
   deviceKey: Map<unknown, unknown>,
 ): Promise<void> {
-  if (deviceKey.size !== 4) {
+  const requiredKeys = [1, -1, -2, -3];
+  const keys = new Set(deviceKey.keys());
+
+  if (
+    keys.size !== requiredKeys.length ||
+    requiredKeys.some((k) => !keys.has(k))
+  ) {
     throw new MDLValidationError(
-      "Device key contains unexpected extra parameters - must contain only four",
+      "Device key must contain exactly the keys [1, -1, -2, -3]",
       "INVALID_DEVICE_KEY",
     );
-  }
-
-  const requiredKeys = [1, -1, -2, -3];
-  for (const key of requiredKeys) {
-    if (!deviceKey.has(key)) {
-      throw new MDLValidationError(
-        `Device key missing required key '${key}'`,
-        "INVALID_DEVICE_KEY",
-      );
-    }
   }
 
   if (deviceKey.get(1) !== 2) {
@@ -317,4 +316,32 @@ function createSigStructure(
   ];
 
   return encode(sigStructure);
+}
+
+function validateValidityInfo(validityInfo: ValidityInfo): void {
+  const errors: string[] = [];
+  const now = new Date();
+
+  const { signed, validFrom, validUntil } = validityInfo;
+
+  const signedDate = new Date(signed);
+  const validFromDate = new Date(validFrom);
+  const validUntilDate = new Date(validUntil);
+
+  if (signedDate > now) errors.push(`'signed' (${signed}) must be in the past`);
+  if (validFromDate > now)
+    errors.push(`'validFrom' (${validFrom}) must be in the past`);
+  if (validUntilDate <= now)
+    errors.push(`'validUntil' (${validUntil}) must be in the future`);
+  if (validFromDate < signedDate)
+    errors.push(
+      `'validFrom' (${validUntil}) must be equal or later than 'signed' (${signed})`,
+    );
+
+  if (errors.length !== 0) {
+    throw new MDLValidationError(
+      `One or more dates are invalid - ${errorMessage(errors)}`,
+      "INVALID_VALIDITY_INFO",
+    );
+  }
 }

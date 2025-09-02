@@ -12,17 +12,19 @@ export interface ValueDigests {
   "org.iso.18013.5.1": Map<unknown, Uint8Array>;
 }
 
+export interface ValidityInfo {
+  signed: string;
+  validFrom: string;
+  validUntil: string;
+}
+
 export interface MobileSecurityObject {
   version: "1.0";
   digestAlgorithm: "SHA-256";
   deviceKeyInfo: DeviceKeyInfo;
   valueDigests: ValueDigests;
   docType: "org.iso.18013.5.1.mDL";
-  validityInfo: {
-    signed: string;
-    validFrom: string;
-    validUntil: string;
-  };
+  validityInfo: ValidityInfo;
 }
 
 export interface TaggedMobileSecurityObject
