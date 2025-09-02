@@ -41,7 +41,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when an IssuerSignedItem is not tagged with tag 24", async () => {
+  it("should throw MDLValidationError when an IssuerSignedItem is not tagged with 24", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingTag24InTitle, rootCertificate);
@@ -53,7 +53,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when 'expiry_date' is not tagged with tag 1004", async () => {
+  it("should throw MDLValidationError when 'expiry_date' is not tagged with 1004", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingTag1004InExpiryDate, rootCertificate);
@@ -65,7 +65,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when 'issue_date' in driving privileges is not tagged with tag 1004", async () => {
+  it("should throw MDLValidationError when 'issue_date' in driving privileges is not tagged with 1004", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(
@@ -80,7 +80,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when 'signed' in validity info is not tagged with tag 0", async () => {
+  it("should throw MDLValidationError when 'signed' in validity info is not tagged with 0", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingTag0InValidityInfo, rootCertificate);
@@ -104,7 +104,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when one of the IssuerSignedItem contains an unknown element identifier (identifier is 'first_name' instead of 'given_name')", async () => {
+  it("should throw MDLValidationError when one of the IssuerSignedItem contains an unknown element identifier ('first_name' instead of 'given_name')", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(hasUnknownProperty, rootCertificate);
@@ -249,7 +249,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when unprotected header certificate is not valid X509 certificate", async () => {
+  it("should throw MDLValidationError when certificate is not a valid X509 certificate", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(
@@ -266,7 +266,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when unprotected header certificate signature fails to verify", async () => {
+  it("should throw MDLValidationError when certificate signature fails to verify", async () => {
     const wrongRootCertificate =
       "-----BEGIN CERTIFICATE-----\n" +
       "MIIBtjCCAVugAwIBAgIUdfgw3nJi35kYnGsMRJ0KfAm4qawwCgYIKoZIzj0EAwIw\n" +
@@ -292,7 +292,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when MSO is missing required key 'docType'", async () => {
+  it("should throw MDLValidationError when payload is missing required key 'docType'", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(msoMissingDocType, rootCertificate);
@@ -304,7 +304,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when IssuerSignedItem digest ID is not present in MSO digests", async () => {
+  it("should throw MDLValidationError when the payload's ValueDigests is missing a digest", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(missingDigestId, rootCertificate);
@@ -328,43 +328,43 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when device key keys are invalid", async () => {
+  it("should throw MDLValidationError when DeviceKey has invalid keys", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(deviceKeyAdditionalKeys, rootCertificate);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Device key must contain exactly the keys [1, -1, -2, -3]",
+        "DeviceKey must contain exactly the keys [1, -1, -2, -3]",
       );
     }
   });
 
-  it("should throw MDLValidationError when device key key type (1) is not EC2 (2)", async () => {
+  it("should throw MDLValidationError when DeviceKey key type (1) is not EC2 (2)", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(deviceKeyInvalidKeyType, rootCertificate);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Device key key type (1) must be EC2 (Elliptic Curve) (2)",
+        "DeviceKey key type (1) must be EC2 (Elliptic Curve) (2)",
       );
     }
   });
 
-  it("should throw MDLValidationError when device key curve (-1) is not P-256 (1)", async () => {
+  it("should throw MDLValidationError when DeviceKey curve (-1) is not P-256 (1)", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(deviceKeyInvalidCurve, rootCertificate);
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "Device key curve (-1) must be P-256 (1)",
+        "DeviceKey curve (-1) must be P-256 (1)",
       );
     }
   });
 
-  it("should throw MDLValidationError when device key is not a valid public key", async () => {
+  it("should throw MDLValidationError when DeviceKey is not a valid public key", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(deviceKeyInvalidPublicKey, rootCertificate);
@@ -374,7 +374,7 @@ describe("isValidCredential", () => {
     }
   });
 
-  it("should throw MDLValidationError when validity info dates are invalid", async () => {
+  it("should throw MDLValidationError when ValidityInfo dates are invalid", async () => {
     expect.assertions(2);
     try {
       await isValidCredential(validityInfoInvalidDates, rootCertificate);

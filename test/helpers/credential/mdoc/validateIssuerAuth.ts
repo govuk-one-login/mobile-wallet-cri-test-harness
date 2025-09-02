@@ -222,34 +222,34 @@ async function validateDeviceKey(
     requiredKeys.some((k) => !keys.has(k))
   ) {
     throw new MDLValidationError(
-      "Device key must contain exactly the keys [1, -1, -2, -3]",
+      "DeviceKey must contain exactly the keys [1, -1, -2, -3]",
       "INVALID_DEVICE_KEY",
     );
   }
 
   if (deviceKey.get(1) !== 2) {
     throw new MDLValidationError(
-      "Device key key type (1) must be EC2 (Elliptic Curve) (2)",
+      "DeviceKey key type (1) must be EC2 (Elliptic Curve) (2)",
       "INVALID_DEVICE_KEY",
     );
   }
 
   if (deviceKey.get(-1) !== 1) {
     throw new MDLValidationError(
-      "Device key curve (-1) must be P-256 (1)",
+      "DeviceKey curve (-1) must be P-256 (1)",
       "INVALID_DEVICE_KEY",
     );
   }
 
   if (!(deviceKey.get(-2) instanceof Uint8Array)) {
     throw new MDLValidationError(
-      "Device key x-coordinate (-2) must be a Uint8Array",
+      "DeviceKey x-coordinate (-2) must be a Uint8Array",
       "INVALID_DEVICE_KEY",
     );
   }
   if (!(deviceKey.get(-3) instanceof Uint8Array)) {
     throw new MDLValidationError(
-      "Device key y-coordinate (-3) must be a Uint8Array",
+      "DeviceKey y-coordinate (-3) must be a Uint8Array",
       "INVALID_DEVICE_KEY",
     );
   }
