@@ -22,7 +22,6 @@ export const mobileSecurityObjectSchema = {
     },
     deviceKeyInfo: {
       type: "object",
-      // TODO Check if `keyAuthorizations` is required
       required: ["deviceKey", "keyAuthorizations"],
       additionalProperties: false,
       properties: {
