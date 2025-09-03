@@ -66,7 +66,7 @@ function base64UrlToUint8Array(data: string): Uint8Array {
 
 /*
  * Override the default CBOR tag 0 (RFC3339 date/time string) decoder.
- * By default, tag 0 is automatically parsed into a JavaScript Date.
+ * By default, data with tag 0 is automatically parsed into a JavaScript Date.
  * Registering this custom decoder instead wraps any tag 0 value in a Tag object,
  * preserving both the tag number (0) and its contents as-is.
  *
