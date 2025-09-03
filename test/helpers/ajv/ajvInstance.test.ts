@@ -53,26 +53,51 @@ describe("getAjvInstance", () => {
     expect(validate({ url: "" })).toBe(false);
   });
 
-  it("should support custom instanceof keyword for Uint8Array validation", () => {
+  it("should validate data as Uint8Array when using custom instanceofUint8Array keyword", () => {
     const ajv = getAjvInstance();
     const schema = {
       type: "object",
       properties: {
         data: {
           type: "object",
-          instanceof: "Uint8Array",
+          instanceofUint8Array: true,
         },
       },
+      required: ["data"],
     };
-    const validate = ajv.compile(schema);
 
-    // Valid Buffer/Uint8Array
-    const buffer = Buffer.from("test data");
-    expect(validate({ data: buffer })).toBe(true);
-    // Invalid non-Buffer/Uint8Array values
+    const validate = ajv.compile(schema);
+    // Buffer/Uint8Array
+    expect(validate({ data: Buffer.from("test data") })).toBe(true);
+    // Non-Buffer/Uint8Array
     expect(validate({ data: "string" })).toBe(false);
     expect(validate({ data: [1, 2, 3] })).toBe(false);
     expect(validate({ data: { length: 4 } })).toBe(false);
     expect(validate({ data: null })).toBe(false);
+  });
+
+  it("should validate data as Map when using custom instanceofMap keyword", () => {
+    const ajv = getAjvInstance();
+    const schema = {
+      type: "object",
+      properties: {
+        data: {
+          type: "object",
+          instanceofMap: true,
+        },
+      },
+      required: ["data"],
+    };
+
+    const validate = ajv.compile(schema);
+    // Map
+    expect(validate({ data: new Map() })).toBe(true);
+    // Non-Map
+    expect(validate({ data: { object: "test" } })).toBe(false);
+    expect(validate({ data: ["array"] })).toBe(false);
+    expect(validate({ data: null })).toBe(false);
+    expect(validate({ data: "string" })).toBe(false);
+    expect(validate({ data: 1 })).toBe(false);
+    expect(validate({ data: false })).toBe(false);
   });
 });

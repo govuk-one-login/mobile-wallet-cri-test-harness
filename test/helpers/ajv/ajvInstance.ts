@@ -3,23 +3,36 @@ import addFormats from "ajv-formats";
 
 let ajvInstance: Ajv | null = null;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function createAjvInstance(): Ajv {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri", "date-time", "date"] });
-  // Custom keyword for Uint8Array validation
-  ajv.addKeyword({
-    keyword: "instanceof",
-    type: "object",
-    schemaType: "string",
-    compile: function (schemaValue) {
-      return function validate(data) {
-        if (schemaValue === "Uint8Array") {
-          return data instanceof Uint8Array;
-        }
-        return false;
-      };
-    },
-  });
+
+  /*
+   * The use of custom AJV keywords like 'instanceofUint8Array' and 'instanceofMap' is required to validate
+   * data types in JavaScript that are not supported by standard JSON Schema, such as Uint8Array and Map objects.
+   * These keywords allow AJV to enforce that data matches specific built-in types, rather than generic 'object'.
+   * This is necessary because mDoc credential contain Uint8Array and Map data types.
+   */
+  ajv
+    .addKeyword({
+      keyword: "instanceofUint8Array",
+      validate: function (schema: any, data: any) {
+        if (!schema) return true;
+        return data instanceof Uint8Array;
+      },
+      errors: false,
+      type: "object",
+    })
+    .addKeyword({
+      keyword: "instanceofMap",
+      validate: function (schema: any, data: any) {
+        if (!schema) return true;
+        return data instanceof Map;
+      },
+      errors: false,
+      type: "object",
+    });
   return ajv;
 }
 

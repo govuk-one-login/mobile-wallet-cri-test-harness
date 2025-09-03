@@ -38,8 +38,7 @@ export const isoNamespaceSchema = {
       },
       random: {
         type: "object",
-        instanceof: "Uint8Array",
-        description: "Binary data stored as a Uint8Array",
+        instanceofUint8Array: true,
       },
       elementValue: {
         anyOf: [
@@ -130,6 +129,25 @@ export const isoNamespaceSchema = {
                     type: "string",
                     pattern: "^\\d{4}-\\d{2}-\\d{2}$",
                   },
+                  codes: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      required: ["code"],
+                      properties: {
+                        code: {
+                          type: "string",
+                        },
+                        sign: {
+                          type: "string",
+                        },
+                        value: {
+                          type: "string",
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                  },
                 },
                 additionalProperties: false,
               },
@@ -147,8 +165,7 @@ export const isoNamespaceSchema = {
           properties: {
             elementValue: {
               type: "object",
-              instanceof: "Uint8Array",
-              description: "Binary data stored as a Uint8Array",
+              instanceofUint8Array: true,
             },
           },
         },

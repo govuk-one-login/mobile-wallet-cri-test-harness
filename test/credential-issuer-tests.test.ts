@@ -40,7 +40,7 @@ import {
   getMetadata,
   sendNotification,
 } from "./helpers/api/api";
-import { isValidIacas } from "./helpers/iacas/isValidIacas";
+import { Iacas, isValidIacas } from "./helpers/iacas/isValidIacas";
 import {
   describeIf,
   itIf,
@@ -434,7 +434,11 @@ describe("Credential Issuer Tests", () => {
 
         itIf("should return valid mdoc credential", isMdoc, async () => {
           const credential = credentialResponse.data.credentials[0].credential;
-          expect(await isValidMdocCredential(credential)).toBe(true);
+          const iacas: Iacas = (await getIacas(CRI_URL, IACAS_ENDPOINT)).data;
+          const rootCertificatePem = iacas.data[0].certificatePem;
+          expect(
+            await isValidMdocCredential(credential, rootCertificatePem),
+          ).toBe(true);
         });
       });
     });
