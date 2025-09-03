@@ -53,7 +53,7 @@ describe("getAjvInstance", () => {
     expect(validate({ url: "" })).toBe(false);
   });
 
-  it("should support custom instanceof keyword for Uint8Array validation", () => {
+  it("should validate data as Uint8Array when using custom instanceofUint8Array keyword", () => {
     const ajv = getAjvInstance();
     const schema = {
       type: "object",
@@ -76,7 +76,7 @@ describe("getAjvInstance", () => {
     expect(validate({ data: null })).toBe(false);
   });
 
-  it("should support custom instanceof keyword for Map validation", () => {
+  it("should validate data as Map when using custom instanceofMap keyword", () => {
     const ajv = getAjvInstance();
     const schema = {
       type: "object",
