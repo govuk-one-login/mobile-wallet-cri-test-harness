@@ -136,11 +136,8 @@ async function validatePayload(
     tags: tags,
   });
   validateMobileSecurityObject(mobileSecurityObject);
-
   validateDigests(mobileSecurityObject.valueDigests, nameSpaces);
-
   await validateDeviceKey(mobileSecurityObject.deviceKeyInfo.deviceKey);
-
   validateValidityInfo(mobileSecurityObject.validityInfo);
 }
 
