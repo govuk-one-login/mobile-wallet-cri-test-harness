@@ -138,6 +138,12 @@ export const isoNamespaceSchema = {
                         code: {
                           type: "string",
                         },
+                        sign: {
+                          type: "string",
+                        },
+                        value: {
+                          type: "string",
+                        },
                       },
                       additionalProperties: false,
                     },

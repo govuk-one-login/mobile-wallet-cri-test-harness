@@ -78,6 +78,12 @@ export const domesticNamespaceSchema = {
                         code: {
                           type: "string",
                         },
+                        sign: {
+                          type: "string",
+                        },
+                        value: {
+                          type: "string",
+                        },
                       },
                       additionalProperties: false,
                     },
