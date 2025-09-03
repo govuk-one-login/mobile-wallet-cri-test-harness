@@ -7,6 +7,13 @@ let ajvInstance: Ajv | null = null;
 function createAjvInstance(): Ajv {
   const ajv = new Ajv({ allErrors: true, verbose: false });
   addFormats(ajv, { formats: ["uri", "date-time", "date"] });
+
+  /*
+   * The use of custom AJV keywords like 'instanceofUint8Array' and 'instanceofMap' is required to validate
+   * data types in JavaScript that are not supported by standard JSON Schema, such as Uint8Array and Map objects.
+   * These keywords allow AJV to enforce that data matches specific built-in types, rather than generic 'object'.
+   * This is necessary because mDoc credential contain Uint8Array and Map data types.
+   */
   ajv
     .addKeyword({
       keyword: "instanceofUint8Array",
