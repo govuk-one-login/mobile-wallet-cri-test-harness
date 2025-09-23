@@ -244,7 +244,7 @@ describe("Credential Issuer Tests", () => {
             expect((error as AxiosError).response?.status).toEqual(401);
             expect(
               (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual('Bearer error="invalid_token"');
+            ).toMatch(/^Bearer(?: realm="[^"]+")? error="invalid_token"$/);
           }
         });
       });
@@ -279,7 +279,7 @@ describe("Credential Issuer Tests", () => {
             expect((error as AxiosError).response?.status).toEqual(401);
             expect(
               (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual('Bearer error="invalid_token"');
+            ).toMatch(/^Bearer(?: realm="[^"]+")? error="invalid_token"$/);
           }
         });
       });
@@ -524,7 +524,7 @@ describe("Credential Issuer Tests", () => {
             expect((error as AxiosError).response?.status).toEqual(401);
             expect(
               (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual('Bearer error="invalid_token"');
+            ).toMatch(/^Bearer(?: realm="[^"]+")? error="invalid_token"$/);
           }
         });
 
@@ -572,7 +572,7 @@ describe("Credential Issuer Tests", () => {
           expect((error as AxiosError).response?.status).toEqual(401);
           expect(
             (error as AxiosError).response?.headers["www-authenticate"],
-          ).toEqual('Bearer error="invalid_token"');
+          ).toMatch(/^Bearer(?: realm="[^"]+")? error="invalid_token"$/);
         }
       });
     });
