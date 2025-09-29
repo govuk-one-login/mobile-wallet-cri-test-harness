@@ -283,7 +283,12 @@ function verifySignature(
   const sigStructure = createSigStructure(protectedHeader, payload);
 
   try {
-    const outcome = verify("sha256", sigStructure, publicKey, signature);
+    const outcome = verify(
+      "sha256",
+      sigStructure,
+      { key: publicKey, dsaEncoding: "ieee-p1363" },
+      signature,
+    );
     if (!outcome) {
       throw new MDLValidationError(
         "Signature not verified",
