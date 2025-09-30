@@ -23,6 +23,14 @@ describe("www-Authenticate", () => {
     ).toBe(true);
   });
 
+    it("should not match if no space after Bearer", () => {
+        expect(
+            wwwAuthenticateHeaderContainsCorrectError(
+                'Bearererror="invalid_token"',
+            ),
+        ).toBe(false);
+    });
+
   it("should not match if it does not start with Bearer", () => {
     expect(
       wwwAuthenticateHeaderContainsCorrectError(
