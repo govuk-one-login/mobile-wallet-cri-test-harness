@@ -276,12 +276,18 @@ function verifySignature(
   payload: Uint8Array,
   signature: Uint8Array,
 ): void {
-  const sigStructure = createSigStructure(protectedHeader, payload);
+  const sigStructure = [
+    "Signature1",
+    protectedHeader,
+    new Uint8Array(),
+    payload,
+  ];
 
+  const toBeSigned = encode(sigStructure);
   try {
     const outcome = verify(
       "sha256",
-      sigStructure,
+      toBeSigned,
       { key: publicKey, dsaEncoding: "ieee-p1363" },
       signature,
     );
@@ -300,20 +306,6 @@ function verifySignature(
       "INVALID_SIGNATURE",
     );
   }
-}
-
-function createSigStructure(
-  protectedHeader: Uint8Array,
-  payload: Uint8Array,
-): Uint8Array {
-  const sigStructure = [
-    "Signature1",
-    protectedHeader,
-    new Uint8Array(),
-    payload,
-  ];
-
-  return encode(sigStructure);
 }
 
 function validateValidityInfo(validityInfo: ValidityInfo): void {
