@@ -47,5 +47,11 @@ describe("www-Authenticate", () => {
         'Bearer error="different error"',
       ),
     ).toBe(false);
+
+    expect(
+      wwwAuthenticateHeaderContainsCorrectError(
+        'Bearer blaherror="invalid_token"',
+      ),
+    ).toBe(false);
   });
 });
