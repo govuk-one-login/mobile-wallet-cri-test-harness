@@ -1,6 +1,9 @@
-export const WWW_AUTHENTICATE_REGEX =
-  /^Bearer(?: realm="[^"]+")? error="invalid_token"$/;
+export function wwwAuthenticateHeaderContainsCorrectError(
+  header: string,
+): boolean {
+  const headerString = Array.isArray(header) ? header.join(", ") : header;
+  const normalisedHeader = headerString.trim();
+  if (!normalisedHeader.startsWith("Bearer")) return false;
 
-export function matchesWwwAuthenticate(header: string): boolean {
-  return WWW_AUTHENTICATE_REGEX.test(header);
+  return normalisedHeader.includes('error="invalid_token"');
 }

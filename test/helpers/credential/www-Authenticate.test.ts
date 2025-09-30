@@ -1,21 +1,45 @@
-import { matchesWwwAuthenticate } from "./www-Authenticate";
+import { wwwAuthenticateHeaderContainsCorrectError } from "./www-Authenticate";
 
 describe("www-Authenticate", () => {
   it("should match without realm", () => {
-    expect(matchesWwwAuthenticate('Bearer error="invalid_token"')).toBe(true);
+    expect(
+      wwwAuthenticateHeaderContainsCorrectError('Bearer error="invalid_token"'),
+    ).toBe(true);
   });
 
   it("should match with realm", () => {
     expect(
-      matchesWwwAuthenticate(
-        'Bearer realm="CREDENTIAL_ISSUER_URL" error="invalid_token"',
+      wwwAuthenticateHeaderContainsCorrectError(
+        'Bearer realm="CREDENTIAL_ISSUER_URL", error="invalid_token"',
       ),
     ).toBe(true);
   });
 
-  it("should not match if realm is empty", () => {
+  it("should match if realm is empty", () => {
     expect(
-      matchesWwwAuthenticate('Bearer realm="" error="invalid_token"'),
+      wwwAuthenticateHeaderContainsCorrectError(
+        'Bearer realm="", error="invalid_token"',
+      ),
+    ).toBe(true);
+  });
+
+  it("should not match if it does not start with Bearer", () => {
+    expect(
+      wwwAuthenticateHeaderContainsCorrectError(
+        'realm="", error="invalid_token"',
+      ),
+    ).toBe(false);
+  });
+
+  it("should not match if error is missing or different", () => {
+    expect(wwwAuthenticateHeaderContainsCorrectError('Bearer realm=""')).toBe(
+      false,
+    );
+
+    expect(
+      wwwAuthenticateHeaderContainsCorrectError(
+        'Bearer error="different error"',
+      ),
     ).toBe(false);
   });
 });

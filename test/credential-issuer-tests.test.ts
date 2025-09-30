@@ -50,7 +50,7 @@ import {
 } from "./helpers/testConditions";
 import { isValidCredential as isValidJwtCredential } from "./helpers/credential/jwt/isValidCredential";
 import { isValidCredential as isValidMdocCredential } from "./helpers/credential/mdoc/isValidCredential";
-import { matchesWwwAuthenticate } from "./helpers/credential/www-Authenticate";
+import { wwwAuthenticateHeaderContainsCorrectError } from "./helpers/credential/www-Authenticate";
 
 let CREDENTIAL_OFFER_DEEP_LINK: string;
 let CRI_URL: string;
@@ -246,7 +246,9 @@ describe("Credential Issuer Tests", () => {
             const header = (error as AxiosError).response?.headers[
               "www-authenticate"
             ];
-            expect(matchesWwwAuthenticate(header)).toBe(true);
+            expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(
+              true,
+            );
           }
         });
       });
@@ -282,7 +284,9 @@ describe("Credential Issuer Tests", () => {
             const header = (error as AxiosError).response?.headers[
               "www-authenticate"
             ];
-            expect(matchesWwwAuthenticate(header)).toBe(true);
+            expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(
+              true,
+            );
           }
         });
       });
@@ -528,7 +532,9 @@ describe("Credential Issuer Tests", () => {
             const header = (error as AxiosError).response?.headers[
               "www-authenticate"
             ];
-            expect(matchesWwwAuthenticate(header)).toBe(true);
+            expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(
+              true,
+            );
           }
         });
 
@@ -577,7 +583,7 @@ describe("Credential Issuer Tests", () => {
           const header = (error as AxiosError).response?.headers[
             "www-authenticate"
           ];
-          expect(matchesWwwAuthenticate(header)).toBe(true);
+          expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(true);
         }
       });
     });
