@@ -6,10 +6,10 @@ import {
 } from "./drivingPrivileges";
 
 export type IssuerAuth = [
-  Uint8Array,
-  Map<number, Uint8Array | [Uint8Array]>,
-  Uint8Array,
-  Uint8Array,
+  protectedHeader: Uint8Array,
+  unprotectedHeader: Map<number, Uint8Array | [Uint8Array]>,
+  payload: Uint8Array,
+  signature: Uint8Array,
 ];
 
 export interface IssuerSignedItem {

@@ -39,12 +39,8 @@ export async function validateIssuerAuth(
   const payload = issuerAuth[2];
   await validatePayload(payload, namespaces);
 
-  verifySignature(
-    certificate.publicKey,
-    protectedHeader,
-    payload,
-    issuerAuth[3],
-  );
+  const signature = issuerAuth[3];
+  verifySignature(certificate.publicKey, protectedHeader, payload, signature);
 }
 
 function validateProtectedHeader(protectedHeader: Uint8Array): void {
