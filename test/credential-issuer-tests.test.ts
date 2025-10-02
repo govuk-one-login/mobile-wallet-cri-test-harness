@@ -50,6 +50,7 @@ import {
 } from "./helpers/testConditions";
 import { isValidCredential as isValidJwtCredential } from "./helpers/credential/jwt/isValidCredential";
 import { isValidCredential as isValidMdocCredential } from "./helpers/credential/mdoc/isValidCredential";
+import { wwwAuthenticateHeaderContainsCorrectError } from "./helpers/credential/www-Authenticate";
 
 let CREDENTIAL_OFFER_DEEP_LINK: string;
 let CRI_URL: string;
@@ -242,9 +243,12 @@ describe("Credential Issuer Tests", () => {
             );
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(401);
-            expect(
-              (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual('Bearer error="invalid_token"');
+            const header = (error as AxiosError).response?.headers[
+              "www-authenticate"
+            ];
+            expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(
+              true,
+            );
           }
         });
       });
@@ -277,9 +281,12 @@ describe("Credential Issuer Tests", () => {
             );
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(401);
-            expect(
-              (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual('Bearer error="invalid_token"');
+            const header = (error as AxiosError).response?.headers[
+              "www-authenticate"
+            ];
+            expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(
+              true,
+            );
           }
         });
       });
@@ -522,9 +529,12 @@ describe("Credential Issuer Tests", () => {
             );
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(401);
-            expect(
-              (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual('Bearer error="invalid_token"');
+            const header = (error as AxiosError).response?.headers[
+              "www-authenticate"
+            ];
+            expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(
+              true,
+            );
           }
         });
 
@@ -570,9 +580,10 @@ describe("Credential Issuer Tests", () => {
           await getCredential(accessToken, proofJwt, CREDENTIAL_ENDPOINT);
         } catch (error) {
           expect((error as AxiosError).response?.status).toEqual(401);
-          expect(
-            (error as AxiosError).response?.headers["www-authenticate"],
-          ).toEqual('Bearer error="invalid_token"');
+          const header = (error as AxiosError).response?.headers[
+            "www-authenticate"
+          ];
+          expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(true);
         }
       });
     });
