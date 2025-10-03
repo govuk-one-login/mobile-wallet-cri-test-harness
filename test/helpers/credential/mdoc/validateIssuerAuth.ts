@@ -39,12 +39,8 @@ export async function validateIssuerAuth(
   const payload = issuerAuth[2];
   await validatePayload(payload, namespaces);
 
-  verifySignature(
-    certificate.publicKey,
-    protectedHeader,
-    payload,
-    issuerAuth[3],
-  );
+  const signature = issuerAuth[3];
+  verifySignature(certificate.publicKey, protectedHeader, payload, signature);
 }
 
 function validateProtectedHeader(protectedHeader: Uint8Array): void {
@@ -280,10 +276,21 @@ function verifySignature(
   payload: Uint8Array,
   signature: Uint8Array,
 ): void {
-  const sigStructure = createSigStructure(protectedHeader, payload);
+  const sigStructure = [
+    "Signature1",
+    protectedHeader,
+    new Uint8Array(),
+    payload,
+  ];
 
+  const toBeSigned = encode(sigStructure);
   try {
-    const outcome = verify("sha256", sigStructure, publicKey, signature);
+    const outcome = verify(
+      "sha256",
+      toBeSigned,
+      { key: publicKey, dsaEncoding: "ieee-p1363" },
+      signature,
+    );
     if (!outcome) {
       throw new MDLValidationError(
         "Signature not verified",
@@ -299,20 +306,6 @@ function verifySignature(
       "INVALID_SIGNATURE",
     );
   }
-}
-
-function createSigStructure(
-  protectedHeader: Uint8Array,
-  payload: Uint8Array,
-): Uint8Array {
-  const sigStructure = [
-    "Signature1",
-    protectedHeader,
-    new Uint8Array(),
-    payload,
-  ];
-
-  return encode(sigStructure);
 }
 
 function validateValidityInfo(validityInfo: ValidityInfo): void {

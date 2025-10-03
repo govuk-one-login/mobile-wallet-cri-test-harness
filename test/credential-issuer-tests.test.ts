@@ -399,14 +399,6 @@ describe("Credential Issuer Tests", () => {
         });
 
         it("should return valid response body", () => {
-          expect(credentialResponse.data.credentials).toBeTruthy();
-          expect(credentialResponse.data.credentials.length).toEqual(1);
-          expect(
-            credentialResponse.data.credentials[0].credential,
-          ).toBeTruthy();
-        });
-
-        it("should return valid response body", () => {
           expect(credentialResponse.data).toHaveProperty("credentials");
           expect(credentialResponse.data.credentials.length).toEqual(1);
           expect(credentialResponse.data.credentials[0]).toHaveProperty(
