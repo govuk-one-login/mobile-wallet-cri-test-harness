@@ -541,9 +541,12 @@ describe("Credential Issuer Tests", () => {
             );
           } catch (error) {
             expect((error as AxiosError).response?.status).toEqual(401);
-            expect(
-              (error as AxiosError).response?.headers["www-authenticate"],
-            ).toEqual("Bearer");
+            const header = (error as AxiosError).response?.headers[
+              "www-authenticate"
+            ];
+            expect(wwwAuthenticateHeaderContainsCorrectError(header)).toBe(
+              true,
+            );
           }
         });
       });

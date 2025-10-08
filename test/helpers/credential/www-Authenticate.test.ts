@@ -37,11 +37,7 @@ describe("www-Authenticate", () => {
     ).toBe(false);
   });
 
-  it("should not match if error is missing or different", () => {
-    expect(wwwAuthenticateHeaderContainsCorrectError('Bearer realm=""')).toBe(
-      false,
-    );
-
+  it("should not match if error is different", () => {
     expect(
       wwwAuthenticateHeaderContainsCorrectError(
         'Bearer error="different error"',
@@ -53,5 +49,17 @@ describe("www-Authenticate", () => {
         'Bearer blaherror="invalid_token"',
       ),
     ).toBe(false);
+  });
+
+  it("should match if it start with Bearer and have only realm", () => {
+    expect(
+      wwwAuthenticateHeaderContainsCorrectError(
+        'Bearer realm="http://localhost:8000"',
+      ),
+    ).toBe(true);
+  });
+
+  it("should match if there are no parameter", () => {
+    expect(wwwAuthenticateHeaderContainsCorrectError("Bearer")).toBe(true);
   });
 });
