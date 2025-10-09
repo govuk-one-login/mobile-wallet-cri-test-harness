@@ -5,9 +5,8 @@ export function wwwAuthenticateHeaderContainsCorrectError(
   return /\berror="invalid_token"/.test(header);
 }
 
-export function wwwAuthenticateHeaderHasNoAuthentication(
-  header: string,
-): boolean {
-  if (header.includes("error")) return false;
+export function wwwAuthenticateHeaderHasNoErrorParams(header: string): boolean {
+  const hasErrorParams = /\b(error|error_description)=/.test(header);
+  if (hasErrorParams) return false;
   return header === "Bearer" || header.startsWith("Bearer ");
 }

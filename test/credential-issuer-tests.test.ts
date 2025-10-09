@@ -52,7 +52,7 @@ import { isValidCredential as isValidJwtCredential } from "./helpers/credential/
 import { isValidCredential as isValidMdocCredential } from "./helpers/credential/mdoc/isValidCredential";
 import {
   wwwAuthenticateHeaderContainsCorrectError,
-  wwwAuthenticateHeaderHasNoAuthentication,
+  wwwAuthenticateHeaderHasNoErrorParams,
 } from "./helpers/credential/www-Authenticate";
 
 let CREDENTIAL_OFFER_DEEP_LINK: string;
@@ -547,7 +547,7 @@ describe("Credential Issuer Tests", () => {
             const header = (error as AxiosError).response?.headers[
               "www-authenticate"
             ];
-            expect(wwwAuthenticateHeaderHasNoAuthentication(header)).toBe(true);
+            expect(wwwAuthenticateHeaderHasNoErrorParams(header)).toBe(true);
           }
         });
       });

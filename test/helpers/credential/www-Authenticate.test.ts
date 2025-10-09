@@ -1,6 +1,6 @@
 import {
   wwwAuthenticateHeaderContainsCorrectError,
-  wwwAuthenticateHeaderHasNoAuthentication,
+  wwwAuthenticateHeaderHasNoErrorParams,
 } from "./www-Authenticate";
 
 describe("www-Authenticate", () => {
@@ -64,22 +64,22 @@ describe("www-Authenticate", () => {
     });
   });
 
-  describe("wwwAuthenticateHeaderHasNoAuthentication", () => {
+  describe("wwwAuthenticateHeaderHasNoErrorParams", () => {
     it("should match if start with Bearer and have realm", () => {
       expect(
-        wwwAuthenticateHeaderHasNoAuthentication(
+        wwwAuthenticateHeaderHasNoErrorParams(
           'Bearer realm="http://localhost:8000"',
         ),
       ).toBe(true);
     });
 
     it("should match if there are no parameter", () => {
-      expect(wwwAuthenticateHeaderHasNoAuthentication("Bearer")).toBe(true);
+      expect(wwwAuthenticateHeaderHasNoErrorParams("Bearer")).toBe(true);
     });
 
     it("should match if start with Bearer and have other parameters", () => {
       expect(
-        wwwAuthenticateHeaderHasNoAuthentication(
+        wwwAuthenticateHeaderHasNoErrorParams(
           'Bearer realm="http://localhost:8000", scope="openid profile email"',
         ),
       ).toBe(true);
@@ -87,15 +87,13 @@ describe("www-Authenticate", () => {
 
     it("should not match if Bearer is missing", () => {
       expect(
-        wwwAuthenticateHeaderHasNoAuthentication(
-          'realm="http://localhost:8000"',
-        ),
+        wwwAuthenticateHeaderHasNoErrorParams('realm="http://localhost:8000"'),
       ).toBe(false);
     });
 
     it("should not match if it start with Bearer with no space", () => {
       expect(
-        wwwAuthenticateHeaderHasNoAuthentication(
+        wwwAuthenticateHeaderHasNoErrorParams(
           'Bearerrealm="http://localhost:8000"',
         ),
       ).toBe(false);
@@ -103,7 +101,7 @@ describe("www-Authenticate", () => {
 
     it("should not match if it contains error", () => {
       expect(
-        wwwAuthenticateHeaderHasNoAuthentication(
+        wwwAuthenticateHeaderHasNoErrorParams(
           'Bearer realm="http://localhost:8000", error="invalid_token"',
         ),
       ).toBe(false);
@@ -111,10 +109,16 @@ describe("www-Authenticate", () => {
 
     it("should not match if it contains error_description", () => {
       expect(
-        wwwAuthenticateHeaderHasNoAuthentication(
+        wwwAuthenticateHeaderHasNoErrorParams(
           'Bearer error_description="The access token expired"',
         ),
       ).toBe(false);
+    });
+
+    it("should match if start with Bearer and have 'error' inside a value", () => {
+      expect(
+        wwwAuthenticateHeaderHasNoErrorParams('Bearer realm="error handling"'),
+      ).toBe(true);
     });
   });
 });
