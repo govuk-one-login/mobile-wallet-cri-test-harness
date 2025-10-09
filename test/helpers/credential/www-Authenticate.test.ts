@@ -120,5 +120,11 @@ describe("www-Authenticate", () => {
         wwwAuthenticateHeaderHasNoErrorParams('Bearer realm="error handling"'),
       ).toBe(true);
     });
+
+      it("should not match if start with Bearer and have error parameter", () => {
+          expect(
+              wwwAuthenticateHeaderHasNoErrorParams('Bearer error=""'),
+          ).toBe(false);
+      });
   });
 });
