@@ -73,7 +73,7 @@ function validateProtectedHeader(protectedHeader: Uint8Array): void {
 }
 
 async function validateUnprotectedHeader(
-  unprotectedHeader: Map<number, Uint8Array | Uint8Array[]>,
+  unprotectedHeader: Map<number, Uint8Array>,
   rootCertificatePem: string,
 ): Promise<X509Certificate> {
   if (unprotectedHeader.size !== 1) {
@@ -90,11 +90,10 @@ async function validateUnprotectedHeader(
   }
 
   const x5chain = unprotectedHeader.get(33)!;
-  const certificateBytes = Array.isArray(x5chain) ? x5chain[0] : x5chain;
 
   let certificate: X509Certificate;
   try {
-    certificate = new X509Certificate(certificateBytes);
+    certificate = new X509Certificate(x5chain);
   } catch (error) {
     throw new MDLValidationError(
       `Failed to parse document signing certificate as X509Certificate - ${errorMessage(error)}`,

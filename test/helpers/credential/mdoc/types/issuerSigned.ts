@@ -7,7 +7,7 @@ import {
 
 export type IssuerAuth = [
   protectedHeader: Uint8Array,
-  unprotectedHeader: Map<number, Uint8Array | [Uint8Array]>,
+  unprotectedHeader: Map<number, Uint8Array>,
   payload: Uint8Array,
   signature: Uint8Array,
 ];
