@@ -2,12 +2,20 @@
 
 set -euo pipefail
 
+
+# Require two positional arguments:
+# 1. CREDENTIAL_FORMAT (jwt or mdoc)
+# 2. CREDENTIAL_OFFER_DEEP_LINK (deep link for the credential offer)
+# Optional parameters follow after these two.
+#
+# Although not all optional parameters listed below are strictly required for integrating the test harness into the
+# example CRI workflow, they are provided as environment variables passed to the docker run command. To improve
+# flexibility, these parameters could be turned into optional command-line arguments in the script itself.
 if [ "$#" -lt 2 ]; then
   echo "Usage: $0 <CREDENTIAL_FORMAT> <CREDENTIAL_OFFER_DEEP_LINK> [--container-name name] [--network-name name] [--test-harness-url URL] [--cri-url URL] [--has-notification-endpoint bool] [--wallet-subject-id id] [--client-id id]"
   exit 1
 fi
 
-# Required positional arguments
 CREDENTIAL_FORMAT="$1"
 CREDENTIAL_OFFER_DEEP_LINK="$2"
 shift 2
@@ -17,7 +25,7 @@ if [[ "$CREDENTIAL_FORMAT" != "jwt" && "$CREDENTIAL_FORMAT" != "mdoc" ]]; then
   exit 1
 fi
 
-# Default optional parameters
+# Set default values for optional parameters. These can be overridden via command-line flags below.
 CONTAINER_NAME="test-harness"
 NETWORK_NAME="bridge"
 TEST_HARNESS_URL=""
@@ -26,7 +34,7 @@ HAS_NOTIFICATION_ENDPOINT="true"
 WALLET_SUBJECT_ID="urn:fdc:wallet.account.gov.uk:2024:DtPT8x-dp_73tnlY3KNTiCitziN9GEherD16bqxNt9i"
 CLIENT_ID="TEST_CLIENT_ID"
 
-# Parse optional flags
+# Parse optional flags with their values; update defaults if provided.
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --container-name)
@@ -64,8 +72,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-
-# Derive TEST_HARNESS_URL if not explicitly set
+# Derive TEST_HARNESS_URL if it wasn't set explicitly:
+# If using default 'bridge' network, assume test harness reachable at localhost, otherwise assume the test harness
+# container is reachable by its container name.
 if [[ -z "$TEST_HARNESS_URL" ]]; then
   if [[ "$NETWORK_NAME" == "bridge" ]]; then
     TEST_HARNESS_URL="http://localhost:3001"
