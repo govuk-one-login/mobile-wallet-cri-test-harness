@@ -1,18 +1,20 @@
 #!/bin/bash
 
-# Start the first process
+set -e
+
 echo "Starting server"
 bash run-server.sh &
+SERVER_PID=$!
 
 sleep 5
 
-# Start the second process
 echo "Running tests against the credential issuer"
-bash run-tests.sh &
+bash run-tests.sh
+TEST_EXIT_CODE=$?
 
-# Wait for any process to exit
-wait -n
+echo "Stopping server"
+kill $SERVER_PID
+wait $SERVER_PID 2>/dev/null || true
 
-# Exit with status of process that exited first
-echo "Exiting with code " $?
-exit $?
+echo "Exiting with code $TEST_EXIT_CODE"
+exit $TEST_EXIT_CODE
