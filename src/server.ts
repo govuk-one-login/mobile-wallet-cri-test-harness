@@ -1,7 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import { getKeyId, getPortNumber } from "./config.js";
 import { generateKeyPair, exportJWK, JWK } from "jose";
-import { writeFileSync } from "fs";
+import { writeFileSync } from "node:fs";
 
 const app: Application = express();
 const port = getPortNumber();
