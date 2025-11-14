@@ -8,12 +8,12 @@ import { errorMessage, MDLValidationError } from "./MDLValidationError";
 import { TaggedDrivingPrivileges } from "./types/drivingPrivileges";
 import { TaggedMobileSecurityObject } from "./types/mobileSecurityObject";
 
-const FULL_DATE_ELEMENTS = ["birth_date", "issue_date", "expiry_date"];
+const FULL_DATE_ELEMENTS = new Set(["birth_date", "issue_date", "expiry_date"]);
 
-const DRIVING_PRIVILEGES_ELEMENTS = [
+const DRIVING_PRIVILEGES_ELEMENTS = new Set([
   "driving_privileges",
   "provisional_driving_privileges",
-];
+]);
 
 export function validateTags(taggedIssuerSigned: TaggedIssuerSigned): void {
   try {
@@ -45,7 +45,7 @@ function validateNamespacesTags(element: Tag, namespaceName: string): void {
     element.contents as Uint8Array,
   );
 
-  if (FULL_DATE_ELEMENTS.includes(decodedItem.elementIdentifier as string)) {
+  if (FULL_DATE_ELEMENTS.has(decodedItem.elementIdentifier)) {
     if (
       !(decodedItem.elementValue instanceof Tag) ||
       decodedItem.elementValue.tag !== TAGS.FULL_DATE
@@ -56,7 +56,7 @@ function validateNamespacesTags(element: Tag, namespaceName: string): void {
     }
   }
 
-  if (DRIVING_PRIVILEGES_ELEMENTS.includes(decodedItem.elementIdentifier)) {
+  if (DRIVING_PRIVILEGES_ELEMENTS.has(decodedItem.elementIdentifier)) {
     const privileges = decodedItem.elementValue as TaggedDrivingPrivileges[];
 
     for (const privilege of privileges) {

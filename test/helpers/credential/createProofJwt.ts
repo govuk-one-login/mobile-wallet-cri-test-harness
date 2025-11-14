@@ -52,7 +52,7 @@ const compress = (publicKey: Uint8Array): Uint8Array => {
 
 function compressEcPoint(x: Uint8Array, y: Uint8Array) {
   const compressedKey = new Uint8Array(x.length + 1);
-  compressedKey[0] = 2 + (y[y.length - 1] & 1);
+  compressedKey[0] = 2 + ((y.at(-1) ?? 0) & 1);
 
   compressedKey.set(x, 1);
   return compressedKey;

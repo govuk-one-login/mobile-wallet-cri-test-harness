@@ -44,7 +44,7 @@ export async function isValidIacas(iacas: Iacas): Promise<boolean> {
   const pem = iaca.certificatePem
     .replace("-----BEGIN CERTIFICATE-----", "")
     .replace("-----END CERTIFICATE-----", "")
-    .replace(/\s+/g, "");
+    .replaceAll(/\s+/g, "");
 
   let certificate: X509Certificate;
   try {
@@ -67,13 +67,13 @@ export async function isValidIacas(iacas: Iacas): Promise<boolean> {
     );
   }
   const countryField = certificate.subjectName.getField("C");
-  if (!countryField || countryField[0] !== country) {
+  if (countryField?.[0] !== country) {
     throw new Error(
       `INVALID_IACAS: country does not match. Should be "${country}" but found "${countryField?.[0]}"`,
     );
   }
   const commonNameField = certificate.subjectName.getField("CN");
-  if (!commonNameField || commonNameField[0] !== commonName) {
+  if (commonNameField?.[0] !== commonName) {
     throw new Error(
       `INVALID_IACAS: commonName does not match. Should be "${commonName}" but found "${commonNameField?.[0]}"`,
     );

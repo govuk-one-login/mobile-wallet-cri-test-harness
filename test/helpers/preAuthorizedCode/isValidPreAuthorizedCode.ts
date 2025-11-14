@@ -45,9 +45,8 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
     throw new Error(
       `INVALID_HEADER: Pre-authorized code header does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
     );
-  } else {
-    return claims;
   }
+  return claims;
 }
 
 async function verifySignature(
