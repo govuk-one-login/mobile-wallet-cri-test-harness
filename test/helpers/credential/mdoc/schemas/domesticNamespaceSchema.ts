@@ -63,11 +63,11 @@ export const domesticNamespaceSchema = {
                   vehicle_category_code: { type: "string" },
                   issue_date: {
                     type: "string",
-                    pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+                    pattern: String.raw`^\d{4}-\d{2}-\d{2}$`,
                   },
                   expiry_date: {
                     type: "string",
-                    pattern: "^\\d{4}-\\d{2}-\\d{2}$",
+                    pattern: String.raw`^\d{4}-\d{2}-\d{2}$`,
                   },
                   codes: {
                     type: "array",

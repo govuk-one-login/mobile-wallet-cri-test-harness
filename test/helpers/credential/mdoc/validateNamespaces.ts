@@ -39,8 +39,8 @@ function validatePortraitFormat(data: Uint8Array): void {
   }
 
   // Look for EOI (End of Image) marker: FF D9
-  const penultimateByte = data[data.length - 2];
-  const lastByte = data[data.length - 1];
+  const penultimateByte = data.at(-2) ?? 0;
+  const lastByte = data.at(-1) ?? 0;
   if (!(penultimateByte === 0xff && lastByte === 0xd9)) {
     throw new MDLValidationError(
       `Invalid EOI - JPEG should end with ffd9 but found ${Buffer.from([penultimateByte, lastByte]).toString("hex")}`,
@@ -52,7 +52,7 @@ function validatePortraitFormat(data: Uint8Array): void {
 function validateDigestIds(namespaces: Record<NameSpace, IssuerSignedItem[]>) {
   const namespacesToCheck = [NAMESPACES.ISO, NAMESPACES.GB];
 
-  namespacesToCheck.forEach((namespace) => {
+  for (const namespace of namespacesToCheck) {
     const digestIds = namespaces[namespace]?.map((item) => item.digestID);
 
     if (!checkUnique(digestIds)) {
@@ -61,7 +61,7 @@ function validateDigestIds(namespaces: Record<NameSpace, IssuerSignedItem[]>) {
         "INVALID_DIGEST_IDS",
       );
     }
-  });
+  }
 }
 
 function checkUnique(digestIds: number[]): boolean {
