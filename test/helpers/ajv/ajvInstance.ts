@@ -37,9 +37,7 @@ function createAjvInstance(): Ajv {
 }
 
 export function getAjvInstance(): Ajv {
-  if (!ajvInstance) {
-    ajvInstance = createAjvInstance();
-  }
+  ajvInstance ??= createAjvInstance();
   return ajvInstance;
 }
 

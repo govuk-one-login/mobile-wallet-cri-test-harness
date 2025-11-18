@@ -13,7 +13,7 @@ echo "Credential format: JWT"
 
 echo "Attempting to build Docker image"
 if ! docker build -t "test-harness" .; then
-    echo "ERROR: Docker build failed"
+    echo "ERROR: Docker build failed" >&2
     exit 1
 fi
 
