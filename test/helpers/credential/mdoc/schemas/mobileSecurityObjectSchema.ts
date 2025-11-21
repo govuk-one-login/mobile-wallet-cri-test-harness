@@ -1,7 +1,6 @@
 export const mobileSecurityObjectSchema = {
   $id: "mobile-security-object",
   type: "object",
-  // TODO: add `status` to `required` and change `additionalProperties` to `false` when the mDL issuer has integrated with the status list
   required: [
     "version",
     "digestAlgorithm",
@@ -9,6 +8,7 @@ export const mobileSecurityObjectSchema = {
     "valueDigests",
     "docType",
     "validityInfo",
+    "status",
   ],
   additionalProperties: true,
   properties: {
