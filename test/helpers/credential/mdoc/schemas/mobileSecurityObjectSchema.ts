@@ -10,7 +10,7 @@ export const mobileSecurityObjectSchema = {
     "validityInfo",
     "status",
   ],
-  additionalProperties: true,
+  additionalProperties: false,
   properties: {
     version: {
       type: "string",
