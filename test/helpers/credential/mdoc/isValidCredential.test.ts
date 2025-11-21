@@ -323,7 +323,7 @@ describe("isValidCredential", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        "No digest found for digestID 367822334 in MSO namespace org.iso.18013.5.1.GB: 367822321,367822347",
+        "No digest found for digest ID 367822334 in MSO namespace org.iso.18013.5.1.GB: 367822321,367822347",
       );
     }
   });
@@ -335,7 +335,7 @@ describe("isValidCredential", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(MDLValidationError);
       expect((error as Error).message).toBe(
-        'Digest mismatch for element identifier "age_over_21 with digest ID 367822425 in namespace org.iso.18013.5.1 - Expected eccebb045750838e3774b9cb3df2a62139d05e0e4cef9391b0a416c2863ce008 but calculated 14ba78df54f06c4e09c5193e19e3104e792fc899307f89a6ceaaaaf75bf63a8c',
+        "Digest mismatch for element identifier age_over_21 with digest ID 367822425 in namespace org.iso.18013.5.1 - Expected eccebb045750838e3774b9cb3df2a62139d05e0e4cef9391b0a416c2863ce008 but calculated 14ba78df54f06c4e09c5193e19e3104e792fc899307f89a6ceaaaaf75bf63a8c",
       );
     }
   });
