@@ -19,8 +19,10 @@ export interface IssuerSignedItem {
   random: Uint8Array;
 }
 
-export interface TaggedIssuerSignedItem
-  extends Omit<IssuerSignedItem, "elementValue"> {
+export interface TaggedIssuerSignedItem extends Omit<
+  IssuerSignedItem,
+  "elementValue"
+> {
   elementValue: string | boolean | Uint8Array | TaggedDrivingPrivileges[] | Tag;
 }
 
