@@ -118,8 +118,12 @@ function validatePayload(
     issuedAt,
     expirationTime,
   );
-  if (!(actualTokenDurationMinutes >= MIN_TOKEN_DURATION_MINUTES
-      && actualTokenDurationMinutes <= MAX_TOKEN_DURATION_MINUTES)) {
+  if (
+    !(
+      actualTokenDurationMinutes >= MIN_TOKEN_DURATION_MINUTES &&
+      actualTokenDurationMinutes <= MAX_TOKEN_DURATION_MINUTES
+    )
+  ) {
     console.log(
       `Note: If your issuer is configured for the credential offer to be valid for a time less than 
       ${MIN_TOKEN_DURATION_MINUTES} minutes and more than ${MAX_TOKEN_DURATION_MINUTES}, update MIN_TOKEN_DURATION_MINUTES and MAX_TOKEN_DURATION_MINUTES in isValidPreAuthorizedCode.ts respectively.`,
