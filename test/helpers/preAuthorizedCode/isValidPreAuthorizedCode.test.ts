@@ -51,9 +51,9 @@ describe("isValidPreAuthorizedCode", () => {
   });
 
   test.each([
-    ["exactly 5 minutes", "5minutes"],
-    ["exactly 60 minutes", "60minutes"],
-    ["between 5 minutes and 60 minutes", "30minutes"],
+    ["exactly 5 minutes", "5 minutes"],
+    ["exactly 60 minutes", "60 minutes"],
+    ["between 5 minutes and 60 minutes", "30 minutes"],
   ])("should return 'true' when token expiry is %s", async (_, expValue) => {
     const preAuthorizedCode = await getTestJwt(
       authServerUrl,
@@ -200,8 +200,8 @@ describe("isValidPreAuthorizedCode", () => {
   });
 
   test.each([
-    ["less than 5 minutes", "3minutes"],
-    ["more than 60 minutes", "61minutes"],
+    ["less than 5 minutes", "3 minutes"],
+    ["more than 60 minutes", "61 minutes"],
   ])(
     "should throw 'INVALID_PAYLOAD' error when token expiry is %s",
     async (_, expValue) => {
@@ -291,7 +291,7 @@ describe("isValidPreAuthorizedCode", () => {
   });
 });
 
-async function getTestJwt(audience, issuer, clientId, kid, exp = "30minutes") {
+async function getTestJwt(audience, issuer, clientId, kid, exp = "30 minutes") {
   const privateKey = {
     kty: "EC",
     x: "-OxU7o3ZtHJ7GnufJkGKv3EAgeisXdZg1eTKErzsiL8",
