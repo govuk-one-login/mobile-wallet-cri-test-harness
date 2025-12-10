@@ -51,26 +51,26 @@ describe("isValidPreAuthorizedCode", () => {
   });
 
   test.each([
-      ["exactly 5 minutes", "5minutes"],
-      ["exactly 60 minutes", "60minutes"],
-      ["between 5 minutes and 60 minutes", "30minutes"],
-      ])("should return 'true' when token expiry is %s", async(_, expValue) => {
-      const preAuthorizedCode = await getTestJwt(
-          authServerUrl,
-          criUrl,
-          clientId,
-          kid,
-          expValue
-      );
-      expect(
-          await isValidPreAuthorizedCode(
-              preAuthorizedCode,
-              jwks,
-              criUrl,
-              authServerUrl,
-              clientId,
-          ),
-      ).toEqual(true);
+    ["exactly 5 minutes", "5minutes"],
+    ["exactly 60 minutes", "60minutes"],
+    ["between 5 minutes and 60 minutes", "30minutes"],
+  ])("should return 'true' when token expiry is %s", async (_, expValue) => {
+    const preAuthorizedCode = await getTestJwt(
+      authServerUrl,
+      criUrl,
+      clientId,
+      kid,
+      expValue,
+    );
+    expect(
+      await isValidPreAuthorizedCode(
+        preAuthorizedCode,
+        jwks,
+        criUrl,
+        authServerUrl,
+        clientId,
+      ),
+    ).toEqual(true);
   });
 
   it("should throw 'HEADER_DECODING_ERROR' error when token header cannot be decoded", async () => {
@@ -200,29 +200,32 @@ describe("isValidPreAuthorizedCode", () => {
   });
 
   test.each([
-      ["less than 5 minutes", "3minutes"],
-      ["more than 60 minutes", "61minutes"],
-  ])("should throw 'INVALID_PAYLOAD' error when token expiry is %s", async (_, expValue) => {
+    ["less than 5 minutes", "3minutes"],
+    ["more than 60 minutes", "61minutes"],
+  ])(
+    "should throw 'INVALID_PAYLOAD' error when token expiry is %s",
+    async (_, expValue) => {
       const preAuthorizedCode = await getTestJwt(
-          authServerUrl,
-          criUrl,
-          clientId,
-          kid,
-          expValue,
+        authServerUrl,
+        criUrl,
+        clientId,
+        kid,
+        expValue,
       );
 
       await expect(
-          isValidPreAuthorizedCode(
-              preAuthorizedCode,
-              jwks,
-              criUrl,
-              authServerUrl,
-              clientId,
-          ),
+        isValidPreAuthorizedCode(
+          preAuthorizedCode,
+          jwks,
+          criUrl,
+          authServerUrl,
+          clientId,
+        ),
       ).rejects.toThrow(
-          `INVALID_PAYLOAD: Invalid "exp" value in token. Expected to be between 5 and 60, but found ${expValue}`,
+        `INVALID_PAYLOAD: Invalid "exp" value in token. Expected to be between 5 and 60, but found ${expValue}`,
       );
-  })
+    },
+  );
 
   it("should throw 'INVALID_PAYLOAD' error when token issuer is not 'https://test-example-cri.gov.uk'", async () => {
     const preAuthorizedCode = await getTestJwt(
