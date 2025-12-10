@@ -28,10 +28,10 @@ export interface MobileSecurityObject {
 }
 
 export interface TaggedMobileSecurityObject
-  extends Omit<MobileSecurityObject, "validityInfo"> {
-  validityInfo: {
-    signed: Tag;
-    validFrom: Tag;
-    validUntil: Tag;
-  };
+    extends Omit<MobileSecurityObject, "validityInfo"> {
+    validityInfo: {
+        signed: Tag;
+        validFrom: Tag;
+        validUntil: Tag;
+    };
 }

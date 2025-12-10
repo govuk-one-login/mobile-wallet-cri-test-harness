@@ -20,8 +20,8 @@ export interface IssuerSignedItem {
 }
 
 export interface TaggedIssuerSignedItem
-  extends Omit<IssuerSignedItem, "elementValue"> {
-  elementValue: string | boolean | Uint8Array | TaggedDrivingPrivileges[] | Tag;
+    extends Omit<IssuerSignedItem, "elementValue"> {
+    elementValue: string | boolean | Uint8Array | TaggedDrivingPrivileges[] | Tag;
 }
 
 export interface IssuerSigned {
