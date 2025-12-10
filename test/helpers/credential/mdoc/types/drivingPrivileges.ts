@@ -13,11 +13,9 @@ export interface DrivingPrivileges {
   codes?: Code[];
 }
 
-export interface TaggedDrivingPrivileges extends Omit<
-  DrivingPrivileges,
-  "issue_date" | "expiry_date"
-> {
-  issue_date?: Tag;
-  expiry_date?: Tag;
-  codes?: Code[];
+export interface TaggedDrivingPrivileges
+    extends Omit<DrivingPrivileges, "issue_date" | "expiry_date"> {
+    issue_date?: Tag;
+    expiry_date?: Tag;
+    codes?: Code[];
 }
