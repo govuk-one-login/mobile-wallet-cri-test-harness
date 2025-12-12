@@ -141,7 +141,7 @@ describe("isValidCredential", () => {
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow(
-      'INVALID_PAYLOAD: Invalid "iss" value in token. Should be https://test-example-cri.gov.uk but found invalidIssuer',
+      'INVALID_PAYLOAD: Invalid "iss" value in token. Should be https://test-example-cri.gov.uk but found "invalidIssuer"',
     );
   });
 
@@ -151,7 +151,7 @@ describe("isValidCredential", () => {
     await expect(
       isValidCredential(credential, didKey, verificationMethod, criUrl),
     ).rejects.toThrow(
-      'INVALID_PAYLOAD: Invalid "sub" value in token. Should be did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c but found notTheProofJwtDidKey',
+      'INVALID_PAYLOAD: Invalid "sub" value in token. Should be did:key:zDnaecAXbW1Z3Gr8D8W1XXysV4XRWDMZGWPLGiCupHBjehR6c but found "notTheProofJwtDidKey"',
     );
   });
 });

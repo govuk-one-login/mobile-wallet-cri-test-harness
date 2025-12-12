@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 echo "Starting server"
 bash run-server.sh &
 SERVER_PID=$!

@@ -13,7 +13,8 @@ export interface Payload {
   exp: number;
 }
 
-const EXPECTED_TOKEN_DURATION_MINUTES = 30;
+const MIN_TOKEN_DURATION_MINUTES = 5;
+const MAX_TOKEN_DURATION_MINUTES = 60;
 
 export async function isValidPreAuthorizedCode(
   preAuthorizedCode: string,
@@ -45,9 +46,8 @@ function getHeaderClaims(jwt: string): ProtectedHeaderParameters {
     throw new Error(
       `INVALID_HEADER: Pre-authorized code header does not comply with the schema. ${JSON.stringify(rulesValidator.errors)}`,
     );
-  } else {
-    return claims;
   }
+  return claims;
 }
 
 async function verifySignature(
@@ -118,15 +118,18 @@ function validatePayload(
     issuedAt,
     expirationTime,
   );
-  if (actualTokenDurationMinutes !== EXPECTED_TOKEN_DURATION_MINUTES) {
+  if (
+    actualTokenDurationMinutes < MIN_TOKEN_DURATION_MINUTES ||
+    actualTokenDurationMinutes > MAX_TOKEN_DURATION_MINUTES
+  ) {
     console.log(
-      `Note: If your issuer is configured for the credential offer to be valid for a time other than 
-      ${EXPECTED_TOKEN_DURATION_MINUTES} minutes, update EXPECTED_TOKEN_DURATION_MINUTES in isValidPreAuthorizedCode.ts.`,
+      `Note: If your issuer is configured for the credential offer to be valid for a time less than 
+      ${MIN_TOKEN_DURATION_MINUTES} minutes or more than ${MAX_TOKEN_DURATION_MINUTES}, update MIN_TOKEN_DURATION_MINUTES and MAX_TOKEN_DURATION_MINUTES in isValidPreAuthorizedCode.ts respectively.`,
     );
 
     throw new Error(
       `INVALID_PAYLOAD: Invalid "exp" value in token. ` +
-        `Expected ${EXPECTED_TOKEN_DURATION_MINUTES} minute expiry but found ${actualTokenDurationMinutes} minutes`,
+        `Expected to be between ${MIN_TOKEN_DURATION_MINUTES} and ${MAX_TOKEN_DURATION_MINUTES}, but found ${actualTokenDurationMinutes} minutes`,
     );
   }
 }

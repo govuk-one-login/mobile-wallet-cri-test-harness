@@ -28,7 +28,7 @@ function getEnvVarValue(variableName: string): string {
 }
 
 export function getPortNumber(): number {
-  return parseInt(getEnvVarValue(ENV_VARS.PORT), 10);
+  return Number.parseInt(getEnvVarValue(ENV_VARS.PORT), 10);
 }
 
 export function getCredentialOfferDeepLink(): string {

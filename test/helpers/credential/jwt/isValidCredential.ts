@@ -90,14 +90,14 @@ function validatePayload(
   const iss = payload.iss;
   if (criUrl !== iss) {
     throw new Error(
-      `INVALID_PAYLOAD: Invalid "iss" value in token. Should be ${criUrl} but found ${iss}`,
+      `INVALID_PAYLOAD: Invalid "iss" value in token. Should be ${criUrl} but found ${JSON.stringify(iss)}`,
     );
   }
 
   const sub = payload.sub;
   if (didKey !== sub) {
     throw new Error(
-      `INVALID_PAYLOAD: Invalid "sub" value in token. Should be ${didKey} but found ${sub}`,
+      `INVALID_PAYLOAD: Invalid "sub" value in token. Should be ${didKey} but found ${JSON.stringify(sub)}`,
     );
   }
 }
