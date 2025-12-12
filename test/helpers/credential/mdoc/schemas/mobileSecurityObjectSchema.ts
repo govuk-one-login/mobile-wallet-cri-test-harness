@@ -39,13 +39,10 @@ export const mobileSecurityObjectSchema = {
               minItems: 2,
               maxItems: 2,
               items: {
-                  "type": "string",
-                  "enum": [
-                      "org.iso.18013.5.1.GB",
-                      "org.iso.18013.5.1"
-                  ],
-                  // additionalItems: false,
-              }
+                type: "string",
+                enum: ["org.iso.18013.5.1.GB", "org.iso.18013.5.1"],
+                // additionalItems: false,
+              },
             },
           },
         },
