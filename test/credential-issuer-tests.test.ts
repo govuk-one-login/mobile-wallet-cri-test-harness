@@ -2,7 +2,6 @@ import {
   getClientId,
   getCredentialFormat,
   getCredentialOfferDeepLink,
-  getCriDomain,
   getCriUrl,
   getSelfURL,
   getWalletSubjectId,
@@ -74,7 +73,7 @@ describe("Credential Issuer Tests", () => {
   beforeAll(async () => {
     CREDENTIAL_OFFER_DEEP_LINK = getCredentialOfferDeepLink();
     CRI_URL = getCriUrl();
-    CRI_DOMAIN = getCriDomain();
+    CRI_DOMAIN = new URL(CRI_URL).hostname;
     WALLET_SUBJECT_ID = getWalletSubjectId();
     const preAuthorizedCode = extractPreAuthorizedCode(
       CREDENTIAL_OFFER_DEEP_LINK,

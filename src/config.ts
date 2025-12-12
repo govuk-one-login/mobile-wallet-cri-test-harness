@@ -5,7 +5,7 @@
 const ENV_VARS = {
   PORT: "PORT",
   CREDENTIAL_OFFER_DEEP_LINK: "CREDENTIAL_OFFER_DEEP_LINK",
-  CRI_DOMAIN: "CRI_DOMAIN",
+  CRI_URL: "CRI_URL",
   WALLET_SUBJECT_ID: "WALLET_SUBJECT_ID",
   TEST_HARNESS_URL: "TEST_HARNESS_URL",
   CLIENT_ID: "CLIENT_ID",
@@ -28,15 +28,11 @@ function getEnvVarValue(variableName: string): string {
 }
 
 export function getPortNumber(): number {
-  return Number.parseInt(getEnvVarValue(ENV_VARS.PORT), 10);
+  return parseInt(getEnvVarValue(ENV_VARS.PORT), 10);
 }
 
 export function getCredentialOfferDeepLink(): string {
   return getEnvVarValue(ENV_VARS.CREDENTIAL_OFFER_DEEP_LINK);
-}
-
-export function getCriDomain(): string {
-  return getEnvVarValue(ENV_VARS.CRI_DOMAIN);
 }
 
 export function getWalletSubjectId(): string {
@@ -48,18 +44,11 @@ export function getKeyId(): string {
 }
 
 export function getCriUrl(): string {
-  const criDomain = getCriDomain();
-  const protocol = criDomain.startsWith("localhost") ? "http" : "https";
-  return `${protocol}://${criDomain}`;
+  return getEnvVarValue(ENV_VARS.CRI_URL);
 }
 
 export function getSelfURL(): string {
-  try {
-    return getEnvVarValue(ENV_VARS.TEST_HARNESS_URL);
-  } catch {
-    console.log("TEST_HARNESS_URL not set, using localhost fallback");
-    return `http://localhost:${getPortNumber()}`;
-  }
+  return getEnvVarValue(ENV_VARS.TEST_HARNESS_URL);
 }
 
 export function getClientId(): string {
