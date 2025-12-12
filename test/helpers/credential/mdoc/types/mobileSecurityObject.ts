@@ -27,11 +27,13 @@ export interface MobileSecurityObject {
   validityInfo: ValidityInfo;
 }
 
-export interface TaggedMobileSecurityObject
-    extends Omit<MobileSecurityObject, "validityInfo"> {
-    validityInfo: {
-        signed: Tag;
-        validFrom: Tag;
-        validUntil: Tag;
-    };
+export interface TaggedMobileSecurityObject extends Omit<
+  MobileSecurityObject,
+  "validityInfo"
+> {
+  validityInfo: {
+    signed: Tag;
+    validFrom: Tag;
+    validUntil: Tag;
+  };
 }
