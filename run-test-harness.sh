@@ -9,9 +9,21 @@ YELLOW='\033[1;33m'
 NO_COLOUR='\033[0m' # No Color
 
 # Logging functions
-log_info() { echo -e "${GREEN}[INFO]${NO_COLOUR} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NO_COLOUR} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NO_COLOUR} $1" >&2; }
+log_info() {
+  local msg="$1"
+  echo -e "${GREEN}[INFO]${NO_COLOUR} ${msg}"
+  return 0
+}
+log_warn() {
+  local msg="$1"
+  echo -e "${YELLOW}[WARN]${NO_COLOUR} ${msg}"
+  return 0
+}
+log_error() {
+  local msg="$1"
+  echo -e "${RED}[ERROR]${NO_COLOUR} ${msg}" >&2
+  return 0
+}
 
 # Usage function
 show_usage() {
@@ -33,6 +45,7 @@ Optional arguments:
   --help, -h                 Show this help message
 
 EOF
+  return 0
 }
 
 # Validate arguments
