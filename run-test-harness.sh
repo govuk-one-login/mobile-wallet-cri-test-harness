@@ -152,11 +152,13 @@ EOF
 
 # Build Docker image
 log_info "Building Docker image..."
-if ! docker build -t "test-harness" . --quiet; then
-  log_error "Docker build failed"
+if ERROR=$(docker build -t "test-harness" . 2>&1); then
+  log_info "Docker image built successfully"
+else
+  log_error "Docker build failed:"
+  echo "$ERROR" >&2
   exit 1
 fi
-log_info "Docker image built successfully"
 
 # Run container
 log_info "Starting test harness container..."
