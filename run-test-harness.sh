@@ -5,7 +5,6 @@ set -euo pipefail
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 NO_COLOUR='\033[0m' # No Color
 
 # Logging functions
@@ -14,11 +13,7 @@ log_info() {
   echo -e "${GREEN}[INFO]${NO_COLOUR} ${msg}"
   return 0
 }
-log_warn() {
-  local msg="$1"
-  echo -e "${YELLOW}[WARN]${NO_COLOUR} ${msg}"
-  return 0
-}
+
 log_error() {
   local msg="$1"
   echo -e "${RED}[ERROR]${NO_COLOUR} ${msg}" >&2
