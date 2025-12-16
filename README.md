@@ -63,7 +63,7 @@ Replace:
 * `<CREDENTIAL_FORMAT>` with either `jwt` or `mdoc`
 * `<CREDENTIAL_OFFER_DEEP_LINK>` with your credential offer deep link
 
-You can optionally configure the following using command-line flags:
+Use command-line flags to configure the following optional parameters:
 
 * `--cri-url`: URL of the credential issuer under test (default: `http://localhost:8080`)
 * `--wallet-subject-id`: the walletSubjectId your service is expecting (default: `urn:fdc:wallet.account.gov.uk:2024:DtPT8x-dp_73tnlY3KNTiCitziN9GEherD16bqxNt9i`)
