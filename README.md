@@ -12,12 +12,12 @@ The test harness takes your credential offer as its input and validates it, then
 
 The test harness simulates valid and invalid calls to the:
 
-* issuer [metadata API](https://docs.wallet.service.gov.uk/credential-issuer-functionality/metadata/) (`/.well-known/openid-credential-issuer`)
-* [credential API](https://docs.wallet.service.gov.uk/credential-issuer-functionality/credential/) (path taken from issuer metadata API)
-* [JWKS API](https://docs.wallet.service.gov.uk/credential-issuer-functionality/jwks/) (`/.well-known/jwks.json`)
-* [did:web API](https://docs.wallet.service.gov.uk/credential-issuer-functionality/did/) (`/.well-known/did.json`)
+* issuer [metadata API](https://docs.wallet.service.gov.uk/issue-a-credential/metadata/) (`/.well-known/openid-credential-issuer`)
+* [credential API](https://docs.wallet.service.gov.uk/issue-a-credential/credential/) (path taken from issuer metadata API)
+* [JWKS API](https://docs.wallet.service.gov.uk/issue-a-credential/jwks/) (`/.well-known/jwks.json`)
+* [did:web API](https://docs.wallet.service.gov.uk/issue-a-credential/did/) (`/.well-known/did.json`)
 * IACAS API (`/.well-known/iacas`)
-* [notification API](https://docs.wallet.service.gov.uk/credential-issuer-functionality/notification/) (path taken from issuer metadata API)
+* [notification API](https://docs.wallet.service.gov.uk/issue-a-credential/notification/) (path taken from issuer metadata API)
 
 After simulating calls to these endpoints, the test harness validates the responses returned by checking that:
 
@@ -41,7 +41,7 @@ The test harness does not test all possible unhappy paths.
 
 You must set up your credential issuer so that it uses the test harness domain to fetch the public signing key that validates the credential access token.
 
-When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/credential-issuer-functionality/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
+When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-a-credential/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
 
 ### Get test harness files
 
@@ -92,7 +92,7 @@ The container runs the `run-server-and-tests.sh` script, which:
 * waits 5 seconds for the server to start
 * executes the test suite (`run-tests.sh`) against the credential issuer
 * exits when the test suite finishes executing
-* saves test results in the output directory
+* saves test results in `./output/report.xml`
 
 ## Disclaimers
 
