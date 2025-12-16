@@ -51,39 +51,33 @@ Clone the repo:
 git clone git@github.com:govuk-one-login/mobile-wallet-cri-test-harness.git
 ```
 
-### Set environment variables
-
-You must set the relevant environment variables before running the test script.
-
-From the cloned repo, open the correct script for your credential type:
-
-* `test-jwt.sh` for JWT credential issuers
-* `test-mdoc.sh` for mdoc credential issuers
-
-Apply the following values to the docker run command:
-
-* `CRI_DOMAIN`: domain of the credential issuer under test
-* `WALLET_SUBJECT_ID`: the walletSubjectId your service is expecting
-* `CLIENT_ID`: the GOV.UK One Login client ID of your service
-* `HAS_NOTIFICATION_ENDPOINT`: boolean indicating whether the CRI implements the notification endpoint - defaults to `"true"`
-
 ### Run test script
 
-Use the correct test script for your credential format.
-
-JWT credential issuers must run:
+Run the test harness with your credential format and credential offer deep link:
 
 ```
-./test-jwt.sh <CREDENTIAL_OFFER_DEEP_LINK>
+./run-test-harness.sh <CREDENTIAL_FORMAT> <CREDENTIAL_OFFER_DEEP_LINK>
 ```
 
-mdoc credential issuers must run:
+Replace:
+* `<CREDENTIAL_FORMAT>` with either `jwt` or `mdoc`
+* `<CREDENTIAL_OFFER_DEEP_LINK>` with your credential offer deep link
+
+You can optionally configure the following using command-line flags:
+
+* `--cri-url`: URL of the credential issuer under test (default: `http://localhost:8080`)
+* `--wallet-subject-id`: the walletSubjectId your service is expecting (default: `urn:fdc:wallet.account.gov.uk:2024:DtPT8x-dp_73tnlY3KNTiCitziN9GEherD16bqxNt9i`)
+* `--client-id`: the GOV.UK One Login client ID of your service (default: `TEST_CLIENT_ID`)
+* `--has-notification-endpoint`: boolean indicating whether the CRI implements the notification endpoint (default: `true`)
+* `--container-name`: Docker container name (default: `test-harness`)
+* `--network-name`: Docker network name (default: `bridge`)
+* `--test-harness-url`: Test harness URL (auto-derived from `--network-name` and `--container-name` if not set)
+
+For example:
 
 ```
-./test-mdoc.sh <CREDENTIAL_OFFER_DEEP_LINK>
+./run-test-harness.sh jwt "https://mobile.build.account.gov.uk/wallet/add?credential_offer..." --cri-url http://localhost:8080 --client-id YOUR_CLIENT_ID
 ```
-
-Replace the `<CREDENTIAL_OFFER_DEEP_LINK>` with your credential offer deep link.
 
 The test script:
 
