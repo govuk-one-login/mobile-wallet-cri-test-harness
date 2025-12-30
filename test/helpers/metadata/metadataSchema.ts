@@ -1,3 +1,5 @@
+import { credentialConfigurationsSupportedSchema } from "./credentialConfigurationsSupported";
+
 export const metadataSchema = {
   type: "object",
   properties: {
@@ -26,9 +28,8 @@ export const metadataSchema = {
       type: "string",
       format: "uri",
     },
-    credential_configurations_supported: {
-      type: "object",
-    },
+    credential_configurations_supported:
+      credentialConfigurationsSupportedSchema,
   },
   additionalProperties: true,
   required: [
