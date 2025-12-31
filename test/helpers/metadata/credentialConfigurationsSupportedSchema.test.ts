@@ -1,5 +1,5 @@
 import { getAjvInstance } from "../ajv/ajvInstance";
-import { credentialConfigurationsSupportedSchema } from "./credentialConfigurationsSupported";
+import { credentialConfigurationsSupportedSchema } from "./credentialConfigurationsSupportedSchema";
 
 describe("credentialConfigurationsSupportedSchema", () => {
   const ajv = getAjvInstance();

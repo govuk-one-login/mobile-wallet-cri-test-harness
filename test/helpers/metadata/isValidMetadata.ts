@@ -1,6 +1,6 @@
 import { metadataSchema } from "./metadataSchema";
 import { getAjvInstance } from "../ajv/ajvInstance";
-import { credentialConfigurationsSupportedSchema } from "./credentialConfigurationsSupported";
+import { credentialConfigurationsSupportedSchema } from "./credentialConfigurationsSupportedSchema";
 
 interface Metadata {
   credential_issuer: string;
