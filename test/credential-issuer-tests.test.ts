@@ -68,10 +68,14 @@ let NONCE: UUID;
 let CLIENT_ID: string;
 let SELF_URL: string;
 let CREDENTIAL_FORMAT: string;
+let CREDENTIAL_CONFIGURATION_ID: string;
 
 describe("Credential Issuer Tests", () => {
   beforeAll(async () => {
     CREDENTIAL_OFFER_DEEP_LINK = getCredentialOfferDeepLink();
+    CREDENTIAL_CONFIGURATION_ID = extractCredentialConfigurationId(
+      CREDENTIAL_OFFER_DEEP_LINK,
+    );
     CRI_URL = getCriUrl();
     CRI_DOMAIN = new URL(CRI_URL).hostname;
     WALLET_SUBJECT_ID = getWalletSubjectId();
@@ -143,6 +147,7 @@ describe("Credential Issuer Tests", () => {
             CRI_URL,
             SELF_URL,
             CREDENTIAL_FORMAT,
+            CREDENTIAL_CONFIGURATION_ID,
           ),
         ).toBe(true);
       });
@@ -590,6 +595,12 @@ function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
   return (parseAsJson(credentialOffer!) as CredentialOffer).grants[
     "urn:ietf:params:oauth:grant-type:pre-authorized_code"
   ]["pre-authorized_code"];
+}
+
+function extractCredentialConfigurationId(credentialOfferDeepLink: string) {
+  const credentialOffer = extractCredentialOffer(credentialOfferDeepLink);
+  return (parseAsJson(credentialOffer!) as CredentialOffer)
+    .credential_configuration_ids[0];
 }
 
 function makeSignatureInvalid(token: string) {
