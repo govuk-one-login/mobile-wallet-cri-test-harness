@@ -1,5 +1,6 @@
 import { metadataSchema } from "./metadataSchema";
 import { getAjvInstance } from "../ajv/ajvInstance";
+import { credentialConfigurationsSupportedSchema } from "./credentialConfigurationsSupported";
 
 interface Metadata {
   credential_issuer: string;
@@ -32,14 +33,21 @@ export interface CredentialConfiguration {
 }
 
 export async function isValidMetadata(
-  metadata: Metadata,
+  metadata: unknown,
   criUrl: string,
   authServerUrl: string,
   credentialFormat: string,
   credentialConfigurationId: string,
 ): Promise<true> {
   const ajv = getAjvInstance();
-  const rulesValidator = ajv.compile(metadataSchema);
+
+  const rulesValidator = ajv
+    .addSchema(
+      credentialConfigurationsSupportedSchema,
+      "credentialConfigurationsSupported",
+    )
+    .compile<Metadata>(metadataSchema);
+
   if (!rulesValidator(metadata)) {
     const validationErrors = rulesValidator.errors;
     throw new Error(

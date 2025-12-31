@@ -1,6 +1,5 @@
-import { credentialConfigurationsSupportedSchema } from "./credentialConfigurationsSupported";
-
 export const metadataSchema = {
+  $id: "metadata",
   type: "object",
   properties: {
     credential_issuer: {
@@ -19,8 +18,9 @@ export const metadataSchema = {
       type: "string",
       format: "uri",
     },
-    credential_configurations_supported:
-      credentialConfigurationsSupportedSchema,
+    credential_configurations_supported: {
+      $ref: "credential-configurations-supported",
+    },
     notification_endpoint: {
       type: "string",
       format: "uri",

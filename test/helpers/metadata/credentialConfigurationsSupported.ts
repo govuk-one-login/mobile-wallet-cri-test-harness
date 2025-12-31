@@ -1,4 +1,5 @@
 export const credentialConfigurationsSupportedSchema = {
+  $id: "credential-configurations-supported",
   type: "object",
   patternProperties: {
     "^.*$": {

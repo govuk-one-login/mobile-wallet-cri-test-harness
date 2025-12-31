@@ -1,10 +1,15 @@
 import { isValidMetadata } from "./isValidMetadata";
+import { resetAjvInstance } from "../ajv/ajvInstance";
 
 const authServerUrl = "https://test-auth-server.gov.uk";
 const criUrl = "https://test-example-cri.gov.uk";
 const credentialConfigurationId = "TestCredential";
 
 describe("isValidMetadata", () => {
+  beforeEach(() => {
+    resetAjvInstance();
+  });
+
   it("should throw 'INVALID_METADATA' error when metadata does not comply with schema", async () => {
     const metadata = metadataBuilder().withOverrides({
       credential_configurations_supported: false,
