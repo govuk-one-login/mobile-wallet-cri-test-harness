@@ -41,15 +41,15 @@ export async function isValidMetadata(
 ): Promise<true> {
   const ajv = getAjvInstance();
 
-  const rulesValidator = ajv
+  const validator = ajv
     .addSchema(
       credentialConfigurationsSupportedSchema,
       "credentialConfigurationsSupported",
     )
     .compile<Metadata>(metadataSchema);
 
-  if (!rulesValidator(metadata)) {
-    const validationErrors = rulesValidator.errors;
+  if (!validator(metadata)) {
+    const validationErrors = validator.errors;
     throw new Error(
       `INVALID_METADATA: Metadata does not comply with the schema. ${JSON.stringify(validationErrors)}`,
     );
