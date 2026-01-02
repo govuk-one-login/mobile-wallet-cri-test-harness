@@ -750,4 +750,66 @@ describe("credentialConfigurationsSupportedSchema", () => {
       });
     });
   });
+
+  describe("Multiple Credentials", () => {
+    it("should return false when any are invalid", () => {
+      const data = {
+        InvalidCredential: {
+          format: "invalid_format",
+          doctype: "org.iso.18013.5.1.mDL",
+          cryptographic_binding_methods_supported: ["cose_key"],
+          credential_signing_alg_values_supported: ["ES256"],
+          credential_validity_period_max_days: 30,
+        },
+        SocialSecurityCredential: {
+          format: "jwt_vc_json",
+          credential_definition: {
+            type: ["VerifiableCredential", "SocialSecurityCredential"],
+          },
+          proof_types_supported: {
+            jwt: {
+              proof_signing_alg_values_supported: ["ES256"],
+            },
+          },
+          cryptographic_binding_methods_supported: ["did:key"],
+          credential_signing_alg_values_supported: ["ES256"],
+          credential_validity_period_max_days: 30,
+        },
+      };
+
+      const isValid = validate(data);
+
+      expect(isValid).toBe(false);
+    });
+
+    it("should return true when all are valid", () => {
+      const data = {
+        "org.iso.18013.5.1.mDL": {
+          format: "mso_mdoc",
+          doctype: "org.iso.18013.5.1.mDL",
+          cryptographic_binding_methods_supported: ["cose_key"],
+          credential_signing_alg_values_supported: ["ES256"],
+          credential_validity_period_max_days: 30,
+        },
+        SocialSecurityCredential: {
+          format: "jwt_vc_json",
+          credential_definition: {
+            type: ["VerifiableCredential", "SocialSecurityCredential"],
+          },
+          proof_types_supported: {
+            jwt: {
+              proof_signing_alg_values_supported: ["ES256"],
+            },
+          },
+          cryptographic_binding_methods_supported: ["did:key"],
+          credential_signing_alg_values_supported: ["ES256"],
+          credential_validity_period_max_days: 30,
+        },
+      };
+
+      const isValid = validate(data);
+
+      expect(isValid).toBe(true);
+    });
+  });
 });
