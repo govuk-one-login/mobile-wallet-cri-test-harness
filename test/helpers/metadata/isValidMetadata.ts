@@ -38,6 +38,7 @@ export async function isValidMetadata(
   authServerUrl: string,
   credentialFormat: string,
   credentialConfigurationId: string,
+  hasNotificationEndpoint: boolean,
 ): Promise<true> {
   const ajv = getAjvInstance();
 
@@ -83,19 +84,30 @@ export async function isValidMetadata(
     );
   }
 
-  const notificationEndpoint = criUrl + "/notification";
-  if (
-    metadata.notification_endpoint &&
-    metadata.notification_endpoint !== notificationEndpoint
-  ) {
-    throw new Error(
-      `INVALID_METADATA: Invalid "notification_endpoint" value. Should be ${notificationEndpoint} but found ${metadata.notification_endpoint}`,
-    );
+  if (hasNotificationEndpoint) {
+    const notificationEndpoint = criUrl + "/notification";
+    if (!metadata.notification_endpoint) {
+      throw new Error(
+        "INVALID_METADATA: Invalid metadata. Missing notification_endpoint",
+      );
+    }
+
+    if (metadata.notification_endpoint !== notificationEndpoint) {
+      throw new Error(
+        `INVALID_METADATA: Invalid "notification_endpoint" value. Should be ${notificationEndpoint} but found ${metadata.notification_endpoint}`,
+      );
+    }
   }
 
   if (credentialFormat === "mdoc") {
     const iacasEndpoint = criUrl + "/iacas";
-    if (!metadata.mdoc_iacas_uri || metadata.mdoc_iacas_uri !== iacasEndpoint) {
+    if (!metadata.mdoc_iacas_uri) {
+      throw new Error(
+        "INVALID_METADATA: Invalid metadata. Missing mdoc_iacas_uri",
+      );
+    }
+
+    if (metadata.mdoc_iacas_uri !== iacasEndpoint) {
       throw new Error(
         `INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be ${iacasEndpoint} but found ${metadata.mdoc_iacas_uri}`,
       );

@@ -3,6 +3,7 @@ import {
   getCredentialFormat,
   getCredentialOfferDeepLink,
   getCriUrl,
+  getHasNotificationEndpoint,
   getSelfURL,
   getWalletSubjectId,
 } from "../src/config";
@@ -148,6 +149,7 @@ describe("Credential Issuer Tests", () => {
             SELF_URL,
             CREDENTIAL_FORMAT,
             CREDENTIAL_CONFIGURATION_ID,
+            getHasNotificationEndpoint() === "true",
           ),
         ).toBe(true);
       });

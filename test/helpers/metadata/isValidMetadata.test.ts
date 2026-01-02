@@ -1,16 +1,39 @@
 import { isValidMetadata } from "./isValidMetadata";
-import { resetAjvInstance } from "../ajv/ajvInstance";
+import { getAjvInstance } from "../ajv/ajvInstance";
+import { ErrorObject, ValidateFunction } from "ajv";
 
-const authServerUrl = "https://test-auth-server.gov.uk";
-const criUrl = "https://test-example-cri.gov.uk";
+const criUrl = "https://cri.example.com";
+const authServerUrl = "https://auth.example.com";
+const credentialFormat = "jwt";
 const credentialConfigurationId = "TestCredential";
+const hasNotificationEndpoint = false;
+
+jest.mock("../ajv/ajvInstance", () => ({
+  getAjvInstance: jest.fn(),
+}));
 
 describe("isValidMetadata", () => {
   beforeEach(() => {
-    resetAjvInstance();
+    jest.clearAllMocks();
+    (getAjvInstance as jest.Mock).mockReturnValue({
+      addSchema: jest.fn().mockReturnThis(),
+      compile: jest.fn().mockReturnValue(jest.fn().mockReturnValue(true)),
+    });
   });
 
   it("should throw 'INVALID_METADATA' error when metadata does not comply with schema", async () => {
+    const mockValidator = jest
+      .fn()
+      .mockReturnValue(false) as unknown as ValidateFunction;
+    mockValidator.errors = [
+      { message: "mock AJV error" } as unknown as ErrorObject,
+    ];
+    const mockAjv = {
+      addSchema: jest.fn().mockReturnThis(),
+      compile: jest.fn().mockReturnValue(mockValidator),
+    };
+    (getAjvInstance as jest.Mock).mockReturnValue(mockAjv);
+
     const metadata = metadataBuilder().withOverrides({
       credential_configurations_supported: false,
     });
@@ -20,11 +43,12 @@ describe("isValidMetadata", () => {
         metadata,
         criUrl,
         authServerUrl,
-        "jwt",
+        credentialFormat,
         credentialConfigurationId,
+        hasNotificationEndpoint,
       ),
     ).rejects.toThrow(
-      "INVALID_METADATA: Metadata does not comply with the schema.",
+      'INVALID_METADATA: Metadata does not comply with the schema. [{"message":"mock AJV error"}]',
     );
   });
 
@@ -38,11 +62,12 @@ describe("isValidMetadata", () => {
         metadata,
         criUrl,
         authServerUrl,
-        "jwt",
+        credentialFormat,
         credentialConfigurationId,
+        hasNotificationEndpoint,
       ),
     ).rejects.toThrow(
-      'INVALID_METADATA: Invalid "credential_issuer" value. Should be https://test-example-cri.gov.uk but found https://something-else.com/',
+      'INVALID_METADATA: Invalid "credential_issuer" value. Should be https://cri.example.com but found https://something-else.com/',
     );
   });
 
@@ -56,11 +81,12 @@ describe("isValidMetadata", () => {
         metadata,
         criUrl,
         authServerUrl,
-        "jwt",
+        credentialFormat,
         credentialConfigurationId,
+        hasNotificationEndpoint,
       ),
     ).rejects.toThrow(
-      'INVALID_METADATA: Invalid "authorization_servers" value. Should contain https://test-auth-server.gov.uk but only contains https://something-else.com/',
+      'INVALID_METADATA: Invalid "authorization_servers" value. Should contain https://auth.example.com but only contains https://something-else.com/',
     );
   });
 
@@ -74,24 +100,19 @@ describe("isValidMetadata", () => {
         metadata,
         criUrl,
         authServerUrl,
-        "jwt",
+        credentialFormat,
         credentialConfigurationId,
+        hasNotificationEndpoint,
       ),
     ).rejects.toThrow(
-      'INVALID_METADATA: Invalid "credential_endpoint" value. Should be https://test-example-cri.gov.uk/credential but found https://something-else.com/something',
+      'INVALID_METADATA: Invalid "credential_endpoint" value. Should be https://cri.example.com/credential but found https://something-else.com/something',
     );
   });
 
   it("should throw 'INVALID_METADATA' error when credential is not in 'credential_configurations_supported'", async () => {
     const metadata = metadataBuilder().withOverrides({
       credential_configurations_supported: {
-        AnotherCredential: {
-          format: "mso_mdoc",
-          doctype: "AnotherCredential",
-          cryptographic_binding_methods_supported: ["cose_key"],
-          credential_signing_alg_values_supported: ["ES256"],
-          credential_validity_period_max_days: 30,
-        },
+        UnknownCredential: {},
       },
     });
 
@@ -100,33 +121,73 @@ describe("isValidMetadata", () => {
         metadata,
         criUrl,
         authServerUrl,
-        "jwt",
+        credentialFormat,
         credentialConfigurationId,
+        hasNotificationEndpoint,
       ),
     ).rejects.toThrow(
       'INVALID_METADATA: Invalid "credential_configurations_supported" value. Missing credential TestCredential',
     );
   });
 
-  it("should throw 'INVALID_METADATA' error when 'notification_endpoint' is invalid", async () => {
-    const metadata = metadataBuilder().withOverrides({
-      notification_endpoint: "https://something-else.com/something",
+  describe("given the credential issuer implements the notification endpoint", () => {
+    it("should throw 'INVALID_METADATA' error when 'notification_endpoint' is mising", async () => {
+      const metadata = metadataBuilder().withOverrides({
+        notification_endpoint: undefined,
+      });
+
+      await expect(
+        isValidMetadata(
+          metadata,
+          criUrl,
+          authServerUrl,
+          credentialFormat,
+          credentialConfigurationId,
+          true,
+        ),
+      ).rejects.toThrow(
+        "INVALID_METADATA: Invalid metadata. Missing notification_endpoint",
+      );
     });
 
-    await expect(
-      isValidMetadata(
-        metadata,
-        criUrl,
-        authServerUrl,
-        "jwt",
-        credentialConfigurationId,
-      ),
-    ).rejects.toThrow(
-      'INVALID_METADATA: Invalid "notification_endpoint" value. Should be https://test-example-cri.gov.uk/notification but found https://something-else.com/something',
-    );
+    it("should throw 'INVALID_METADATA' error when 'notification_endpoint' is invalid", async () => {
+      const metadata = metadataBuilder().withOverrides({
+        notification_endpoint: "https://something-else.com/something",
+      });
+
+      await expect(
+        isValidMetadata(
+          metadata,
+          criUrl,
+          authServerUrl,
+          credentialFormat,
+          credentialConfigurationId,
+          true,
+        ),
+      ).rejects.toThrow(
+        'INVALID_METADATA: Invalid "notification_endpoint" value. Should be https://cri.example.com/notification but found https://something-else.com/something',
+      );
+    });
+
+    it("should return true when 'notification_endpoint' is valid", async () => {
+      const metadata = metadataBuilder().withOverrides({
+        notification_endpoint: criUrl + "/notification",
+      });
+
+      expect(
+        await isValidMetadata(
+          metadata,
+          criUrl,
+          authServerUrl,
+          credentialFormat,
+          credentialConfigurationId,
+          true,
+        ),
+      ).toEqual(true);
+    });
   });
 
-  describe("given the credential format is mDOC", () => {
+  describe("given the credential format is mDoc ('mdoc')", () => {
     it("should throw 'INVALID_METADATA' error when 'mdoc_iacas_uri' is missing", async () => {
       const metadata = metadataBuilder().withDefaults();
 
@@ -137,9 +198,10 @@ describe("isValidMetadata", () => {
           authServerUrl,
           "mdoc",
           credentialConfigurationId,
+          hasNotificationEndpoint,
         ),
       ).rejects.toThrow(
-        'INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be https://test-example-cri.gov.uk/iacas but found undefined',
+        "INVALID_METADATA: Invalid metadata. Missing mdoc_iacas_uri",
       );
     });
 
@@ -155,15 +217,16 @@ describe("isValidMetadata", () => {
           authServerUrl,
           "mdoc",
           credentialConfigurationId,
+          hasNotificationEndpoint,
         ),
       ).rejects.toThrow(
-        'INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be https://test-example-cri.gov.uk/iacas but found https://something-else.com/something',
+        'INVALID_METADATA: Invalid "mdoc_iacas_uri" value. Should be https://cri.example.com/iacas but found https://something-else.com/something',
       );
     });
 
     it("should return true when metadata is valid", async () => {
       const metadata = metadataBuilder().withOverrides({
-        mdoc_iacas_uri: "https://test-example-cri.gov.uk/iacas",
+        mdoc_iacas_uri: criUrl + "/iacas",
       });
 
       expect(
@@ -173,12 +236,13 @@ describe("isValidMetadata", () => {
           authServerUrl,
           "mdoc",
           credentialConfigurationId,
+          hasNotificationEndpoint,
         ),
       ).toEqual(true);
     });
   });
 
-  describe("given the credential format is JWT", () => {
+  describe("given the credential format is JWT ('jwt')", () => {
     it("should return true when metadata is valid", async () => {
       const metadata = metadataBuilder().withDefaults();
 
@@ -189,43 +253,7 @@ describe("isValidMetadata", () => {
           authServerUrl,
           "jwt",
           credentialConfigurationId,
-        ),
-      ).toEqual(true);
-    });
-  });
-
-  describe("given the metadata contains 'notification_endpoint'", () => {
-    it("should return false when 'notification_endpoint' is invalid", async () => {
-      const metadata = metadataBuilder().withOverrides({
-        notification_endpoint:
-          "https://test-example-cri.gov.uk/invalid-notification-path",
-      });
-
-      await expect(
-        isValidMetadata(
-          metadata,
-          criUrl,
-          authServerUrl,
-          "mdoc",
-          credentialConfigurationId,
-        ),
-      ).rejects.toThrow(
-        'INVALID_METADATA: Invalid "notification_endpoint" value. Should be https://test-example-cri.gov.uk/notification but found https://test-example-cri.gov.uk/invalid-notification-path',
-      );
-    });
-
-    it("should return true when 'notification_endpoint' is valid", async () => {
-      const metadata = metadataBuilder().withOverrides({
-        notification_endpoint: "https://test-example-cri.gov.uk/notification",
-      });
-
-      expect(
-        await isValidMetadata(
-          metadata,
-          criUrl,
-          authServerUrl,
-          "jwt",
-          credentialConfigurationId,
+          hasNotificationEndpoint,
         ),
       ).toEqual(true);
     });
@@ -240,15 +268,7 @@ function metadataBuilder<T>(): {
     credential_issuer: criUrl,
     authorization_servers: [authServerUrl],
     credential_endpoint: criUrl + "/credential",
-    credential_configurations_supported: {
-      TestCredential: {
-        format: "mso_mdoc",
-        doctype: "TestCredential",
-        cryptographic_binding_methods_supported: ["cose_key"],
-        credential_signing_alg_values_supported: ["ES256"],
-        credential_validity_period_max_days: 30,
-      },
-    },
+    credential_configurations_supported: { TestCredential: {} },
   };
   return {
     withDefaults() {
