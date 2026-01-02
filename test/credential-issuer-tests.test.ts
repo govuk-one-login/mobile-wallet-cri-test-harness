@@ -143,14 +143,14 @@ describe("Credential Issuer Tests", () => {
 
       it("should return valid metadata", async () => {
         expect(
-          await isValidMetadata(
-            response.data,
-            CRI_URL,
-            SELF_URL,
-            CREDENTIAL_FORMAT,
-            CREDENTIAL_CONFIGURATION_ID,
-            getHasNotificationEndpoint() === "true",
-          ),
+          await isValidMetadata({
+            metadata: response.data,
+            criUrl: CRI_URL,
+            authServerUrl: SELF_URL,
+            credentialFormat: CREDENTIAL_FORMAT,
+            credentialConfigurationId: CREDENTIAL_CONFIGURATION_ID,
+            hasNotificationEndpoint: getHasNotificationEndpoint() === "true",
+          }),
         ).toBe(true);
       });
     });

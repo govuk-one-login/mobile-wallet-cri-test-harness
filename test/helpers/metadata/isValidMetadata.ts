@@ -32,14 +32,23 @@ export interface CredentialConfiguration {
   };
 }
 
-export async function isValidMetadata(
-  metadata: unknown,
-  criUrl: string,
-  authServerUrl: string,
-  credentialFormat: string,
-  credentialConfigurationId: string,
-  hasNotificationEndpoint: boolean,
-): Promise<true> {
+export interface IsValidMetadata {
+  metadata: unknown;
+  criUrl: string;
+  authServerUrl: string;
+  credentialFormat: string;
+  credentialConfigurationId: string;
+  hasNotificationEndpoint: boolean;
+}
+
+export async function isValidMetadata({
+  metadata,
+  criUrl,
+  authServerUrl,
+  credentialFormat,
+  credentialConfigurationId,
+  hasNotificationEndpoint,
+}: IsValidMetadata): Promise<true> {
   const ajv = getAjvInstance();
 
   const validator = ajv
