@@ -3,11 +3,11 @@ import {
   getCredentialFormat,
   getCredentialOfferDeepLink,
   getCriUrl,
+  getHasNotificationEndpoint,
   getSelfURL,
   getWalletSubjectId,
 } from "../src/config";
 import {
-  CredentialOffer,
   extractCredentialOffer,
   isValidCredentialOffer,
   parseAsJson,
@@ -58,6 +58,7 @@ let CREDENTIAL_OFFER_DEEP_LINK: string;
 let CRI_URL: string;
 let CRI_DOMAIN: string;
 let WALLET_SUBJECT_ID: string;
+let PRE_AUTHORIZED_CODE: string;
 let PRE_AUTHORIZED_CODE_PAYLOAD: JWTPayload;
 let CREDENTIAL_ENDPOINT: string;
 let NOTIFICATION_ENDPOINT: string | undefined;
@@ -68,17 +69,24 @@ let NONCE: UUID;
 let CLIENT_ID: string;
 let SELF_URL: string;
 let CREDENTIAL_FORMAT: string;
+let CREDENTIAL_CONFIGURATION_ID: string;
 
 describe("Credential Issuer Tests", () => {
   beforeAll(async () => {
     CREDENTIAL_OFFER_DEEP_LINK = getCredentialOfferDeepLink();
+    const credentialOffer = parseAsJson(
+      extractCredentialOffer(CREDENTIAL_OFFER_DEEP_LINK),
+    );
+    CREDENTIAL_CONFIGURATION_ID =
+      credentialOffer.credential_configuration_ids[0];
+    PRE_AUTHORIZED_CODE =
+      credentialOffer.grants[
+        "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+      ]["pre-authorized_code"];
+    PRE_AUTHORIZED_CODE_PAYLOAD = decodeJwt(PRE_AUTHORIZED_CODE);
     CRI_URL = getCriUrl();
     CRI_DOMAIN = new URL(CRI_URL).hostname;
     WALLET_SUBJECT_ID = getWalletSubjectId();
-    const preAuthorizedCode = extractPreAuthorizedCode(
-      CREDENTIAL_OFFER_DEEP_LINK,
-    );
-    PRE_AUTHORIZED_CODE_PAYLOAD = decodeJwt(preAuthorizedCode);
     const metadata = (await getMetadata(CRI_URL)).data;
     CREDENTIAL_ENDPOINT = metadata.credential_endpoint;
     NOTIFICATION_ENDPOINT = metadata.notification_endpoint;
@@ -103,13 +111,10 @@ describe("Credential Issuer Tests", () => {
 
       it("should be valid pre-authorized code", async () => {
         const jwks = (await getJwks(CRI_URL)).data.keys;
-        const preAuthorizedCode = extractPreAuthorizedCode(
-          CREDENTIAL_OFFER_DEEP_LINK,
-        );
 
         expect(
           await isValidPreAuthorizedCode(
-            preAuthorizedCode,
+            PRE_AUTHORIZED_CODE,
             jwks,
             CRI_URL,
             SELF_URL,
@@ -138,12 +143,14 @@ describe("Credential Issuer Tests", () => {
 
       it("should return valid metadata", async () => {
         expect(
-          await isValidMetadata(
-            response.data,
-            CRI_URL,
-            SELF_URL,
-            CREDENTIAL_FORMAT,
-          ),
+          await isValidMetadata({
+            metadata: response.data,
+            criUrl: CRI_URL,
+            authServerUrl: SELF_URL,
+            credentialFormat: CREDENTIAL_FORMAT,
+            credentialConfigurationId: CREDENTIAL_CONFIGURATION_ID,
+            hasNotificationEndpoint: getHasNotificationEndpoint() === "true",
+          }),
         ).toBe(true);
       });
     });
@@ -584,13 +591,6 @@ describe("Credential Issuer Tests", () => {
     });
   });
 });
-
-function extractPreAuthorizedCode(credentialOfferDeepLink: string) {
-  const credentialOffer = extractCredentialOffer(credentialOfferDeepLink);
-  return (parseAsJson(credentialOffer!) as CredentialOffer).grants[
-    "urn:ietf:params:oauth:grant-type:pre-authorized_code"
-  ]["pre-authorized_code"];
-}
 
 function makeSignatureInvalid(token: string) {
   return token + "makeSignatureInvalid";
