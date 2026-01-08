@@ -1,8 +1,143 @@
 export const isoNamespaceSchema = {
   $id: "iso-namespace",
   type: "array",
-  minItems: 18,
-  maxItems: 18,
+  allOf: [
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "family_name" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "given_name" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "birth_date" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "issue_date" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "expiry_date" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "issuing_country" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "issuing_authority" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "document_number" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "portrait" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "birth_place" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "driving_privileges" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "un_distinguishing_sign" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "resident_address" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "resident_postal_code" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+    {
+      contains: {
+        type: "object",
+        properties: {
+          elementIdentifier: { const: "resident_city" },
+        },
+        required: ["elementIdentifier"],
+      },
+    },
+  ],
   items: {
     type: "object",
     required: ["digestID", "elementIdentifier", "random", "elementValue"],
