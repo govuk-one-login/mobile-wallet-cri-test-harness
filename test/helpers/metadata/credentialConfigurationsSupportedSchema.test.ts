@@ -605,6 +605,32 @@ describe("credentialConfigurationsSupportedSchema", () => {
           }),
         );
       });
+
+      it("should return true if there are additional properties", () => {
+        const data = {
+          SocialSecurityCredential: {
+            format: "jwt_vc_json",
+            credential_definition: {
+              type: ["VerifiableCredential", "SocialSecurityCredential"],
+              extra_property: "allowed",
+            },
+            proof_types_supported: {
+              extra_property: "allowed",
+              jwt: {
+                proof_signing_alg_values_supported: ["ES256"],
+                extra_property: "allowed",
+              },
+            },
+            cryptographic_binding_methods_supported: ["did:key"],
+            credential_signing_alg_values_supported: ["ES256"],
+            credential_validity_period_max_days: 30,
+          },
+        };
+
+        const isValid = validate(data);
+
+        expect(isValid).toBe(true);
+      });
     });
 
     describe("cryptographic_binding_methods_supported", () => {

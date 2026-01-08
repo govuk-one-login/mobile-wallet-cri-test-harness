@@ -4,6 +4,7 @@ export const credentialConfigurationsSupportedSchema = {
   patternProperties: {
     "^.*$": {
       type: "object",
+      additionalProperties: true,
       properties: {
         format: {
           type: "string",
@@ -28,7 +29,6 @@ export const credentialConfigurationsSupportedSchema = {
           format: "uri",
         },
       },
-      additionalProperties: true,
       required: [
         "format",
         "cryptographic_binding_methods_supported",
@@ -57,6 +57,7 @@ export const credentialConfigurationsSupportedSchema = {
           properties: {
             credential_definition: {
               type: "object",
+              additionalProperties: true,
               properties: {
                 type: {
                   type: "array",
@@ -70,9 +71,11 @@ export const credentialConfigurationsSupportedSchema = {
             },
             proof_types_supported: {
               type: "object",
+              additionalProperties: true,
               properties: {
                 jwt: {
                   type: "object",
+                  additionalProperties: true,
                   properties: {
                     proof_signing_alg_values_supported: {
                       type: "array",
