@@ -14,7 +14,8 @@ import { NAMESPACES } from "./constants/namespaces";
 /**
  * Validates a base64url-encoded mDL credential string.
  *
- * @param credential - The base64url-encoded credential string.
+ * @param credential - Base64url-encoded credential.
+ * @param rootCertificatePem - Root certificate in PEM format.
  * @returns true if the credential is valid; otherwise, throws an error.
  */
 export async function isValidCredential(
@@ -24,18 +25,15 @@ export async function isValidCredential(
   const cborBytes = base64UrlToUint8Array(credential);
 
   /*
-  We intentionally decode the SAME CBOR payload twice.
-  1. cborDecoder(cborBytes)         → preserves CBOR tags
-  (used in validateNamespacesCborTags to check correct tagging compliance)
-
-  2. cborDecoder(cborBytes, TAGS)   → normalises/removes CBOR tags
-  (used in cborDecoder to produce a usable IssuerSigned object)
+  The CBOR bytes are intentionally decoded twice.
+  1. issuerSignedDecoder(cborBytes)         → preserves CBOR tags
+  2. issuerSignedDecoder(cborBytes, tags)   → removes CBOR tags
 
   This may seem redundant, but it's required:
-  - The first decode ensures that required CBOR tags are present and valid.
-  - The second decode converts tagged structures into plain JavaScript values.
+  - The first decoding ensures the required CBOR tags are present so they can be validated in validateTags.
+  - The second decoding converts tagged structures into plain JavaScript values.
 
-  Skipping either step would either leave tag data unchecked, or produce objects that are harder to validate.
+  Skipping either step would either leave tag data unchecked or produce objects that are harder to validate.
   */
   const taggedIssuerSigned: TaggedIssuerSigned = issuerSignedDecoder(cborBytes);
   validateTags(taggedIssuerSigned);
