@@ -4,10 +4,12 @@ import "cbor2/types";
 import { validateTags } from "./validateTags";
 import { validateIssuerAuth } from "./validateIssuerAuth";
 import { TAGS } from "./constants/tags";
-import { validaNamespaces } from "./validateNamespaces";
+import { validatePortrait } from "./validatePortrait";
 import { errorMessage, MDLValidationError } from "./MDLValidationError";
 import { IssuerSigned, TaggedIssuerSigned } from "./types/issuerSigned";
 import { validateIssuerSignedSchema } from "./validateIssuerSigned";
+import { validateDigestIds } from "./validateDigestIds";
+import { NAMESPACES } from "./constants/namespaces";
 
 /**
  * Validates a base64url-encoded mDL credential string.
@@ -42,7 +44,8 @@ export async function isValidCredential(
 
   validateIssuerSignedSchema(issuerSigned);
 
-  validaNamespaces(issuerSigned);
+  validateDigestIds(issuerSigned.nameSpaces);
+  validatePortrait(issuerSigned.nameSpaces[NAMESPACES.ISO]);
 
   await validateIssuerAuth(
     issuerSigned.issuerAuth,
