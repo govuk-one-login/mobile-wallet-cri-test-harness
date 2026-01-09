@@ -1,5 +1,6 @@
 import { getAjvInstance } from "../../../ajv/ajvInstance";
 import { domesticNamespaceSchema } from "./domesticNamespaceSchema";
+import { testIssuerSignedItemsBuilder } from "./testIssuerSignedItemsBuilder";
 
 describe("domesticNamespaceSchema", () => {
   const ajv = getAjvInstance();
@@ -20,7 +21,10 @@ describe("domesticNamespaceSchema", () => {
   });
 
   it("should return false if array does not contain objects only", () => {
-    const data = ["string", ...dataBuilder().withDefaults()];
+    const data = [
+      "string",
+      ...testIssuerSignedItemsBuilder(defaultData).withDefaults(),
+    ];
 
     const isValid = validate(data);
 
@@ -34,7 +38,10 @@ describe("domesticNamespaceSchema", () => {
   });
 
   it("should return false if required object with elementIdentifier 'welsh_licence' is missing", () => {
-    const data = dataBuilder().withMissingRequiredElement("welsh_licence");
+    const data =
+      testIssuerSignedItemsBuilder(defaultData).withMissingRequiredElement(
+        "welsh_licence",
+      );
 
     const isValid = validate(data);
 
@@ -51,7 +58,7 @@ describe("domesticNamespaceSchema", () => {
   describe("IssuerSignedItem", () => {
     describe("digestID", () => {
       it("should return false if it is missing", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           digestID: undefined,
           elementIdentifier: "welsh_licence",
         });
@@ -68,7 +75,7 @@ describe("domesticNamespaceSchema", () => {
       });
 
       it("should return false if it is smaller than 0", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           digestID: -1,
           elementIdentifier: "welsh_licence",
         });
@@ -85,7 +92,7 @@ describe("domesticNamespaceSchema", () => {
       });
 
       it("should return false if it is larger than 2147483648", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           digestID: 2147483649,
           elementIdentifier: "welsh_licence",
         });
@@ -104,7 +111,7 @@ describe("domesticNamespaceSchema", () => {
 
     describe("random", () => {
       it("should return false if it is missing", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           random: undefined,
           elementIdentifier: "welsh_licence",
         });
@@ -121,7 +128,7 @@ describe("domesticNamespaceSchema", () => {
       });
 
       it("should return false if it is not a Uint8Array", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           random: "not Uint8Array",
           elementIdentifier: "welsh_licence",
         });
@@ -147,7 +154,7 @@ describe("domesticNamespaceSchema", () => {
             elementIdentifier: undefined,
             elementValue: "some value",
           },
-          ...dataBuilder().withDefaults(),
+          ...testIssuerSignedItemsBuilder(defaultData).withDefaults(),
         ];
 
         const isValid = validate(data);
@@ -169,7 +176,7 @@ describe("domesticNamespaceSchema", () => {
             elementIdentifier: "unknownElementIdentifier",
             elementValue: "some value",
           },
-          ...dataBuilder().withDefaults(),
+          ...testIssuerSignedItemsBuilder(defaultData).withDefaults(),
         ];
 
         const isValid = validate(data);
@@ -194,7 +201,7 @@ describe("domesticNamespaceSchema", () => {
     describe("elementValue", () => {
       describe("title", () => {
         it("should return false if it is not string", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "title",
             elementValue: 123,
           });
@@ -213,7 +220,7 @@ describe("domesticNamespaceSchema", () => {
 
       describe("welsh_licence", () => {
         it("should return false if it is not boolean", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "welsh_licence",
             elementValue: "not boolean",
           });
@@ -232,7 +239,7 @@ describe("domesticNamespaceSchema", () => {
 
       describe("provisional_driving_privileges", () => {
         it("should return false if it is not array", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "provisional_driving_privileges",
             elementValue: "not array",
           });
@@ -249,7 +256,7 @@ describe("domesticNamespaceSchema", () => {
         });
 
         it("should return false if array does not contain objects only", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "provisional_driving_privileges",
             elementValue: ["string", { vehicle_category_code: "A" }],
           });
@@ -266,7 +273,7 @@ describe("domesticNamespaceSchema", () => {
         });
 
         it("should return false if driving privilege object is missing 'vehicle_category_code'", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "provisional_driving_privileges",
             elementValue: [{ vehicle_category_code: undefined }],
           });
@@ -283,7 +290,7 @@ describe("domesticNamespaceSchema", () => {
         });
 
         it("should return false if 'vehicle_category_code' is not string", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "provisional_driving_privileges",
             elementValue: [{ vehicle_category_code: 123 }],
           });
@@ -300,7 +307,7 @@ describe("domesticNamespaceSchema", () => {
         });
 
         it("should return false if 'issue_date' is not in the format YYYY-MM-DD", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "provisional_driving_privileges",
             elementValue: [
               { vehicle_category_code: "B", issue_date: "09-12-2020" },
@@ -319,7 +326,7 @@ describe("domesticNamespaceSchema", () => {
         });
 
         it("should return false if 'expiry_date' is not in the format YYYY-MM-DD", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "provisional_driving_privileges",
             elementValue: [
               { vehicle_category_code: "B", expiry_date: "09-12-2024" },
@@ -341,7 +348,7 @@ describe("domesticNamespaceSchema", () => {
   });
 
   it("should return true when data is valid", () => {
-    const data = dataBuilder().withDefaults();
+    const data = testIssuerSignedItemsBuilder(defaultData).withDefaults();
 
     const isValid = validate(data);
 
@@ -349,12 +356,7 @@ describe("domesticNamespaceSchema", () => {
   });
 });
 
-const data: {
-  digestID: any;
-  elementIdentifier: any;
-  random: any;
-  elementValue: any;
-}[] = [
+const defaultData = [
   {
     digestID: 1,
     elementIdentifier: "welsh_licence",
@@ -380,37 +382,3 @@ const data: {
     ],
   },
 ];
-
-function dataBuilder(): {
-  withDefaults();
-  withOverrides(overrideItem: {
-    digestID?: any;
-    elementIdentifier?: any;
-    random?: any;
-    elementValue?: any;
-  });
-  withMissingRequiredElement(elementIdentifier: string);
-} {
-  return {
-    withDefaults() {
-      return data;
-    },
-    withOverrides(overrideItem: {
-      digestID?: any;
-      elementIdentifier?: any;
-      random?: any;
-      elementValue?: any;
-    }) {
-      return data.map((defaultItem) =>
-        defaultItem.elementIdentifier === overrideItem.elementIdentifier
-          ? { ...defaultItem, ...overrideItem }
-          : defaultItem,
-      );
-    },
-    withMissingRequiredElement(elementIdentifier: string) {
-      return data.filter(function (defaultItem) {
-        return defaultItem.elementIdentifier !== elementIdentifier;
-      });
-    },
-  };
-}

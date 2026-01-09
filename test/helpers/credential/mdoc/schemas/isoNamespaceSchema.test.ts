@@ -1,5 +1,6 @@
 import { getAjvInstance } from "../../../ajv/ajvInstance";
 import { isoNamespaceSchema } from "./isoNamespaceSchema";
+import { testIssuerSignedItemsBuilder } from "./testIssuerSignedItemsBuilder";
 
 describe("isoNamespaceSchema", () => {
   const ajv = getAjvInstance();
@@ -20,7 +21,10 @@ describe("isoNamespaceSchema", () => {
   });
 
   it("should return false if array does not contain objects only", () => {
-    const data = ["string", ...dataBuilder().withDefaults()];
+    const data = [
+      "string",
+      ...testIssuerSignedItemsBuilder(defaultData).withDefaults(),
+    ];
 
     const isValid = validate(data);
 
@@ -52,7 +56,10 @@ describe("isoNamespaceSchema", () => {
   ])(
     "should return false if required object with elementIdentifier '%s' is missing",
     (elementIdentifier) => {
-      const data = dataBuilder().withMissingRequiredElement(elementIdentifier);
+      const data =
+        testIssuerSignedItemsBuilder(defaultData).withMissingRequiredElement(
+          elementIdentifier,
+        );
 
       const isValid = validate(data);
 
@@ -69,7 +76,7 @@ describe("isoNamespaceSchema", () => {
   describe("IssuerSignedItem", () => {
     describe("digestID", () => {
       it("should return false if it is missing", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           digestID: undefined,
           elementIdentifier: "family_name",
         });
@@ -86,7 +93,7 @@ describe("isoNamespaceSchema", () => {
       });
 
       it("should return false if it is smaller than 0", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           digestID: -1,
           elementIdentifier: "family_name",
         });
@@ -103,7 +110,7 @@ describe("isoNamespaceSchema", () => {
       });
 
       it("should return false if it is larger than 2147483648", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           digestID: 2147483649,
           elementIdentifier: "family_name",
         });
@@ -122,7 +129,7 @@ describe("isoNamespaceSchema", () => {
 
     describe("random", () => {
       it("should return false if it is missing", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           random: undefined,
           elementIdentifier: "family_name",
         });
@@ -139,7 +146,7 @@ describe("isoNamespaceSchema", () => {
       });
 
       it("should return false if it is not a Uint8Array", () => {
-        const data = dataBuilder().withOverrides({
+        const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
           random: "not Uint8Array",
           elementIdentifier: "family_name",
         });
@@ -165,7 +172,7 @@ describe("isoNamespaceSchema", () => {
             elementIdentifier: undefined,
             elementValue: "some value",
           },
-          ...dataBuilder().withDefaults(),
+          ...testIssuerSignedItemsBuilder(defaultData).withDefaults(),
         ];
 
         const isValid = validate(data);
@@ -187,7 +194,7 @@ describe("isoNamespaceSchema", () => {
             elementIdentifier: "unknownElementIdentifier",
             elementValue: "some value",
           },
-          ...dataBuilder().withDefaults(),
+          ...testIssuerSignedItemsBuilder(defaultData).withDefaults(),
         ];
 
         const isValid = validate(data);
@@ -227,7 +234,7 @@ describe("isoNamespaceSchema", () => {
     describe("elementValue", () => {
       describe("family_name", () => {
         it("should return false if it is not string", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "family_name",
             elementValue: 123,
           });
@@ -246,7 +253,7 @@ describe("isoNamespaceSchema", () => {
 
       describe("age_over_18", () => {
         it("should return false if it is not boolean", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "age_over_18",
             elementValue: 123,
           });
@@ -265,7 +272,7 @@ describe("isoNamespaceSchema", () => {
 
       describe("birth_date", () => {
         it("should return false if it is not in the format YYYY-MM-DD", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "birth_date",
             elementValue: "01-01-1990",
           });
@@ -284,7 +291,7 @@ describe("isoNamespaceSchema", () => {
 
       describe("driving_privileges", () => {
         it("should return false if it is not array", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "driving_privileges",
             elementValue: { vehicle_category_code: "B" },
           });
@@ -301,7 +308,7 @@ describe("isoNamespaceSchema", () => {
         });
 
         it("should return false if array does not contain objects only", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "driving_privileges",
             elementValue: ["string", { vehicle_category_code: "B" }],
           });
@@ -318,7 +325,7 @@ describe("isoNamespaceSchema", () => {
         });
 
         it("should return false if driving privilege object is missing 'vehicle_category_code'", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "driving_privileges",
             elementValue: [{ issue_date: "2024-09-12" }],
           });
@@ -335,7 +342,7 @@ describe("isoNamespaceSchema", () => {
         });
 
         it("should return false if 'vehicle_category_code' is not string", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "driving_privileges",
             elementValue: [
               { vehicle_category_code: 1, issue_date: "2024-09-12" },
@@ -356,7 +363,7 @@ describe("isoNamespaceSchema", () => {
 
       describe("portrait", () => {
         it("should return false if it is not a Uint8Array", () => {
-          const data = dataBuilder().withOverrides({
+          const data = testIssuerSignedItemsBuilder(defaultData).withOverrides({
             elementIdentifier: "portrait",
             elementValue: "not Uint8Array",
           });
@@ -376,7 +383,7 @@ describe("isoNamespaceSchema", () => {
   });
 
   it("should return true when data is valid", () => {
-    const data = dataBuilder().withDefaults();
+    const data = testIssuerSignedItemsBuilder(defaultData).withDefaults();
 
     const isValid = validate(data);
 
@@ -384,12 +391,7 @@ describe("isoNamespaceSchema", () => {
   });
 });
 
-const data: {
-  digestID: any;
-  elementIdentifier: any;
-  random: any;
-  elementValue: any;
-}[] = [
+const defaultData = [
   {
     digestID: 0,
     elementIdentifier: "family_name",
@@ -499,37 +501,3 @@ const data: {
     elementValue: true,
   },
 ];
-
-function dataBuilder(): {
-  withDefaults();
-  withOverrides(overrideItem: {
-    digestID?: any;
-    elementIdentifier?: any;
-    random?: any;
-    elementValue?: any;
-  });
-  withMissingRequiredElement(elementIdentifier: string);
-} {
-  return {
-    withDefaults() {
-      return data;
-    },
-    withOverrides(overrideItem: {
-      digestID?: any;
-      elementIdentifier?: any;
-      random?: any;
-      elementValue?: any;
-    }) {
-      return data.map((defaultItem) =>
-        defaultItem.elementIdentifier === overrideItem.elementIdentifier
-          ? { ...defaultItem, ...overrideItem }
-          : defaultItem,
-      );
-    },
-    withMissingRequiredElement(elementIdentifier: string) {
-      return data.filter(function (defaultItem) {
-        return defaultItem.elementIdentifier !== elementIdentifier;
-      });
-    },
-  };
-}
