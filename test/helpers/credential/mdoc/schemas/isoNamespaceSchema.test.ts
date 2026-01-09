@@ -33,20 +33,38 @@ describe("isoNamespaceSchema", () => {
     );
   });
 
-  it("should return false if required object with elementIdentifier 'family_name' is missing", () => {
-    const data = dataBuilder().withMissingRequiredFamilyName();
+  it.each([
+    "family_name",
+    "given_name",
+    "birth_date",
+    "issue_date",
+    "expiry_date",
+    "issuing_country",
+    "issuing_authority",
+    "document_number",
+    "portrait",
+    "birth_place",
+    "driving_privileges",
+    "un_distinguishing_sign",
+    "resident_address",
+    "resident_postal_code",
+    "resident_city",
+  ])(
+    "should return false if required object with elementIdentifier '%s' is missing",
+    (elementIdentifier) => {
+      const data = dataBuilder().withMissingRequiredElement(elementIdentifier);
 
-    const isValid = validate(data);
+      const isValid = validate(data);
 
-    expect(isValid).toBe(false);
-    expect(validate.errors).toContainEqual(
-      expect.objectContaining({
-        instancePath: "/0/elementIdentifier",
-        message: "must be equal to constant",
-        params: { allowedValue: "family_name" },
-      }),
-    );
-  });
+      expect(isValid).toBe(false);
+      expect(validate.errors).toContainEqual(
+        expect.objectContaining({
+          message: "must be equal to constant",
+          params: { allowedValue: elementIdentifier },
+        }),
+      );
+    },
+  );
 
   describe("IssuerSignedItem", () => {
     describe("digestID", () => {
@@ -490,7 +508,7 @@ function dataBuilder(): {
     random?: any;
     elementValue?: any;
   });
-  withMissingRequiredFamilyName();
+  withMissingRequiredElement(elementIdentifier: string);
 } {
   return {
     withDefaults() {
@@ -508,9 +526,9 @@ function dataBuilder(): {
           : defaultItem,
       );
     },
-    withMissingRequiredFamilyName() {
+    withMissingRequiredElement(elementIdentifier: string) {
       return data.filter(function (defaultItem) {
-        return defaultItem.elementIdentifier !== "family_name";
+        return defaultItem.elementIdentifier !== elementIdentifier;
       });
     },
   };
