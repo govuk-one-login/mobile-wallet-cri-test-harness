@@ -1,8 +1,13 @@
 export const domesticNamespaceSchema = {
   $id: "domestic-namespace",
   type: "array",
-  minItems: 2,
-  maxItems: 3,
+  contains: {
+    type: "object",
+    properties: {
+      elementIdentifier: { const: "welsh_licence" },
+    },
+    required: ["elementIdentifier"],
+  },
   items: {
     type: "object",
     required: ["digestID", "elementIdentifier", "random", "elementValue"],

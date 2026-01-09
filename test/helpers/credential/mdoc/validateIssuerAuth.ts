@@ -11,6 +11,13 @@ import {
   ValidityInfo,
   ValueDigests,
 } from "./types/mobileSecurityObject";
+import {
+  COSE_ALGORITHMS,
+  COSE_ELLIPTIC_CURVES,
+  COSE_HEADER_PARAMETERS,
+  COSE_KEY_PARAMETERS,
+  COSE_KEY_TYPES,
+} from "./constants/cose";
 
 const tags = new Map([
   [
@@ -58,13 +65,16 @@ function validateProtectedHeader(protectedHeader: Uint8Array): void {
       "INVALID_PROTECTED_HEADER",
     );
   }
-  if (!protectedHeaderDecoded.has(1)) {
+  if (!protectedHeaderDecoded.has(COSE_HEADER_PARAMETERS.ALG)) {
     throw new MDLValidationError(
       'Protected header missing "alg" (1)',
       "INVALID_PROTECTED_HEADER",
     );
   }
-  if (protectedHeaderDecoded.get(1) !== -7) {
+  if (
+    protectedHeaderDecoded.get(COSE_HEADER_PARAMETERS.ALG) !==
+    COSE_ALGORITHMS.ES256
+  ) {
     throw new MDLValidationError(
       'Protected header "alg" must be -7 (ES256)',
       "INVALID_PROTECTED_HEADER",
@@ -82,14 +92,14 @@ async function validateUnprotectedHeader(
       "INVALID_UNPROTECTED_HEADER",
     );
   }
-  if (!unprotectedHeader.has(33)) {
+  if (!unprotectedHeader.has(COSE_HEADER_PARAMETERS.X5_CHAIN)) {
     throw new MDLValidationError(
       'Unprotected header missing "x5chain" (33)',
       "INVALID_UNPROTECTED_HEADER",
     );
   }
 
-  const x5chain = unprotectedHeader.get(33)!;
+  const x5chain = unprotectedHeader.get(COSE_HEADER_PARAMETERS.X5_CHAIN)!;
 
   let certificate: X509Certificate;
   try {
@@ -206,7 +216,12 @@ function validateDigests(
 async function validateDeviceKey(
   deviceKey: Map<unknown, unknown>,
 ): Promise<void> {
-  const requiredKeys = [1, -1, -2, -3];
+  const requiredKeys = [
+    COSE_KEY_PARAMETERS.KTY,
+    COSE_KEY_PARAMETERS.EC2_CRV,
+    COSE_KEY_PARAMETERS.EC2_X,
+    COSE_KEY_PARAMETERS.EC2_Y,
+  ];
   const keys = new Set(deviceKey.keys());
 
   if (
@@ -219,27 +234,29 @@ async function validateDeviceKey(
     );
   }
 
-  if (deviceKey.get(1) !== 2) {
+  if (deviceKey.get(COSE_KEY_PARAMETERS.KTY) !== COSE_KEY_TYPES.EC2) {
     throw new MDLValidationError(
       "DeviceKey key type (1) must be EC2 (Elliptic Curve) (2)",
       "INVALID_DEVICE_KEY",
     );
   }
 
-  if (deviceKey.get(-1) !== 1) {
+  if (
+    deviceKey.get(COSE_KEY_PARAMETERS.EC2_CRV) !== COSE_ELLIPTIC_CURVES.P_256
+  ) {
     throw new MDLValidationError(
       "DeviceKey curve (-1) must be P-256 (1)",
       "INVALID_DEVICE_KEY",
     );
   }
 
-  if (!(deviceKey.get(-2) instanceof Uint8Array)) {
+  if (!(deviceKey.get(COSE_KEY_PARAMETERS.EC2_X) instanceof Uint8Array)) {
     throw new MDLValidationError(
       "DeviceKey x-coordinate (-2) must be a Uint8Array",
       "INVALID_DEVICE_KEY",
     );
   }
-  if (!(deviceKey.get(-3) instanceof Uint8Array)) {
+  if (!(deviceKey.get(COSE_KEY_PARAMETERS.EC2_Y) instanceof Uint8Array)) {
     throw new MDLValidationError(
       "DeviceKey y-coordinate (-3) must be a Uint8Array",
       "INVALID_DEVICE_KEY",
