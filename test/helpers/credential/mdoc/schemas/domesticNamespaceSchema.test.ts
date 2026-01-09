@@ -34,7 +34,7 @@ describe("domesticNamespaceSchema", () => {
   });
 
   it("should return false if required object with elementIdentifier 'welsh_licence' is missing", () => {
-    const data = dataBuilder().withMissingRequiredWelshLicence();
+    const data = dataBuilder().withMissingRequiredElement("welsh_licence");
 
     const isValid = validate(data);
 
@@ -389,7 +389,7 @@ function dataBuilder(): {
     random?: any;
     elementValue?: any;
   });
-  withMissingRequiredWelshLicence();
+  withMissingRequiredElement(elementIdentifier: string);
 } {
   return {
     withDefaults() {
@@ -407,9 +407,9 @@ function dataBuilder(): {
           : defaultItem,
       );
     },
-    withMissingRequiredWelshLicence() {
+    withMissingRequiredElement(elementIdentifier: string) {
       return data.filter(function (defaultItem) {
-        return defaultItem.elementIdentifier !== "welsh_licence";
+        return defaultItem.elementIdentifier !== elementIdentifier;
       });
     },
   };
