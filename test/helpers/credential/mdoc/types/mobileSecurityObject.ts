@@ -25,6 +25,12 @@ export interface MobileSecurityObject {
   valueDigests: ValueDigests;
   docType: "org.iso.18013.5.1.mDL";
   validityInfo: ValidityInfo;
+  status: {
+    status_list: {
+      idx: number;
+      uri: string;
+    };
+  };
 }
 
 export interface TaggedMobileSecurityObject extends Omit<
