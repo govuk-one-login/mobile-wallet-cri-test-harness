@@ -7,7 +7,7 @@ interface Code {
 }
 
 export interface DrivingPrivileges {
-  vehicleCategoryCode: string;
+  vehicle_category_code: string;
   issue_date?: string;
   expiry_date?: string;
   codes?: Code[];
