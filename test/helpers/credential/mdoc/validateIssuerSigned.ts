@@ -2,7 +2,7 @@ import { getAjvInstance } from "../../ajv/ajvInstance";
 import { IssuerSigned } from "./types/issuerSigned";
 import { isoNamespaceSchema } from "./schemas/isoNamespaceSchema";
 import { domesticNamespaceSchema } from "./schemas/domesticNamespaceSchema";
-import { issuerSignedSchema } from "./schemas/issuedSignedSchema";
+import { issuerSignedSchema } from "./schemas/issuerSignedSchema";
 import { MDLValidationError } from "./MDLValidationError";
 
 export function validateIssuerSignedSchema(issuerSigned: IssuerSigned): void {
