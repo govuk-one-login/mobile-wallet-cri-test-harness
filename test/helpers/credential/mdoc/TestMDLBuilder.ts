@@ -19,215 +19,6 @@ import { IssuerSignedItem } from "./types/issuerSigned";
 import { NameSpace } from "./types/namespaces";
 import { DrivingPrivileges } from "./types/drivingPrivileges";
 
-const DEFAULT_NAMESPACES = new Map([
-  [
-    NAMESPACES.GB,
-    [
-      {
-        digestID: 20,
-        random: new Uint8Array([
-          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        ]),
-        elementIdentifier: "welsh_licence",
-        elementValue: true,
-      },
-      {
-        digestID: 30,
-        random: new Uint8Array([
-          2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        ]),
-        elementIdentifier: "provisional_driving_privileges",
-        elementValue: [
-          {
-            vehicle_category_code: "C1",
-            issue_date: new Tag(TAGS.FULL_DATE, "2029-05-10"),
-          },
-        ],
-      },
-      {
-        digestID: 40,
-        random: new Uint8Array([
-          3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-        ]),
-        elementIdentifier: "title",
-        elementValue: "Mr",
-      },
-    ],
-  ],
-  [
-    NAMESPACES.ISO,
-    [
-      {
-        digestID: 10,
-        random: new Uint8Array([
-          16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
-        ]),
-        elementIdentifier: "family_name",
-        elementValue: "Doe",
-      },
-      {
-        digestID: 20,
-        random: new Uint8Array([
-          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        ]),
-        elementIdentifier: "given_name",
-        elementValue: "Jane",
-      },
-      {
-        digestID: 30,
-        random: new Uint8Array([
-          2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        ]),
-        elementIdentifier: "birth_date",
-        elementValue: new Tag(TAGS.FULL_DATE, "2000-12-12"),
-      },
-      {
-        digestID: 40,
-        random: new Uint8Array([
-          3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-        ]),
-        elementIdentifier: "issue_date",
-        elementValue: new Tag(TAGS.FULL_DATE, "2020-07-01"),
-      },
-      {
-        digestID: 50,
-        random: new Uint8Array([
-          4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-        ]),
-        elementIdentifier: "expiry_date",
-        elementValue: new Tag(TAGS.FULL_DATE, "2030-06-30"),
-      },
-      {
-        digestID: 60,
-        random: new Uint8Array([
-          6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-        ]),
-        elementIdentifier: "issuing_country",
-        elementValue: "GB",
-      },
-      {
-        digestID: 70,
-        random: new Uint8Array([
-          7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-        ]),
-        elementIdentifier: "issuing_authority",
-        elementValue: "DVLA",
-      },
-      {
-        digestID: 80,
-        random: new Uint8Array([
-          8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-        ]),
-        elementIdentifier: "document_number",
-        elementValue: "TEST123",
-      },
-      {
-        digestID: 90,
-        random: new Uint8Array([
-          9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-        ]),
-        elementIdentifier: "portrait",
-        elementValue: new Uint8Array([255, 216, 255, 224, 255, 217]),
-      },
-      {
-        digestID: 100,
-        random: new Uint8Array([
-          10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-        ]),
-        elementIdentifier: "birth_place",
-        elementValue: "London",
-      },
-      {
-        digestID: 110,
-        random: new Uint8Array([
-          11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-        ]),
-        elementIdentifier: "driving_privileges",
-        elementValue: [
-          {
-            vehicle_category_code: "C1",
-            issue_date: new Tag(TAGS.FULL_DATE, "2029-05-10"),
-          },
-        ],
-      },
-      {
-        digestID: 120,
-        random: new Uint8Array([
-          12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
-        ]),
-        elementIdentifier: "un_distinguishing_sign",
-        elementValue: "UK",
-      },
-      {
-        digestID: 130,
-        random: new Uint8Array([
-          13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-        ]),
-        elementIdentifier: "resident_address",
-        elementValue: "Adelaide Road",
-      },
-      {
-        digestID: 140,
-        random: new Uint8Array([
-          14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-        ]),
-        elementIdentifier: "resident_postal_code",
-        elementValue: "NW3 3RX",
-      },
-      {
-        digestID: 150,
-        random: new Uint8Array([
-          15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-        ]),
-        elementIdentifier: "resident_city",
-        elementValue: "London",
-      },
-    ],
-  ],
-]);
-
-const DEFAULT_SIGNING_KEY = `-----BEGIN EC PRIVATE KEY-----
-MHcCAQEEIKexbdPE2TDYzOuasfwN4QWNqHF1wNsV30ERMPPaRYnWoAoGCCqGSM49
-AwEHoUQDQgAE+NKi4QpYV/avqTFFoldRIYEZaRgKF/qv+xJsek63Eh2cKn922zlJ
-Hj2KglzSlLm439BfFYGDYVet6W7pkvIYfg==
------END EC PRIVATE KEY-----`;
-
-const DEFAULT_DOCUMENT_SIGNING_CERTIFICATE = `-----BEGIN CERTIFICATE-----
-MIIBtzCCAV2gAwIBAgIUZpfeB6WGkUsUk13SiJX8i6vG1IAwCgYIKoZIzj0EAwIw
-QTELMAkGA1UEBhMCR0IxMjAwBgNVBAMMKW1ETCBFeGFtcGxlIElBQ0EgUm9vdCAt
-IExPQ0FMIGVudmlyb25tZW50MB4XDTI1MDkwMjEwMzMzMloXDTI2MDkwMjEwMzMz
-MlowMjELMAkGA1UEBhMCR0IxIzAhBgNVBAMMGkV4YW1wbGUgSXNzdWVyIERTQyAo
-TE9DQUwpMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+NKi4QpYV/avqTFFoldR
-IYEZaRgKF/qv+xJsek63Eh2cKn922zlJHj2KglzSlLm439BfFYGDYVet6W7pkvIY
-fqNCMEAwHQYDVR0OBBYEFFBBWigj2hXjuJNidBxTFPvGxzOLMB8GA1UdIwQYMBaA
-FPY4eri7CuGrxh14YMTQe1qnBVjoMAoGCCqGSM49BAMCA0gAMEUCIQCm99llHZfq
-nPUS1X4/UZfbJ4HlbU33EaTqS/Y4vrOPVQIgLcG3k0jJQIxapcCUF7r/4rVUju0z
-FmibH8pIONDZjSI=
------END CERTIFICATE-----`;
-
-const DEFAULT_DEVICE_KEY = new Map<number, number | Uint8Array>([
-  [COSE_KEY_PARAMETERS.KTY, COSE_KEY_TYPES.EC2],
-  [COSE_KEY_PARAMETERS.EC2_CRV, COSE_ELLIPTIC_CURVES.P_256],
-  [
-    COSE_KEY_PARAMETERS.EC2_X,
-    new Uint8Array(
-      Buffer.from(
-        "6DCF397495962365F7E8FA912AB95D9990E9002E31CC151840FD7754AFA6BD53",
-        "hex",
-      ),
-    ),
-  ],
-  [
-    COSE_KEY_PARAMETERS.EC2_Y,
-    new Uint8Array(
-      Buffer.from(
-        "39D569F97C102510B56506AE414A72D6EEAA084ED454C751DCF90FF9602C2953",
-        "hex",
-      ),
-    ),
-  ],
-]);
-
 export class TestMDLBuilder {
   private readonly namespaces: Map<NameSpace, IssuerSignedItem[]>;
   private readonly validityInfo: {
@@ -451,3 +242,212 @@ export class TestMDLBuilder {
     return this;
   }
 }
+
+const DEFAULT_NAMESPACES = new Map([
+  [
+    NAMESPACES.GB,
+    [
+      {
+        digestID: 20,
+        random: new Uint8Array([
+          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        ]),
+        elementIdentifier: "welsh_licence",
+        elementValue: true,
+      },
+      {
+        digestID: 30,
+        random: new Uint8Array([
+          2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        ]),
+        elementIdentifier: "provisional_driving_privileges",
+        elementValue: [
+          {
+            vehicle_category_code: "C1",
+            issue_date: new Tag(TAGS.FULL_DATE, "2029-05-10"),
+          },
+        ],
+      },
+      {
+        digestID: 40,
+        random: new Uint8Array([
+          3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+        ]),
+        elementIdentifier: "title",
+        elementValue: "Mr",
+      },
+    ],
+  ],
+  [
+    NAMESPACES.ISO,
+    [
+      {
+        digestID: 10,
+        random: new Uint8Array([
+          16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
+        ]),
+        elementIdentifier: "family_name",
+        elementValue: "Doe",
+      },
+      {
+        digestID: 20,
+        random: new Uint8Array([
+          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        ]),
+        elementIdentifier: "given_name",
+        elementValue: "Jane",
+      },
+      {
+        digestID: 30,
+        random: new Uint8Array([
+          2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+        ]),
+        elementIdentifier: "birth_date",
+        elementValue: new Tag(TAGS.FULL_DATE, "2000-12-12"),
+      },
+      {
+        digestID: 40,
+        random: new Uint8Array([
+          3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+        ]),
+        elementIdentifier: "issue_date",
+        elementValue: new Tag(TAGS.FULL_DATE, "2020-07-01"),
+      },
+      {
+        digestID: 50,
+        random: new Uint8Array([
+          4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+        ]),
+        elementIdentifier: "expiry_date",
+        elementValue: new Tag(TAGS.FULL_DATE, "2030-06-30"),
+      },
+      {
+        digestID: 60,
+        random: new Uint8Array([
+          6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+        ]),
+        elementIdentifier: "issuing_country",
+        elementValue: "GB",
+      },
+      {
+        digestID: 70,
+        random: new Uint8Array([
+          7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+        ]),
+        elementIdentifier: "issuing_authority",
+        elementValue: "DVLA",
+      },
+      {
+        digestID: 80,
+        random: new Uint8Array([
+          8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+        ]),
+        elementIdentifier: "document_number",
+        elementValue: "TEST123",
+      },
+      {
+        digestID: 90,
+        random: new Uint8Array([
+          9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+        ]),
+        elementIdentifier: "portrait",
+        elementValue: new Uint8Array([255, 216, 255, 224, 255, 217]),
+      },
+      {
+        digestID: 100,
+        random: new Uint8Array([
+          10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+        ]),
+        elementIdentifier: "birth_place",
+        elementValue: "London",
+      },
+      {
+        digestID: 110,
+        random: new Uint8Array([
+          11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+        ]),
+        elementIdentifier: "driving_privileges",
+        elementValue: [
+          {
+            vehicle_category_code: "C1",
+            issue_date: new Tag(TAGS.FULL_DATE, "2029-05-10"),
+          },
+        ],
+      },
+      {
+        digestID: 120,
+        random: new Uint8Array([
+          12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+        ]),
+        elementIdentifier: "un_distinguishing_sign",
+        elementValue: "UK",
+      },
+      {
+        digestID: 130,
+        random: new Uint8Array([
+          13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+        ]),
+        elementIdentifier: "resident_address",
+        elementValue: "Adelaide Road",
+      },
+      {
+        digestID: 140,
+        random: new Uint8Array([
+          14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+        ]),
+        elementIdentifier: "resident_postal_code",
+        elementValue: "NW3 3RX",
+      },
+      {
+        digestID: 150,
+        random: new Uint8Array([
+          15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+        ]),
+        elementIdentifier: "resident_city",
+        elementValue: "London",
+      },
+    ],
+  ],
+]);
+
+const DEFAULT_SIGNING_KEY = `-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIKexbdPE2TDYzOuasfwN4QWNqHF1wNsV30ERMPPaRYnWoAoGCCqGSM49
+AwEHoUQDQgAE+NKi4QpYV/avqTFFoldRIYEZaRgKF/qv+xJsek63Eh2cKn922zlJ
+Hj2KglzSlLm439BfFYGDYVet6W7pkvIYfg==
+-----END EC PRIVATE KEY-----`;
+
+const DEFAULT_DOCUMENT_SIGNING_CERTIFICATE = `-----BEGIN CERTIFICATE-----
+MIIBtzCCAV2gAwIBAgIUZpfeB6WGkUsUk13SiJX8i6vG1IAwCgYIKoZIzj0EAwIw
+QTELMAkGA1UEBhMCR0IxMjAwBgNVBAMMKW1ETCBFeGFtcGxlIElBQ0EgUm9vdCAt
+IExPQ0FMIGVudmlyb25tZW50MB4XDTI1MDkwMjEwMzMzMloXDTI2MDkwMjEwMzMz
+MlowMjELMAkGA1UEBhMCR0IxIzAhBgNVBAMMGkV4YW1wbGUgSXNzdWVyIERTQyAo
+TE9DQUwpMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+NKi4QpYV/avqTFFoldR
+IYEZaRgKF/qv+xJsek63Eh2cKn922zlJHj2KglzSlLm439BfFYGDYVet6W7pkvIY
+fqNCMEAwHQYDVR0OBBYEFFBBWigj2hXjuJNidBxTFPvGxzOLMB8GA1UdIwQYMBaA
+FPY4eri7CuGrxh14YMTQe1qnBVjoMAoGCCqGSM49BAMCA0gAMEUCIQCm99llHZfq
+nPUS1X4/UZfbJ4HlbU33EaTqS/Y4vrOPVQIgLcG3k0jJQIxapcCUF7r/4rVUju0z
+FmibH8pIONDZjSI=
+-----END CERTIFICATE-----`;
+
+const DEFAULT_DEVICE_KEY = new Map<number, number | Uint8Array>([
+  [COSE_KEY_PARAMETERS.KTY, COSE_KEY_TYPES.EC2],
+  [COSE_KEY_PARAMETERS.EC2_CRV, COSE_ELLIPTIC_CURVES.P_256],
+  [
+    COSE_KEY_PARAMETERS.EC2_X,
+    new Uint8Array(
+      Buffer.from(
+        "6DCF397495962365F7E8FA912AB95D9990E9002E31CC151840FD7754AFA6BD53",
+        "hex",
+      ),
+    ),
+  ],
+  [
+    COSE_KEY_PARAMETERS.EC2_Y,
+    new Uint8Array(
+      Buffer.from(
+        "39D569F97C102510B56506AE414A72D6EEAA084ED454C751DCF90FF9602C2953",
+        "hex",
+      ),
+    ),
+  ],
+]);
