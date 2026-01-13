@@ -21,8 +21,10 @@ function createAjvInstance(): Ajv {
         if (!schema) return true;
         return data instanceof Uint8Array;
       },
-      errors: false,
-      type: "object",
+      errors: true,
+      error: {
+        message: "must be instance of Uint8Array",
+      },
     })
     .addKeyword({
       keyword: "instanceofMap",
