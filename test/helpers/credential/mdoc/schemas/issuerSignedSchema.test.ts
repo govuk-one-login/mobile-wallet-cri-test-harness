@@ -1,5 +1,5 @@
 import { getAjvInstance } from "../../../ajv/ajvInstance";
-import { issuerSignedSchema } from "./issuedSignedSchema";
+import { issuerSignedSchema } from "./issuerSignedSchema";
 
 describe("issuerSignedSchema", () => {
   const ajv = getAjvInstance();
