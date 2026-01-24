@@ -342,6 +342,122 @@ describe("isValidCredential", () => {
         }
       });
 
+      it("should throw MDLValidationError when document signing certificate is a CA", async () => {
+        const myRootCertificatePem = `-----BEGIN CERTIFICATE-----
+MIIBcDCCARWgAwIBAgIUVHqA2ddXcDCAlO2Ld9EDzQfR5vswCgYIKoZIzj0EAwIw
+DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTQ0ODIxWhcNMjgxMTEyMTQ0ODIxWjAN
+MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABKly5DhTsvua
+fBJhTvK6d+A28jR29Ol9kilyZgY6IbZLUfTP1H9WDBngizCpFjIOrhlGj23QQdch
+6R6wF4IrOrqjUzBRMB0GA1UdDgQWBBRAIds87ONth6nYeNv6+rz0PIdNLTAfBgNV
+HSMEGDAWgBRAIds87ONth6nYeNv6+rz0PIdNLTAPBgNVHRMBAf8EBTADAQH/MAoG
+CCqGSM49BAMCA0kAMEYCIQD4QvS91tKhgS9Lz8XTb94KIUUke6yhRT3VTz3bPK39
+/wIhAIJ08Es4AINKhwitGcifM6M9d0rjlstxV/XfCqvG+0N2
+-----END CERTIFICATE-----`;
+
+        const caCert = new X509Certificate(myRootCertificatePem);
+        const credential = new TestMDLBuilder()
+            .withUnprotectedHeader(new Map().set(33, new Uint8Array(caCert.raw)
+            )
+            )
+            .build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, myRootCertificatePem);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+              "Document signing certificate must not be a CA certificate",
+          );
+        }
+      });
+
+      it("should throw MDLValidationError when document signing certificate is not valid at the current time", async () => {
+        const myRootCertificatePem = `-----BEGIN CERTIFICATE-----
+MIIBbzCCARWgAwIBAgIUSbw+wA3X6WD8/3Z3mOZJOVtU42kwCgYIKoZIzj0EAwIw
+DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTkxMTE1WhcNMjgxMTEyMTkxMTE1WjAN
+MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJIk9VIyUJyG
+12FKznr8IEcSXEa9xVj1I8s2acSSsvW4BSK3MlfvDxVRN7lelQOxKwcGtqhWtDdZ
+2cZrZWROkrqjUzBRMB0GA1UdDgQWBBSV4DSQB8bJVhOvKQAokBr5WN9+SDAfBgNV
+HSMEGDAWgBSV4DSQB8bJVhOvKQAokBr5WN9+SDAPBgNVHRMBAf8EBTADAQH/MAoG
+CCqGSM49BAMCA0gAMEUCIHJX/nPDkYMhOHjlf5eYVmguWHfiEZ9qTttnUMe3+rSQ
+AiEAwWFik9W/VGfnLgE3rJ+Eb74AJgS7w2ouwULrTSZ2rpM=
+-----END CERTIFICATE-----`;
+        const notYetValidCertPem = `-----BEGIN CERTIFICATE-----
+MIIBaTCCAQ+gAwIBAgIURf+h7qmhNPgAaEaPTcVxS9VHCs8wCgYIKoZIzj0EAwIw
+DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTkyMzMzWhcNMjcwMTIzMTkyMzMzWjAN
+MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGeeOjZn8fE8
+VlYczaP1WxltIBRFS7GYDd2tCwjnWQTb8bkcduDJgkUY5F7oSPIXXt62DxB6e5eN
+8EvSn3nmQR6jTTBLMAkGA1UdEwQCMAAwHQYDVR0OBBYEFB44hqfYqP0ffiWBMv3/
+FvTJh8vMMB8GA1UdIwQYMBaAFJXgNJAHxslWE68pACiQGvlY335IMAoGCCqGSM49
+BAMCA0gAMEUCIQC2c028yzpQCh2Azw/YHpxOzn+ZxKvqpHrk8ysE7KY9ygIgZD51
+P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
+-----END CERTIFICATE-----`;
+
+        const notValid = new X509Certificate(notYetValidCertPem);
+        const credential = new TestMDLBuilder()
+            .withUnprotectedHeader(new Map().set(33, new Uint8Array(notValid.raw)
+            )
+            )
+            .build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, myRootCertificatePem);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+              "Document signing certificate is not valid at the current time",
+          );
+        }
+      });
+
+      it("should throw MDLValidationError when certificate issuer does not match root subject", async () => {
+        const serverCert = `-----BEGIN CERTIFICATE-----
+MIIBajCCAQ+gAwIBAgIUaISZZlk1t+jLC9SyUnYcl4c7gTkwCgYIKoZIzj0EAwIw
+DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTk1MjQ4WhcNMjcwMTIzMTk1MjQ4WjAN
+MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABAHGaZhNOqIx
+otdbjr4RXPk7sieLzT3dX7laB/b2TDPCEW+xbRGq0tItxubAz1k8c/ZBjpY3v6NK
+uK57UPOxKomjTTBLMAkGA1UdEwQCMAAwHQYDVR0OBBYEFOende87vaMlo0+3LABk
+YKLizuksMB8GA1UdIwQYMBaAFOEhaMIg0DOmzJcXORzaUU+fmZJ3MAoGCCqGSM49
+BAMCA0kAMEYCIQD8eg+NH2fDlojqX6YQ5faB9nuXE3yAbbuL6V45sF2MywIhALuL
+1SCmoCBIHknFWIY6MdUiT9JqBVYud5RarNd2ELU9
+-----END CERTIFICATE-----`;
+        const rightCert = new X509Certificate(serverCert);
+
+        const credential = new TestMDLBuilder().withUnprotectedHeader(
+            new Map().set(
+                33,
+                new Uint8Array(rightCert.raw),
+            ),
+        )
+            .build();
+
+        const wrongRootCertificatePem = `
+-----BEGIN CERTIFICATE-----
+MIIBljCCAT2gAwIBAgIUcMeonDSXBcMqZrQzuBRKlpwG0y0wCgYIKoZIzj0EAwIw
+ITEfMB0GA1UEAwwWd3Jvbmctcm9vdC5leGFtcGxlLmNvbTAeFw0yNjAxMjMxOTM4
+MDFaFw0yNzAxMjMxOTM4MDFaMCExHzAdBgNVBAMMFndyb25nLXJvb3QuZXhhbXBs
+ZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQkrXs9P6Z9z4n1pbhGC5Y0
+82PS1o4lRwodyFF61fNvIOVzH5WxsfiZDcU4dEqrSZM2/pE2n5zzaYOdfoDoPJFP
+o1MwUTAdBgNVHQ4EFgQUB7IelwSHCNmsz/ed4PwyORHRyEkwHwYDVR0jBBgwFoAU
+B7IelwSHCNmsz/ed4PwyORHRyEkwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQD
+AgNHADBEAiBHMPDVvDY1/wv8qg5hjsJqKwJJLZjn8shzipQMHkINFQIgYlax1R1Z
+YXI+nxj0UF0tJFmifMK9N6hiz4cPnCXh8/g=
+-----END CERTIFICATE-----
+        `;
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, wrongRootCertificatePem);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+              "Certificate issuer does not match root subject",
+          );
+        }
+      })
+
       it("should throw MDLValidationError when document signing certificate signature fails to verify", async () => {
         const credential = new TestMDLBuilder().build();
         const wrongRootCertificate =
