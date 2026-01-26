@@ -396,59 +396,67 @@ P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
         }
       });
 
-//       it("should throw MDLValidationError when certificate issuer does not match root subject", async () => {
-//         const serverCert = `-----BEGIN CERTIFICATE-----
-// MIIBajCCAQ+gAwIBAgIUaISZZlk1t+jLC9SyUnYcl4c7gTkwCgYIKoZIzj0EAwIw
-// DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTk1MjQ4WhcNMjcwMTIzMTk1MjQ4WjAN
-// MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABAHGaZhNOqIx
-// otdbjr4RXPk7sieLzT3dX7laB/b2TDPCEW+xbRGq0tItxubAz1k8c/ZBjpY3v6NK
-// uK57UPOxKomjTTBLMAkGA1UdEwQCMAAwHQYDVR0OBBYEFOende87vaMlo0+3LABk
-// YKLizuksMB8GA1UdIwQYMBaAFOEhaMIg0DOmzJcXORzaUU+fmZJ3MAoGCCqGSM49
-// BAMCA0kAMEYCIQD8eg+NH2fDlojqX6YQ5faB9nuXE3yAbbuL6V45sF2MywIhALuL
-// 1SCmoCBIHknFWIY6MdUiT9JqBVYud5RarNd2ELU9
-// -----END CERTIFICATE-----`;
-//
-//         const rightCert = new X509Certificate(serverCert);
-//
-//         const credential = new TestMDLBuilder().withUnprotectedHeader(
-//             new Map().set(
-//                 33,
-//                 new Uint8Array(rightCert.raw),
-//             ),
-//         )
-//             .build();
-//
-//         expect.assertions(2);
-//         try {
-//           jest.setSystemTime()
-//           await isValidCredential(credential, rootCertificate);
-//         } catch (error) {
-//           expect(error).toBeInstanceOf(MDLValidationError);
-//           expect((error as Error).message).toBe(
-//               "Certificate issuer does not match root subject",
-//           );
-//         }
-//       })
+      it("should throw MDLValidationError when certificate issuer does not match root subject", async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date("2026-06-01T13:38:48Z"));
+        const serverCert = `-----BEGIN CERTIFICATE-----
+MIIBajCCAQ+gAwIBAgIUaISZZlk1t+jLC9SyUnYcl4c7gTkwCgYIKoZIzj0EAwIw
+DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTk1MjQ4WhcNMjcwMTIzMTk1MjQ4WjAN
+MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABAHGaZhNOqIx
+otdbjr4RXPk7sieLzT3dX7laB/b2TDPCEW+xbRGq0tItxubAz1k8c/ZBjpY3v6NK
+uK57UPOxKomjTTBLMAkGA1UdEwQCMAAwHQYDVR0OBBYEFOende87vaMlo0+3LABk
+YKLizuksMB8GA1UdIwQYMBaAFOEhaMIg0DOmzJcXORzaUU+fmZJ3MAoGCCqGSM49
+BAMCA0kAMEYCIQD8eg+NH2fDlojqX6YQ5faB9nuXE3yAbbuL6V45sF2MywIhALuL
+1SCmoCBIHknFWIY6MdUiT9JqBVYud5RarNd2ELU9
+-----END CERTIFICATE-----`; // Valid From	Fri, 23 Jan 2026 19:52:48 UTC // Valid To	Sat, 23 Jan 2027 19:52:48 UTC
 
-      it("should throw MDLValidationError when document signing certificate signature fails to verify", async () => {
-        const credential = new TestMDLBuilder().build();
-        const wrongRootCertificate =
-          "-----BEGIN CERTIFICATE-----\n" +
-          "MIIBtjCCAVugAwIBAgIUdfgw3nJi35kYnGsMRJ0KfAm4qawwCgYIKoZIzj0EAwIw\n" +
-          "MDELMAkGA1UEBhMCR0IxITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMgUHR5IEx0\n" +
-          "ZDAeFw0yNTA5MDIxNDE0NTFaFw0yODA2MjIxNDE0NTFaMDAxCzAJBgNVBAYTAkdC\n" +
-          "MSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwWTATBgcqhkjOPQIB\n" +
-          "BggqhkjOPQMBBwNCAATNyPQhkP/28GvtX2R2I7LBFFO2q/0cqNSTH+gLVpuEK77E\n" +
-          "6tZNcYkXY/1uC1NIqR7i72n4M/twU9Ec8N6FHQJqo1MwUTAdBgNVHQ4EFgQUUEUg\n" +
-          "pugnthqAqN+eTD08xE+q7xYwHwYDVR0jBBgwFoAUUEUgpugnthqAqN+eTD08xE+q\n" +
-          "7xYwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgNJADBGAiEA5MHTLb+/+Uyu\n" +
-          "6cLX77cam3q83boYH6Sxvdr6Rr/UbCkCIQDeIUG6WrIVjJe6NQJovdAJKYI7+d6x\n" +
-          "VbIr9TmJjl7Evw==\n" +
-          "-----END CERTIFICATE-----";
+        const rightCert = new X509Certificate(serverCert);
+
+        const credential = new TestMDLBuilder().withUnprotectedHeader(
+            new Map().set(
+                33,
+                new Uint8Array(rightCert.raw),
+            ),
+        )
+            .build();
 
         expect.assertions(2);
         try {
-          await isValidCredential(credential, wrongRootCertificate);
+          await isValidCredential(credential, rootCertificate);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+              "Certificate issuer does not match root subject",
+          );
+        }
+      });
+
+      it("should throw MDLValidationError when document signing certificate signature fails to verify", async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date("2026-06-01T13:38:48Z"));
+
+        const rootCert = `-----BEGIN CERTIFICATE-----
+MIIBaTCCAQ+gAwIBAgIURf+h7qmhNPgAaEaPTcVxS9VHCs8wCgYIKoZIzj0EAwIw
+DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTkyMzMzWhcNMjcwMTIzMTkyMzMzWjAN
+MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGeeOjZn8fE8
+VlYczaP1WxltIBRFS7GYDd2tCwjnWQTb8bkcduDJgkUY5F7oSPIXXt62DxB6e5eN
+8EvSn3nmQR6jTTBLMAkGA1UdEwQCMAAwHQYDVR0OBBYEFB44hqfYqP0ffiWBMv3/
+FvTJh8vMMB8GA1UdIwQYMBaAFJXgNJAHxslWE68pACiQGvlY335IMAoGCCqGSM49
+BAMCA0gAMEUCIQC2c028yzpQCh2Azw/YHpxOzn+ZxKvqpHrk8ysE7KY9ygIgZD51
+P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
+-----END CERTIFICATE-----`; // Valid From	Fri, 23 Jan 2026 19:52:48 UTC // Valid To	Sat, 23 Jan 2027 19:52:48 UTC
+        const root =  new X509Certificate(rootCert);
+        const corruptedCert = new Uint8Array(root.raw);
+        corruptedCert[corruptedCert.length - 10] ^= 0xFF;
+
+        const credential = new TestMDLBuilder()
+            .withUnprotectedHeader(
+                new Map().set(33, corruptedCert),
+            ).build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, rootCert);
         } catch (error) {
           expect(error).toBeInstanceOf(MDLValidationError);
           expect((error as Error).message).toBe(
@@ -459,7 +467,7 @@ P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
 
       it("should throw MDLValidationError when MSO signature fails to verify", async () => {
         jest.useFakeTimers();
-        jest.setSystemTime(new Date("2025-09-10T13:38:48Z"));
+        jest.setSystemTime(new Date("2026-01-10T13:38:48Z"));
         const rootCertificate = `-----BEGIN CERTIFICATE-----
 MIICDTCCAbOgAwIBAgIULjpCx753jPKhnnOzt6AqxMuH/MkwCgYIKoZIzj0EAwIw
 XDELMAkGA1UEBhMCVUsxDzANBgNVBAgMBkxvbmRvbjEPMA0GA1UEBwwGTG9uZG9u

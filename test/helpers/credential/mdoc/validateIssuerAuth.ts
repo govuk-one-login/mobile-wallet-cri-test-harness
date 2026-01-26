@@ -131,12 +131,12 @@ async function validateUnprotectedHeader(
     );
   }
 
-  // if (certificate.issuer !== rootCertificate.subject) {
-  //   throw new MDLValidationError(
-  //       "Certificate issuer does not match root subject",
-  //       "INVALID_UNPROTECTED_HEADER"
-  //   );
-  // }
+  if (certificate.issuer !== rootCertificate.subject) {
+    throw new MDLValidationError(
+        "Certificate issuer does not match root subject",
+        "INVALID_UNPROTECTED_HEADER"
+    );
+  }
 
   try {
     const outcome = certificate.verify(rootCertificate.publicKey);
