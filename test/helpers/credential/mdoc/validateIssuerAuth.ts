@@ -113,7 +113,7 @@ async function validateUnprotectedHeader(
 
   const rootCertificate = new X509Certificate(rootCertificatePem);
 
-  if ((certificate as any).ca) {
+  if (certificate.ca) {
     throw new MDLValidationError(
       "Document signing certificate must not be a CA certificate",
       "INVALID_UNPROTECTED_HEADER",
