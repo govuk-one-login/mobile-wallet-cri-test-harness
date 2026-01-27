@@ -346,9 +346,9 @@ describe("isValidCredential", () => {
 
         const caCert = new X509Certificate(rootCertificate);
         const credential = new TestMDLBuilder()
-            .withUnprotectedHeader(new Map().set(33, new Uint8Array(caCert.raw)
-            )
-            )
+            .withUnprotectedHeader(
+                new Map().set(
+                    33, new Uint8Array(caCert.raw)))
             .build();
 
         expect.assertions(2);
@@ -365,7 +365,7 @@ describe("isValidCredential", () => {
       it("should throw MDLValidationError when document signing certificate is not valid at the current time", async () => {
         jest.useFakeTimers();
         jest.setSystemTime(new Date("2025-09-10T13:38:48Z"));
-        const notYetValidCertPem = `-----BEGIN CERTIFICATE-----
+        const notYetValidCert = `-----BEGIN CERTIFICATE-----
 MIIBaTCCAQ+gAwIBAgIURf+h7qmhNPgAaEaPTcVxS9VHCs8wCgYIKoZIzj0EAwIw
 DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTkyMzMzWhcNMjcwMTIzMTkyMzMzWjAN
 MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGeeOjZn8fE8
@@ -376,7 +376,7 @@ BAMCA0gAMEUCIQC2c028yzpQCh2Azw/YHpxOzn+ZxKvqpHrk8ysE7KY9ygIgZD51
 P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
 -----END CERTIFICATE-----`;  //Valid From	Fri, 23 Jan 2026 19:23:33 UTC // Valid To	Sat, 23 Jan 2027 19:23:33 UTC
 
-        const notValid = new X509Certificate(notYetValidCertPem);
+        const notValid = new X509Certificate(notYetValidCert);
         const credential = new TestMDLBuilder()
             .withUnprotectedHeader(new Map().set(33, new Uint8Array(notValid.raw)
             )
@@ -415,9 +415,7 @@ BAMCA0kAMEYCIQD8eg+NH2fDlojqX6YQ5faB9nuXE3yAbbuL6V45sF2MywIhALuL
         const credential = new TestMDLBuilder().withUnprotectedHeader(
             new Map().set(
                 33,
-                new Uint8Array(rightCert.raw),
-            ),
-        )
+                new Uint8Array(rightCert.raw)))
             .build();
 
         expect.assertions(2);
@@ -481,7 +479,7 @@ nrOwa2pL5QDDoxzrWr8G84179bKBaqNTMFEwHQYDVR0OBBYEFOuameupM0YpmgBT
 EwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSAAwRQIgVvfBUEP5PZCKX173c0y7kyZm
 t1jfnQrTHh3z2ale/FUCIQCePJrmnE1+WFyYJylg+RYLBx2OmpA7+gOzQyVFTDKh
 Bg==
------END CERTIFICATE-----`;
+-----END CERTIFICATE-----`; //Valid From	Thu, 08 Jan 2026 13:38:48 UTC // Valid To	Sat, 28 Oct 2028 13:38:48 UTC
 
         const wrongDocumentSigningCertificate =
           new X509Certificate(`-----BEGIN CERTIFICATE-----
