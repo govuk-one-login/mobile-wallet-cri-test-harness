@@ -343,13 +343,12 @@ describe("isValidCredential", () => {
       });
 
       it("should throw MDLValidationError when document signing certificate is a CA", async () => {
-
-        const caCert = new X509Certificate(rootCertificate);
+        const caCertificate = new X509Certificate(rootCertificate);
         const credential = new TestMDLBuilder()
-            .withUnprotectedHeader(
-                new Map().set(
-                    33, new Uint8Array(caCert.raw)))
-            .build();
+          .withUnprotectedHeader(
+            new Map().set(33, new Uint8Array(caCertificate.raw)),
+          )
+          .build();
 
         expect.assertions(2);
         try {
@@ -357,7 +356,7 @@ describe("isValidCredential", () => {
         } catch (error) {
           expect(error).toBeInstanceOf(MDLValidationError);
           expect((error as Error).message).toBe(
-              "Document signing certificate must not be a CA certificate",
+            "Document signing certificate must not be a CA certificate",
           );
         }
       });
@@ -365,7 +364,8 @@ describe("isValidCredential", () => {
       it("should throw MDLValidationError when document signing certificate is not valid at the current time", async () => {
         jest.useFakeTimers();
         jest.setSystemTime(new Date("2025-09-10T13:38:48Z"));
-        const notYetValidCert = `-----BEGIN CERTIFICATE-----
+        // Current time: 2025-09-10, Certificate valid from: 2026-01-23
+        const notYetValidCertificatePem = `-----BEGIN CERTIFICATE-----
 MIIBaTCCAQ+gAwIBAgIURf+h7qmhNPgAaEaPTcVxS9VHCs8wCgYIKoZIzj0EAwIw
 DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTkyMzMzWhcNMjcwMTIzMTkyMzMzWjAN
 MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGeeOjZn8fE8
@@ -374,14 +374,16 @@ VlYczaP1WxltIBRFS7GYDd2tCwjnWQTb8bkcduDJgkUY5F7oSPIXXt62DxB6e5eN
 FvTJh8vMMB8GA1UdIwQYMBaAFJXgNJAHxslWE68pACiQGvlY335IMAoGCCqGSM49
 BAMCA0gAMEUCIQC2c028yzpQCh2Azw/YHpxOzn+ZxKvqpHrk8ysE7KY9ygIgZD51
 P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
------END CERTIFICATE-----`;  //Valid From	Fri, 23 Jan 2026 19:23:33 UTC // Valid To	Sat, 23 Jan 2027 19:23:33 UTC
+-----END CERTIFICATE-----`;
 
-        const notValid = new X509Certificate(notYetValidCert);
+        const notYetValidCertificate = new X509Certificate(
+          notYetValidCertificatePem,
+        );
         const credential = new TestMDLBuilder()
-            .withUnprotectedHeader(new Map().set(33, new Uint8Array(notValid.raw)
-            )
-            )
-            .build();
+          .withUnprotectedHeader(
+            new Map().set(33, new Uint8Array(notYetValidCertificate.raw)),
+          )
+          .build();
 
         expect.assertions(2);
         try {
@@ -389,17 +391,15 @@ P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
         } catch (error) {
           expect(error).toBeInstanceOf(MDLValidationError);
           expect((error as Error).message).toBe(
-              "Document signing certificate is not valid at the current time",
+            "Document signing certificate is not valid at the current time",
           );
-        } finally {
-          jest.useRealTimers();
         }
       });
 
       it("should throw MDLValidationError when certificate issuer does not match root subject", async () => {
         jest.useFakeTimers();
         jest.setSystemTime(new Date("2026-06-01T13:38:48Z"));
-        const serverCert = `-----BEGIN CERTIFICATE-----
+        const mismatchedIssuerCertificatePem = `-----BEGIN CERTIFICATE-----
 MIIBajCCAQ+gAwIBAgIUaISZZlk1t+jLC9SyUnYcl4c7gTkwCgYIKoZIzj0EAwIw
 DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTk1MjQ4WhcNMjcwMTIzMTk1MjQ4WjAN
 MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABAHGaZhNOqIx
@@ -408,15 +408,17 @@ uK57UPOxKomjTTBLMAkGA1UdEwQCMAAwHQYDVR0OBBYEFOende87vaMlo0+3LABk
 YKLizuksMB8GA1UdIwQYMBaAFOEhaMIg0DOmzJcXORzaUU+fmZJ3MAoGCCqGSM49
 BAMCA0kAMEYCIQD8eg+NH2fDlojqX6YQ5faB9nuXE3yAbbuL6V45sF2MywIhALuL
 1SCmoCBIHknFWIY6MdUiT9JqBVYud5RarNd2ELU9
------END CERTIFICATE-----`; // Valid From	Fri, 23 Jan 2026 19:52:48 UTC // Valid To	Sat, 23 Jan 2027 19:52:48 UTC
+-----END CERTIFICATE-----`;
 
-        const rightCert = new X509Certificate(serverCert);
+        const mismatchedIssuerCertificate = new X509Certificate(
+          mismatchedIssuerCertificatePem,
+        );
 
-        const credential = new TestMDLBuilder().withUnprotectedHeader(
-            new Map().set(
-                33,
-                new Uint8Array(rightCert.raw)))
-            .build();
+        const credential = new TestMDLBuilder()
+          .withUnprotectedHeader(
+            new Map().set(33, new Uint8Array(mismatchedIssuerCertificate.raw)),
+          )
+          .build();
 
         expect.assertions(2);
         try {
@@ -424,7 +426,7 @@ BAMCA0kAMEYCIQD8eg+NH2fDlojqX6YQ5faB9nuXE3yAbbuL6V45sF2MywIhALuL
         } catch (error) {
           expect(error).toBeInstanceOf(MDLValidationError);
           expect((error as Error).message).toBe(
-              "Certificate issuer does not match root subject",
+            "Certificate issuer does not match root subject",
           );
         }
       });
@@ -433,7 +435,7 @@ BAMCA0kAMEYCIQD8eg+NH2fDlojqX6YQ5faB9nuXE3yAbbuL6V45sF2MywIhALuL
         jest.useFakeTimers();
         jest.setSystemTime(new Date("2026-06-01T13:38:48Z"));
 
-        const rootCert = `-----BEGIN CERTIFICATE-----
+        const wrongRootCertificatePem = `-----BEGIN CERTIFICATE-----
 MIIBaTCCAQ+gAwIBAgIURf+h7qmhNPgAaEaPTcVxS9VHCs8wCgYIKoZIzj0EAwIw
 DTELMAkGA1UEBhMCR0IwHhcNMjYwMTIzMTkyMzMzWhcNMjcwMTIzMTkyMzMzWjAN
 MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGeeOjZn8fE8
@@ -443,18 +445,17 @@ FvTJh8vMMB8GA1UdIwQYMBaAFJXgNJAHxslWE68pACiQGvlY335IMAoGCCqGSM49
 BAMCA0gAMEUCIQC2c028yzpQCh2Azw/YHpxOzn+ZxKvqpHrk8ysE7KY9ygIgZD51
 P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
 -----END CERTIFICATE-----`; // Valid From	Fri, 23 Jan 2026 19:52:48 UTC // Valid To	Sat, 23 Jan 2027 19:52:48 UTC
-        const root =  new X509Certificate(rootCert);
+        const root = new X509Certificate(wrongRootCertificatePem);
         const corruptedCert = new Uint8Array(root.raw);
-        corruptedCert[corruptedCert.length - 10] ^= 0xFF;
+        corruptedCert[corruptedCert.length - 10] ^= 0xff;
 
         const credential = new TestMDLBuilder()
-            .withUnprotectedHeader(
-                new Map().set(33, corruptedCert),
-            ).build();
+          .withUnprotectedHeader(new Map().set(33, corruptedCert))
+          .build();
 
         expect.assertions(2);
         try {
-          await isValidCredential(credential, rootCert);
+          await isValidCredential(credential, wrongRootCertificatePem);
         } catch (error) {
           expect(error).toBeInstanceOf(MDLValidationError);
           expect((error as Error).message).toBe(

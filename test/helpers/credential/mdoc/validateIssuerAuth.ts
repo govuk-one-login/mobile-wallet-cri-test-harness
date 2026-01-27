@@ -127,14 +127,14 @@ async function validateUnprotectedHeader(
   if (now < validFrom || now > validTo) {
     throw new MDLValidationError(
       "Document signing certificate is not valid at the current time",
-        "INVALID_UNPROTECTED_HEADER"
+      "INVALID_UNPROTECTED_HEADER",
     );
   }
 
   if (certificate.issuer !== rootCertificate.subject) {
     throw new MDLValidationError(
-        "Certificate issuer does not match root subject",
-        "INVALID_UNPROTECTED_HEADER"
+      "Certificate issuer does not match root subject",
+      "INVALID_UNPROTECTED_HEADER",
     );
   }
 
