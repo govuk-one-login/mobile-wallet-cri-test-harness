@@ -41,7 +41,6 @@ function validateNamespacesTags(element: Tag, namespaceName: string): void {
     );
   }
 
-  Tag.registerDecoder(1004, (tag) => new Tag(1004, tag.contents));
   const decodedItem: TaggedIssuerSignedItem = decode(
     element.contents as Uint8Array,
   );
