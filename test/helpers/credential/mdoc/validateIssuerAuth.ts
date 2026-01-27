@@ -112,6 +112,32 @@ async function validateUnprotectedHeader(
   }
 
   const rootCertificate = new X509Certificate(rootCertificatePem);
+
+  if (certificate.ca) {
+    throw new MDLValidationError(
+      "Document signing certificate must not be a CA certificate",
+      "INVALID_UNPROTECTED_HEADER",
+    );
+  }
+
+  const validFrom = new Date(certificate.validFrom).getTime();
+  const validTo = new Date(certificate.validTo).getTime();
+  const now = Date.now();
+
+  if (now < validFrom || now > validTo) {
+    throw new MDLValidationError(
+      "Document signing certificate is not valid at the current time",
+      "INVALID_UNPROTECTED_HEADER",
+    );
+  }
+
+  if (certificate.issuer !== rootCertificate.subject) {
+    throw new MDLValidationError(
+      "Certificate issuer does not match root subject",
+      "INVALID_UNPROTECTED_HEADER",
+    );
+  }
+
   try {
     const outcome = certificate.verify(rootCertificate.publicKey);
     if (!outcome) {
