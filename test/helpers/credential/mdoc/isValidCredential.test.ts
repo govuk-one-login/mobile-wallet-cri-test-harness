@@ -464,6 +464,48 @@ P1oagJM6zj+3hIFOq8se0YLBI8S9sWUVsxluiN4=
         }
       });
 
+      it("should throw MDLValidationError when certificate.verify throws an error", async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date("2026-06-01T13:38:48Z"));
+        const root = `-----BEGIN CERTIFICATE-----
+MIIBcDCCARWgAwIBAgIUBEchMrG4TkaH1GCFT9g4aavAl/0wCgYIKoZIzj0EAwIw
+DTELMAkGA1UEBhMCR0IwHhcNMjYwMjA2MTg1NDM1WhcNMjgxMTI2MTg1NDM1WjAN
+MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABL3Tlt3/IOay
+YdXEon4ewumUzsXI9YzPKeZ2BotkqN6v+rq5YbiwpR1gvw7O4I9935T6bsAhQizJ
+P6bzH6sxUQOjUzBRMB0GA1UdDgQWBBTdsH0VK3ME3dXqAVUbAjWUGsd4WTAfBgNV
+HSMEGDAWgBTdsH0VK3ME3dXqAVUbAjWUGsd4WTAPBgNVHRMBAf8EBTADAQH/MAoG
+CCqGSM49BAMCA0kAMEYCIQCswZ7AEN7C1BXUozJzfpSutZZ/dFCvqeL4t6h9Da15
+mgIhANG2+hz/ejZdUjVcjtDdN+/18Wus8gs9vdveWu9SeoJ7
+-----END CERTIFICATE-----`
+        const serverCertPem = `-----BEGIN CERTIFICATE-----
+MIIBXzCCAQSgAwIBAgIUG3qUgKL8F+aOHk32XWfbkqQTscgwCgYIKoZIzj0EAwIw
+DTELMAkGA1UEBhMCR0IwHhcNMjYwMjA2MTg1NTExWhcNMjcwMjA2MTg1NTExWjAN
+MQswCQYDVQQGEwJHQjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOXFsTMRj4fU
+tvM1QYsmsus81yuCkfV4lDcZEg6u8FydSg5FdXFYxzyU39MczeXXNUJqAN2XnuHf
+JlzEAsRP2QujQjBAMB0GA1UdDgQWBBQQLWmAtbNhbHhI82ZqZrqD78QmjTAfBgNV
+HSMEGDAWgBTdsH0VK3ME3dXqAVUbAjWUGsd4WTAKBggqhkjOPQQDAgNJADBGAiEA
+pUMhLrs/OBOz/HPHLhtA6WW2TqqG9xLVMGwFrEQDRjUCIQCkl26uhVBpZ7xaUyZD
+oqkvy0k40yR/ej0XvNwSLKHIyQ==
+-----END CERTIFICATE-----`
+        const certficate = new X509Certificate(serverCertPem);
+        const credential = new TestMDLBuilder()
+            .withUnprotectedHeader(new Map().set(33, new Uint8Array(certficate.raw)))
+            .build();
+        const verifySpy = jest
+            .spyOn(X509Certificate.prototype, "verify")
+            .mockImplementation(() => {throw new Error("crypto failure")});
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, root);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe("Signature could not be verified - crypto failure");
+        } finally {
+          verifySpy.mockRestore();
+        }
+      })
+
       it("should throw MDLValidationError when MSO signature fails to verify", async () => {
         jest.useFakeTimers();
         jest.setSystemTime(new Date("2026-01-10T13:38:48Z"));

@@ -50,7 +50,7 @@ export async function validateIssuerAuth(
   verifySignature(certificate.publicKey, protectedHeader, payload, signature);
 }
 
-function validateProtectedHeader(protectedHeader: Uint8Array): void {
+export function validateProtectedHeader(protectedHeader: Uint8Array): void {
   const protectedHeaderDecoded = decode(protectedHeader);
   if (!(protectedHeaderDecoded instanceof Map)) {
     throw new MDLValidationError(
@@ -151,7 +151,7 @@ async function validateUnprotectedHeader(
       throw error;
     }
     throw new MDLValidationError(
-      `Signature could not be verified - ${errorMessage(error)} `,
+      `Signature could not be verified - ${errorMessage(error)}`,
       "INVALID_UNPROTECTED_HEADER",
     );
   }
