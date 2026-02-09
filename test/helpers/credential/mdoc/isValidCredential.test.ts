@@ -4,7 +4,7 @@ import { MDLValidationError } from "./MDLValidationError";
 import { Tag } from "cbor2";
 import { base64url } from "jose";
 import { resetAjvInstance } from "../../ajv/ajvInstance";
-import { X509Certificate } from "node:crypto";
+import { X509Certificate} from "node:crypto";
 
 const rootCertificate = `-----BEGIN CERTIFICATE-----
 MIIB1zCCAX2gAwIBAgIUIatAsTQsYXy6Wrb1Cdp8tJ3RLC0wCgYIKoZIzj0EAwIw
@@ -487,9 +487,9 @@ HSMEGDAWgBTdsH0VK3ME3dXqAVUbAjWUGsd4WTAKBggqhkjOPQQDAgNJADBGAiEA
 pUMhLrs/OBOz/HPHLhtA6WW2TqqG9xLVMGwFrEQDRjUCIQCkl26uhVBpZ7xaUyZD
 oqkvy0k40yR/ej0XvNwSLKHIyQ==
 -----END CERTIFICATE-----`
-        const certficate = new X509Certificate(serverCertPem);
+        const certificate = new X509Certificate(serverCertPem);
         const credential = new TestMDLBuilder()
-            .withUnprotectedHeader(new Map().set(33, new Uint8Array(certficate.raw)))
+            .withUnprotectedHeader(new Map().set(33, new Uint8Array(certificate.raw)))
             .build();
         const verifySpy = jest
             .spyOn(X509Certificate.prototype, "verify")
@@ -641,6 +641,38 @@ h6XK6xERRLkY5jjINTt8TkU=
           expect(error).toBeInstanceOf(MDLValidationError);
           expect((error as Error).message).toBe(
             "DeviceKey curve (-1) must be P-256 (1)",
+          );
+        }
+      });
+
+      it("should throw MDLValidationError when x-coordinate (-2) is not a Uint8Array", async () => {
+        const credential = new TestMDLBuilder()
+            .withDeviceKeyParameter(-2, 123)
+            .build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, rootCertificate);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+              "DeviceKey x-coordinate (-2) must be a Uint8Array",
+          );
+        }
+      });
+
+      it("should throw MDLValidationError when y-coordinate (-3) is not a Uint8Array", async () => {
+        const credential = new TestMDLBuilder()
+            .withDeviceKeyParameter(-3, "string" as unknown as Uint8Array)
+            .build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, rootCertificate);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+              "DeviceKey y-coordinate (-3) must be a Uint8Array",
           );
         }
       });
