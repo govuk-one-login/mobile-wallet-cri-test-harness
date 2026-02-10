@@ -4,7 +4,7 @@ import { MDLValidationError } from "./MDLValidationError";
 import { Tag } from "cbor2";
 import { base64url } from "jose";
 import { resetAjvInstance } from "../../ajv/ajvInstance";
-import { X509Certificate} from "node:crypto";
+import { X509Certificate } from "node:crypto";
 
 const rootCertificate = `-----BEGIN CERTIFICATE-----
 MIIB1zCCAX2gAwIBAgIUIatAsTQsYXy6Wrb1Cdp8tJ3RLC0wCgYIKoZIzj0EAwIw
@@ -149,6 +149,48 @@ describe("isValidCredential", () => {
       }
     });
 
+    it("should throw MDLValidationError when 'expiry_date' in driving privileges is not tagged with 1004", async () => {
+      const credential = new TestMDLBuilder()
+        .withElementValue("driving_privileges", [
+          {
+            vehicle_category_code: "C1",
+            expiry_date: "2029-05-10",
+          },
+        ])
+        .build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+          "Failed to validate tags - 'expiry_date' in 'driving_privileges' missing tag '1004'",
+        );
+      }
+    });
+
+    it("should throw MDLValidationError when 'expiry_date' in provisional driving privileges is not tagged with 1004", async () => {
+      const credential = new TestMDLBuilder()
+        .withElementValue("provisional_driving_privileges", [
+          {
+            vehicle_category_code: "C1",
+            expiry_date: "2029-05-10",
+          },
+        ])
+        .build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+          "Failed to validate tags - 'expiry_date' in 'provisional_driving_privileges' missing tag '1004'",
+        );
+      }
+    });
+
     it("should throw MDLValidationError when 'signed' in ValidityInfo is not tagged with 0", async () => {
       const credential = new TestMDLBuilder()
         .withValidityInfo({
@@ -163,6 +205,42 @@ describe("isValidCredential", () => {
         expect(error).toBeInstanceOf(MDLValidationError);
         expect((error as Error).message).toBe(
           "Failed to validate tags - 'signed' in 'ValidityInfo' missing tag 0",
+        );
+      }
+    });
+
+    it("should throw MDLValidationError when 'validFrom' in ValidityInfo is not tagged with 0", async () => {
+      const credential = new TestMDLBuilder()
+        .withValidityInfo({
+          validFrom: "2025-12-20T15:20:33",
+        })
+        .build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+          "Failed to validate tags - 'validFrom' in 'ValidityInfo' missing tag 0",
+        );
+      }
+    });
+
+    it("should throw MDLValidationError when 'validUntil' in ValidityInfo is not tagged with 0", async () => {
+      const credential = new TestMDLBuilder()
+        .withValidityInfo({
+          validUntil: "2025-12-20T15:20:33",
+        })
+        .build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+          "Failed to validate tags - 'validUntil' in 'ValidityInfo' missing tag 0",
         );
       }
     });
@@ -476,7 +554,7 @@ P6bzH6sxUQOjUzBRMB0GA1UdDgQWBBTdsH0VK3ME3dXqAVUbAjWUGsd4WTAfBgNV
 HSMEGDAWgBTdsH0VK3ME3dXqAVUbAjWUGsd4WTAPBgNVHRMBAf8EBTADAQH/MAoG
 CCqGSM49BAMCA0kAMEYCIQCswZ7AEN7C1BXUozJzfpSutZZ/dFCvqeL4t6h9Da15
 mgIhANG2+hz/ejZdUjVcjtDdN+/18Wus8gs9vdveWu9SeoJ7
------END CERTIFICATE-----`
+-----END CERTIFICATE-----`;
         const serverCertPem = `-----BEGIN CERTIFICATE-----
 MIIBXzCCAQSgAwIBAgIUG3qUgKL8F+aOHk32XWfbkqQTscgwCgYIKoZIzj0EAwIw
 DTELMAkGA1UEBhMCR0IwHhcNMjYwMjA2MTg1NTExWhcNMjcwMjA2MTg1NTExWjAN
@@ -486,25 +564,31 @@ JlzEAsRP2QujQjBAMB0GA1UdDgQWBBQQLWmAtbNhbHhI82ZqZrqD78QmjTAfBgNV
 HSMEGDAWgBTdsH0VK3ME3dXqAVUbAjWUGsd4WTAKBggqhkjOPQQDAgNJADBGAiEA
 pUMhLrs/OBOz/HPHLhtA6WW2TqqG9xLVMGwFrEQDRjUCIQCkl26uhVBpZ7xaUyZD
 oqkvy0k40yR/ej0XvNwSLKHIyQ==
------END CERTIFICATE-----`
+-----END CERTIFICATE-----`;
         const certificate = new X509Certificate(serverCertPem);
         const credential = new TestMDLBuilder()
-            .withUnprotectedHeader(new Map().set(33, new Uint8Array(certificate.raw)))
-            .build();
+          .withUnprotectedHeader(
+            new Map().set(33, new Uint8Array(certificate.raw)),
+          )
+          .build();
         const verifySpy = jest
-            .spyOn(X509Certificate.prototype, "verify")
-            .mockImplementation(() => {throw new Error("crypto failure")});
+          .spyOn(X509Certificate.prototype, "verify")
+          .mockImplementation(() => {
+            throw new Error("crypto failure");
+          });
 
         expect.assertions(2);
         try {
           await isValidCredential(credential, root);
         } catch (error) {
           expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe("Signature could not be verified - crypto failure");
+          expect((error as Error).message).toBe(
+            "Signature could not be verified - crypto failure",
+          );
         } finally {
           verifySpy.mockRestore();
         }
-      })
+      });
 
       it("should throw MDLValidationError when MSO signature fails to verify", async () => {
         jest.useFakeTimers();
@@ -647,8 +731,8 @@ h6XK6xERRLkY5jjINTt8TkU=
 
       it("should throw MDLValidationError when x-coordinate (-2) is not a Uint8Array", async () => {
         const credential = new TestMDLBuilder()
-            .withDeviceKeyParameter(-2, 123)
-            .build();
+          .withDeviceKeyParameter(-2, 123)
+          .build();
 
         expect.assertions(2);
         try {
@@ -656,15 +740,15 @@ h6XK6xERRLkY5jjINTt8TkU=
         } catch (error) {
           expect(error).toBeInstanceOf(MDLValidationError);
           expect((error as Error).message).toBe(
-              "DeviceKey x-coordinate (-2) must be a Uint8Array",
+            "DeviceKey x-coordinate (-2) must be a Uint8Array",
           );
         }
       });
 
       it("should throw MDLValidationError when y-coordinate (-3) is not a Uint8Array", async () => {
         const credential = new TestMDLBuilder()
-            .withDeviceKeyParameter(-3, "string" as unknown as Uint8Array)
-            .build();
+          .withDeviceKeyParameter(-3, "string" as unknown as Uint8Array)
+          .build();
 
         expect.assertions(2);
         try {
@@ -672,7 +756,7 @@ h6XK6xERRLkY5jjINTt8TkU=
         } catch (error) {
           expect(error).toBeInstanceOf(MDLValidationError);
           expect((error as Error).message).toBe(
-              "DeviceKey y-coordinate (-3) must be a Uint8Array",
+            "DeviceKey y-coordinate (-3) must be a Uint8Array",
           );
         }
       });
