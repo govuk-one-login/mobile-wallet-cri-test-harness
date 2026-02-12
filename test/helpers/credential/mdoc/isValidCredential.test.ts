@@ -294,7 +294,26 @@ describe("isValidCredential", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(MDLValidationError);
         expect((error as Error).message).toBe(
-          "Invalid SOI - JPEG should start with ffd8ffe0 or ffd8ffee or ffd8ffdb for JPEG but found ffd8ffe1",
+          "Invalid SOI - JPEG should start with ffd8ffe0 or ffd8ffee or ffd8ffdb but found ffd8ffe1",
+        );
+      }
+    });
+
+    it("should throw MDLValidationError when penultimate byte is invalid", async() => {
+      const credential = new TestMDLBuilder()
+          .withElementValue("portrait", new Uint8Array([
+              0xff, 0xd8, 0xff, 0xe0,
+              0x00, 0xd9
+          ]))
+          .build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+            "Invalid EOI - JPEG should end with ffd9 but found 00d9",
         );
       }
     });
@@ -311,6 +330,40 @@ describe("isValidCredential", () => {
         expect(error).toBeInstanceOf(MDLValidationError);
         expect((error as Error).message).toBe(
           "Invalid EOI - JPEG should end with ffd9 but found ffe0",
+        );
+      }
+    });
+
+    it("should throw MDLValidationError when portrait array is too short", async () => {
+      const credential = new TestMDLBuilder()
+          .withElementValue("portrait", new Uint8Array([
+            0xff, 0xd8, 0xff, 0xe0
+          ]))
+          .build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+            "Invalid EOI - JPEG should end with ffd9 but found ffe0",
+        );
+      }
+    });
+
+    it("should throw MDLValidationError when portrait is empty", async () => {
+      const credential = new TestMDLBuilder()
+          .withElementValue("portrait", new Uint8Array([]))
+          .build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toContain(
+            "Invalid SOI",
         );
       }
     });
