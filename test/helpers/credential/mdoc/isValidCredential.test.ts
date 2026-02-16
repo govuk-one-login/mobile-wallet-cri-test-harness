@@ -3,8 +3,13 @@ import { TestMDLBuilder } from "./TestMDLBuilder";
 import { MDLValidationError } from "./MDLValidationError";
 import { Tag } from "cbor2";
 import { base64url } from "jose";
-import { resetAjvInstance } from "../../ajv/ajvInstance";
+import * as ajvModule from "../../ajv/ajvInstance";
 import { X509Certificate } from "node:crypto";
+import { validateIssuerSignedSchema } from "./validateIssuerSigned";
+import { ErrorObject, ValidateFunction } from "ajv";
+import { IssuerSigned } from "./types/issuerSigned";
+import { validateMobileSecurityObject } from "./validateIssuerAuth";
+import { MobileSecurityObject } from "./types/mobileSecurityObject";
 
 const rootCertificate = `-----BEGIN CERTIFICATE-----
 MIIB1zCCAX2gAwIBAgIUIatAsTQsYXy6Wrb1Cdp8tJ3RLC0wCgYIKoZIzj0EAwIw
@@ -26,7 +31,8 @@ describe("isValidCredential", () => {
 
   afterEach(() => {
     jest.useRealTimers();
-    resetAjvInstance();
+    ajvModule.resetAjvInstance();
+    jest.restoreAllMocks();
   });
 
   describe("Encoding", () => {
@@ -246,6 +252,100 @@ describe("isValidCredential", () => {
     });
   });
 
+  describe("IssuerSigned", () => {
+    it("should throw MDLValidationError with AJV error", () => {
+      const mockValidator = jest
+        .fn()
+        .mockReturnValue(false) as unknown as ValidateFunction;
+      mockValidator.errors = [
+        {
+          instancePath: "/path",
+          message: "must be a string",
+          data: 123,
+          keyword: "key",
+        } as unknown as ErrorObject,
+      ];
+
+      const mockAjv = {
+        addSchema: jest.fn().mockReturnThis(),
+        compile: jest.fn().mockReturnValue(mockValidator),
+      };
+
+      jest.spyOn(ajvModule, "getAjvInstance").mockReturnValue(mockAjv as never);
+
+      expect(() => validateIssuerSignedSchema({} as IssuerSigned)).toThrow(
+        "IssuerSigned does not comply with schema - /path: must be a string",
+      );
+    });
+
+    it("should default path to 'root' when instancePath is missing", () => {
+      const mockValidator = jest
+        .fn()
+        .mockReturnValue(false) as unknown as ValidateFunction;
+      mockValidator.errors = [
+        {
+          instancePath: "",
+          message: "must be a string",
+          data: 123,
+          keyword: "key",
+        } as unknown as ErrorObject,
+      ];
+
+      const mockAjv = {
+        addSchema: jest.fn().mockReturnThis(),
+        compile: jest.fn().mockReturnValue(mockValidator),
+      };
+
+      jest.spyOn(ajvModule, "getAjvInstance").mockReturnValue(mockAjv as never);
+
+      expect(() => validateIssuerSignedSchema({} as IssuerSigned)).toThrow(
+        "IssuerSigned does not comply with schema - root: must be a string",
+      );
+    });
+
+    it("should default message to 'Unknown validation error' when message is missing", () => {
+      const mockValidator = jest
+        .fn()
+        .mockReturnValue(false) as unknown as ValidateFunction;
+      mockValidator.errors = [
+        {
+          instancePath: "/path",
+          message: undefined,
+          data: 123,
+          keyword: "key",
+        } as unknown as ErrorObject,
+      ];
+
+      const mockAjv = {
+        addSchema: jest.fn().mockReturnThis(),
+        compile: jest.fn().mockReturnValue(mockValidator),
+      };
+
+      jest.spyOn(ajvModule, "getAjvInstance").mockReturnValue(mockAjv as never);
+
+      expect(() => validateIssuerSignedSchema({} as IssuerSigned)).toThrow(
+        "IssuerSigned does not comply with schema - /path: Unknown validation error",
+      );
+    });
+
+    it("should handle undefined validator.errors", () => {
+      const mockValidator = jest
+        .fn()
+        .mockReturnValue(false) as unknown as ValidateFunction;
+      mockValidator.errors = undefined;
+
+      const mockAjv = {
+        addSchema: jest.fn().mockReturnThis(),
+        compile: jest.fn().mockReturnValue(mockValidator),
+      };
+
+      jest.spyOn(ajvModule, "getAjvInstance").mockReturnValue(mockAjv as never);
+
+      expect(() => validateIssuerSignedSchema({} as IssuerSigned)).toThrow(
+        "IssuerSigned does not comply with schema - ",
+      );
+    });
+  });
   describe("Digest IDs", () => {
     it("should throw MDLValidationError when digest IDs within the org.iso.18013.5.1 namespace are not unique", async () => {
       const credential = new TestMDLBuilder()
@@ -299,13 +399,13 @@ describe("isValidCredential", () => {
       }
     });
 
-    it("should throw MDLValidationError when penultimate byte is invalid", async() => {
+    it("should throw MDLValidationError when penultimate byte is invalid", async () => {
       const credential = new TestMDLBuilder()
-          .withElementValue("portrait", new Uint8Array([
-              0xff, 0xd8, 0xff, 0xe0,
-              0x00, 0xd9
-          ]))
-          .build();
+        .withElementValue(
+          "portrait",
+          new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0xd9]),
+        )
+        .build();
 
       expect.assertions(2);
       try {
@@ -313,7 +413,7 @@ describe("isValidCredential", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(MDLValidationError);
         expect((error as Error).message).toBe(
-            "Invalid EOI - JPEG should end with ffd9 but found 00d9",
+          "Invalid EOI - JPEG should end with ffd9 but found 00d9",
         );
       }
     });
@@ -336,10 +436,8 @@ describe("isValidCredential", () => {
 
     it("should throw MDLValidationError when portrait array is too short", async () => {
       const credential = new TestMDLBuilder()
-          .withElementValue("portrait", new Uint8Array([
-            0xff, 0xd8, 0xff, 0xe0
-          ]))
-          .build();
+        .withElementValue("portrait", new Uint8Array([0xff, 0xd8, 0xff, 0xe0]))
+        .build();
 
       expect.assertions(2);
       try {
@@ -347,30 +445,44 @@ describe("isValidCredential", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(MDLValidationError);
         expect((error as Error).message).toBe(
-            "Invalid EOI - JPEG should end with ffd9 but found ffe0",
+          "Invalid EOI - JPEG should end with ffd9 but found ffe0",
         );
       }
     });
 
     it("should throw MDLValidationError when portrait is empty", async () => {
       const credential = new TestMDLBuilder()
-          .withElementValue("portrait", new Uint8Array([]))
-          .build();
+        .withElementValue("portrait", new Uint8Array([]))
+        .build();
 
       expect.assertions(2);
       try {
         await isValidCredential(credential, rootCertificate);
       } catch (error) {
         expect(error).toBeInstanceOf(MDLValidationError);
-        expect((error as Error).message).toContain(
-            "Invalid SOI",
-        );
+        expect((error as Error).message).toContain("Invalid SOI");
       }
     });
   });
 
   describe("IssuerAuth", () => {
     describe("Protected header", () => {
+      it("should throw MDLValidationError when protected header is not a Map", async () => {
+        const credential = new TestMDLBuilder()
+          .withProtectedHeader("not a map" as unknown as Map<number, number>)
+          .build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, rootCertificate);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+            "Protected header is not a Map",
+          );
+        }
+      });
+
       it("should throw MDLValidationError when protected header has more than one key", async () => {
         const credential = new TestMDLBuilder()
           .withProtectedHeader(new Map().set(1, -7).set(2, "b"))
@@ -693,6 +805,115 @@ h6XK6xERRLkY5jjINTt8TkU=
         } finally {
           jest.useRealTimers();
         }
+      });
+    });
+
+    describe("Validate MSO", () => {
+      it("should should throw MDLValidationError for MSO with AJV error", () => {
+        const mockValidator = jest
+          .fn()
+          .mockReturnValue(false) as unknown as ValidateFunction;
+        mockValidator.errors = [
+          {
+            instancePath: "/path",
+            message: "must be a string",
+            data: 123,
+            keyword: "key",
+          } as unknown as ErrorObject,
+        ];
+
+        const mockAjv = {
+          addSchema: jest.fn().mockReturnThis(),
+          compile: jest.fn().mockReturnValue(mockValidator),
+        };
+
+        jest
+          .spyOn(ajvModule, "getAjvInstance")
+          .mockReturnValue(mockAjv as never);
+
+        expect(() =>
+          validateMobileSecurityObject({} as MobileSecurityObject),
+        ).toThrow(
+          "MobileSecurityObject does not comply with schema - /path: must be a string",
+        );
+      });
+
+      it("should default path to 'root' when instancePath is missing", () => {
+        const mockValidator = jest
+          .fn()
+          .mockReturnValue(false) as unknown as ValidateFunction;
+        mockValidator.errors = [
+          {
+            instancePath: "",
+            message: "must be a string",
+            data: 123,
+            keyword: "key",
+          } as unknown as ErrorObject,
+        ];
+
+        const mockAjv = {
+          addSchema: jest.fn().mockReturnThis(),
+          compile: jest.fn().mockReturnValue(mockValidator),
+        };
+
+        jest
+          .spyOn(ajvModule, "getAjvInstance")
+          .mockReturnValue(mockAjv as never);
+
+        expect(() =>
+          validateMobileSecurityObject({} as MobileSecurityObject),
+        ).toThrow(
+          "MobileSecurityObject does not comply with schema - root: must be a string",
+        );
+      });
+
+      it("should default to 'Unknown validation error' when message is missing", () => {
+        const mockValidator = jest
+          .fn()
+          .mockReturnValue(false) as unknown as ValidateFunction;
+        mockValidator.errors = [
+          {
+            instancePath: "/path",
+            message: undefined,
+            data: 123,
+            keyword: "key",
+          } as unknown as ErrorObject,
+        ];
+
+        const mockAjv = {
+          addSchema: jest.fn().mockReturnThis(),
+          compile: jest.fn().mockReturnValue(mockValidator),
+        };
+
+        jest
+          .spyOn(ajvModule, "getAjvInstance")
+          .mockReturnValue(mockAjv as never);
+
+        expect(() =>
+          validateMobileSecurityObject({} as MobileSecurityObject),
+        ).toThrow(
+          "MobileSecurityObject does not comply with schema - /path: Unknown validation error",
+        );
+      });
+
+      it("should handle undefined validator.errors", () => {
+        const mockValidator = jest
+          .fn()
+          .mockReturnValue(false) as unknown as ValidateFunction;
+        mockValidator.errors = undefined;
+
+        const mockAjv = {
+          addSchema: jest.fn().mockReturnThis(),
+          compile: jest.fn().mockReturnValue(mockValidator),
+        };
+
+        jest
+          .spyOn(ajvModule, "getAjvInstance")
+          .mockReturnValue(mockAjv as never);
+
+        expect(() =>
+          validateMobileSecurityObject({} as MobileSecurityObject),
+        ).toThrow("MobileSecurityObject does not comply with schema - ");
       });
     });
 

@@ -172,7 +172,7 @@ async function validatePayload(
   validateValidityInfo(mobileSecurityObject.validityInfo);
 }
 
-function validateMobileSecurityObject(
+export function validateMobileSecurityObject(
   mobileSecurityObject: MobileSecurityObject,
 ): void {
   const ajv = getAjvInstance();
