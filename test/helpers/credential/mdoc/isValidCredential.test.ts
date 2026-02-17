@@ -346,6 +346,7 @@ describe("isValidCredential", () => {
       );
     });
   });
+
   describe("Digest IDs", () => {
     it("should throw MDLValidationError when digest IDs within the org.iso.18013.5.1 namespace are not unique", async () => {
       const credential = new TestMDLBuilder()
