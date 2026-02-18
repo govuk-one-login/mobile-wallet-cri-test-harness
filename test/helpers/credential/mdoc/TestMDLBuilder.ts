@@ -201,7 +201,7 @@ export class TestMDLBuilder {
     return this;
   }
 
-  withUntaggedMsoBytes(): TestMDLBuilder {
+  withUntaggedMsoBytes(): this {
     this.untagMsoBytes = true;
     return this;
   }
