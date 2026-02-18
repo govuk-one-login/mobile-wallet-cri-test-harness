@@ -33,6 +33,7 @@ export class TestMDLBuilder {
   private readonly elementsWithoutTag24: Set<string>;
   private readonly elementsWithMismatchedDigests: Map<string, Uint8Array>;
   private readonly elementsWithoutDigests: Set<string>;
+  private untagMsoBytes = false;
 
   constructor() {
     this.namespaces = new Map();
@@ -128,7 +129,10 @@ export class TestMDLBuilder {
       },
     };
 
-    const msoEncoded = encode(new Tag(TAGS.ENCODED_CBOR_DATA, encode(mso)));
+    const encodedMso = encode(mso);
+    const msoEncoded = this.untagMsoBytes
+      ? encodedMso
+      : encode(new Tag(TAGS.ENCODED_CBOR_DATA, encodedMso));
 
     const protectedHeader = encode(this.protectedHeader);
     const toBeSigned = encode([
@@ -194,6 +198,11 @@ export class TestMDLBuilder {
 
   withUntaggedIssuerSignedItemBytes(elementIdentifier: string) {
     this.elementsWithoutTag24.add(elementIdentifier);
+    return this;
+  }
+
+  withUntaggedMsoBytes(): TestMDLBuilder {
+    this.untagMsoBytes = true;
     return this;
   }
 

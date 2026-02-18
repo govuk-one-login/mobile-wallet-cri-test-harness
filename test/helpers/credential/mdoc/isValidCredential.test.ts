@@ -197,6 +197,14 @@ describe("isValidCredential", () => {
       }
     });
 
+    it("should throw MDLValidationError when MobileSecurityObjectBytes missing tag '24'", async () => {
+      const credential = new TestMDLBuilder().withUntaggedMsoBytes().build();
+
+      await expect(
+        isValidCredential(credential, rootCertificate),
+      ).rejects.toThrow("MobileSecurityObjectBytes missing tag");
+    });
+
     it("should throw MDLValidationError when 'signed' in ValidityInfo is not tagged with 0", async () => {
       const credential = new TestMDLBuilder()
         .withValidityInfo({
