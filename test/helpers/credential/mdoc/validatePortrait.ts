@@ -20,7 +20,7 @@ export function validatePortrait(issuerSignedItems: IssuerSignedItem[]): void {
     ![0xe0, 0xee, 0xdb].includes(byte4)
   ) {
     throw new MDLValidationError(
-      `Invalid SOI - JPEG should start with ffd8ffe0 or ffd8ffee or ffd8ffdb for JPEG but found ${Buffer.from([byte1, byte2, byte3, byte4]).toString("hex")}`,
+      `Invalid SOI - JPEG should start with ffd8ffe0 or ffd8ffee or ffd8ffdb but found ${Buffer.from([byte1, byte2, byte3, byte4]).toString("hex")}`,
       "INVALID_PORTRAIT",
     );
   }
