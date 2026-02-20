@@ -1,6 +1,9 @@
 name: Nightly Quality Analysis & Docker Image Vulnerability Scan
 
 on:
+  push:
+    branches:
+      - fix-nightly-builds
   schedule:
     - cron: '0 0 * * 1-5'
   workflow_dispatch:
