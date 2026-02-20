@@ -41,7 +41,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284 # v0.34.0
         with:
-          image-ref: node:lts-bookworm-slim
+          image-ref: test-harness
           format: table
           exit-code: 1
           ignore-unfixed: true
