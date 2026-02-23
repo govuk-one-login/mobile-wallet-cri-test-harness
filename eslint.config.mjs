@@ -6,7 +6,8 @@ export default [
   {
     ignores: [
       "dist",
-      "coverage"
+      "coverage",
+      "test/helpers/credential/mdoc/TestMDLBuilder.ts"
     ],
   },
   {

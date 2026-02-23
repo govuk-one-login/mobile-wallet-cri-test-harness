@@ -74,9 +74,14 @@ function base64UrlToUint8Array(data: string): Uint8Array {
  * This allows for explicit verification that a given value was actually tagged with 0,
  * instead of being silently converted to a Date type.
  */
-Tag.registerDecoder(TAGS.DATE_TIME, (tag) => new Tag(TAGS.DATE_TIME, tag.contents));
-Tag.registerDecoder(TAGS.FULL_DATE, (tag) => new Tag(TAGS.FULL_DATE, tag.contents));
-
+Tag.registerDecoder(
+  TAGS.DATE_TIME,
+  (tag) => new Tag(TAGS.DATE_TIME, tag.contents),
+);
+Tag.registerDecoder(
+  TAGS.FULL_DATE,
+  (tag) => new Tag(TAGS.FULL_DATE, tag.contents),
+);
 
 const tags = new Map([
   [
