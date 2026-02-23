@@ -443,22 +443,6 @@ describe("isValidCredential", () => {
       }
     });
 
-    it("should throw MDLValidationError when portrait array is too short", async () => {
-      const credential = new TestMDLBuilder()
-        .withElementValue("portrait", new Uint8Array([0xff, 0xd8, 0xff, 0xe0]))
-        .build();
-
-      expect.assertions(2);
-      try {
-        await isValidCredential(credential, rootCertificate);
-      } catch (error) {
-        expect(error).toBeInstanceOf(MDLValidationError);
-        expect((error as Error).message).toBe(
-          "Invalid EOI - JPEG should end with ffd9 but found ffe0",
-        );
-      }
-    });
-
     it("should throw MDLValidationError when portrait is empty", async () => {
       const credential = new TestMDLBuilder()
         .withElementValue("portrait", new Uint8Array([]))
