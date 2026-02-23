@@ -133,7 +133,7 @@ export class TestMDLBuilder {
     const tagged = this.untaggedMsoBytes
       ? msoBytes
       : new Tag(TAGS.ENCODED_CBOR_DATA, msoBytes);
-    const payload = encode(tagged)
+    const payload = encode(tagged);
 
     const protectedHeader = encode(this.protectedHeader);
     const toBeSigned = encode([

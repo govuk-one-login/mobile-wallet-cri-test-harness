@@ -5,11 +5,7 @@ import { Tag } from "cbor2";
 import { base64url } from "jose";
 import * as ajvModule from "../../ajv/ajvInstance";
 import { X509Certificate } from "node:crypto";
-import { validateIssuerSignedSchema } from "./validateIssuerSigned";
 import { ErrorObject, ValidateFunction } from "ajv";
-import { IssuerSigned } from "./types/issuerSigned";
-import { validateMobileSecurityObject } from "./validateIssuerAuth";
-import { MobileSecurityObject } from "./types/mobileSecurityObject";
 
 const rootCertificate = `-----BEGIN CERTIFICATE-----
 MIIB1zCCAX2gAwIBAgIUIatAsTQsYXy6Wrb1Cdp8tJ3RLC0wCgYIKoZIzj0EAwIw
@@ -261,7 +257,7 @@ describe("isValidCredential", () => {
   });
 
   describe("IssuerSigned", () => {
-    it("should throw MDLValidationError with AJV error", () => {
+    it("should throw MDLValidationError with AJV error", async () => {
       const mockValidator = jest
         .fn()
         .mockReturnValue(false) as unknown as ValidateFunction;
@@ -281,12 +277,20 @@ describe("isValidCredential", () => {
 
       jest.spyOn(ajvModule, "getAjvInstance").mockReturnValue(mockAjv as never);
 
-      expect(() => validateIssuerSignedSchema({} as IssuerSigned)).toThrow(
-        "IssuerSigned does not comply with schema - /path: must be a string",
-      );
+      const credential = new TestMDLBuilder().build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+          "IssuerSigned does not comply with schema - /path: must be a string",
+        );
+      }
     });
 
-    it("should default path to 'root' when instancePath is missing", () => {
+    it("should throw MDLValidationError and default path to 'root' when instancePath is missing", async () => {
       const mockValidator = jest
         .fn()
         .mockReturnValue(false) as unknown as ValidateFunction;
@@ -306,12 +310,20 @@ describe("isValidCredential", () => {
 
       jest.spyOn(ajvModule, "getAjvInstance").mockReturnValue(mockAjv as never);
 
-      expect(() => validateIssuerSignedSchema({} as IssuerSigned)).toThrow(
-        "IssuerSigned does not comply with schema - root: must be a string",
-      );
+      const credential = new TestMDLBuilder().build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+          "IssuerSigned does not comply with schema - root: must be a string",
+        );
+      }
     });
 
-    it("should default message to 'Unknown validation error' when message is missing", () => {
+    it("should throw MDLValidationError and default message to 'Unknown validation error' when message is missing", async () => {
       const mockValidator = jest
         .fn()
         .mockReturnValue(false) as unknown as ValidateFunction;
@@ -331,12 +343,20 @@ describe("isValidCredential", () => {
 
       jest.spyOn(ajvModule, "getAjvInstance").mockReturnValue(mockAjv as never);
 
-      expect(() => validateIssuerSignedSchema({} as IssuerSigned)).toThrow(
-        "IssuerSigned does not comply with schema - /path: Unknown validation error",
-      );
+      const credential = new TestMDLBuilder().build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+          "IssuerSigned does not comply with schema - /path: Unknown validation error",
+        );
+      }
     });
 
-    it("should throw MDLValidationError with empty error details when validator.errors is undefined", () => {
+    it("should throw MDLValidationError with empty error details when validator.errors is undefined", async () => {
       const mockValidator = jest
         .fn()
         .mockReturnValue(false) as unknown as ValidateFunction;
@@ -349,9 +369,17 @@ describe("isValidCredential", () => {
 
       jest.spyOn(ajvModule, "getAjvInstance").mockReturnValue(mockAjv as never);
 
-      expect(() => validateIssuerSignedSchema({} as IssuerSigned)).toThrow(
-        "IssuerSigned does not comply with schema - ",
-      );
+      const credential = new TestMDLBuilder().build();
+
+      expect.assertions(2);
+      try {
+        await isValidCredential(credential, rootCertificate);
+      } catch (error) {
+        expect(error).toBeInstanceOf(MDLValidationError);
+        expect((error as Error).message).toBe(
+          "IssuerSigned does not comply with schema - ",
+        );
+      }
     });
   });
 
@@ -802,10 +830,11 @@ h6XK6xERRLkY5jjINTt8TkU=
     });
 
     describe("Validate MSO", () => {
-      it("should should throw MDLValidationError for MSO with AJV error", () => {
+      it("should should throw MDLValidationError for MSO with AJV error", async () => {
         const mockValidator = jest
           .fn()
-          .mockReturnValue(false) as unknown as ValidateFunction;
+          .mockReturnValueOnce(true) // first call IssuerSigned (valid)
+          .mockReturnValueOnce(false) as unknown as ValidateFunction; // second call MSO (invalid)
         mockValidator.errors = [
           {
             instancePath: "/path",
@@ -824,17 +853,24 @@ h6XK6xERRLkY5jjINTt8TkU=
           .spyOn(ajvModule, "getAjvInstance")
           .mockReturnValue(mockAjv as never);
 
-        expect(() =>
-          validateMobileSecurityObject({} as MobileSecurityObject),
-        ).toThrow(
-          "MobileSecurityObject does not comply with schema - /path: must be a string",
-        );
+        const credential = new TestMDLBuilder().build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, rootCertificate);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+            "MobileSecurityObject does not comply with schema - /path: must be a string",
+          );
+        }
       });
 
-      it("should default path to 'root' when instancePath is missing", () => {
+      it("should should throw MDLValidationError and default path to 'root' when instancePath is missing", async () => {
         const mockValidator = jest
           .fn()
-          .mockReturnValue(false) as unknown as ValidateFunction;
+          .mockReturnValueOnce(true) // first call IssuerSigned (valid)
+          .mockReturnValueOnce(false) as unknown as ValidateFunction; // second call MSO (invalid)
         mockValidator.errors = [
           {
             instancePath: "",
@@ -853,17 +889,24 @@ h6XK6xERRLkY5jjINTt8TkU=
           .spyOn(ajvModule, "getAjvInstance")
           .mockReturnValue(mockAjv as never);
 
-        expect(() =>
-          validateMobileSecurityObject({} as MobileSecurityObject),
-        ).toThrow(
-          "MobileSecurityObject does not comply with schema - root: must be a string",
-        );
+        const credential = new TestMDLBuilder().build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, rootCertificate);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+            "MobileSecurityObject does not comply with schema - root: must be a string",
+          );
+        }
       });
 
-      it("should default to 'Unknown validation error' when message is missing", () => {
+      it("should throw MDLValidationError and default to 'Unknown validation error' when message is missing", async () => {
         const mockValidator = jest
           .fn()
-          .mockReturnValue(false) as unknown as ValidateFunction;
+          .mockReturnValueOnce(true) // first call IssuerSigned (valid)
+          .mockReturnValueOnce(false) as unknown as ValidateFunction; // second call MSO (invalid)
         mockValidator.errors = [
           {
             instancePath: "/path",
@@ -882,17 +925,24 @@ h6XK6xERRLkY5jjINTt8TkU=
           .spyOn(ajvModule, "getAjvInstance")
           .mockReturnValue(mockAjv as never);
 
-        expect(() =>
-          validateMobileSecurityObject({} as MobileSecurityObject),
-        ).toThrow(
-          "MobileSecurityObject does not comply with schema - /path: Unknown validation error",
-        );
+        const credential = new TestMDLBuilder().build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, rootCertificate);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+            "MobileSecurityObject does not comply with schema - /path: Unknown validation error",
+          );
+        }
       });
 
-      it("should throw MDLValidationError with empty error details when validator.errors is undefined", () => {
+      it("should throw MDLValidationError with empty error details when validator.errors is undefined", async () => {
         const mockValidator = jest
           .fn()
-          .mockReturnValue(false) as unknown as ValidateFunction;
+          .mockReturnValueOnce(true) // first call IssuerSigned (valid)
+          .mockReturnValueOnce(false) as unknown as ValidateFunction; // second call MSO (invalid)
         mockValidator.errors = undefined;
 
         const mockAjv = {
@@ -904,207 +954,215 @@ h6XK6xERRLkY5jjINTt8TkU=
           .spyOn(ajvModule, "getAjvInstance")
           .mockReturnValue(mockAjv as never);
 
-        expect(() =>
-          validateMobileSecurityObject({} as MobileSecurityObject),
-        ).toThrow("MobileSecurityObject does not comply with schema - ");
+        const credential = new TestMDLBuilder().build();
+
+        expect.assertions(2);
+        try {
+          await isValidCredential(credential, rootCertificate);
+        } catch (error) {
+          expect(error).toBeInstanceOf(MDLValidationError);
+          expect((error as Error).message).toBe(
+            "MobileSecurityObject does not comply with schema - ",
+          );
+        }
+      });
+
+      describe("Value digests", () => {
+        it("should throw MDLValidationError when the payload's ValueDigests is missing a digest", async () => {
+          const credential = new TestMDLBuilder()
+            .withoutDigest("welsh_licence")
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "No digest found for digest ID 20 in MSO namespace org.iso.18013.5.1.GB: 30,40",
+            );
+          }
+        });
+
+        it("should throw MDLValidationError when digests don't match", async () => {
+          const credential = new TestMDLBuilder()
+            .withMismatchedDigest(
+              "family_name",
+              new Uint8Array(Buffer.from("incorrect-digest")),
+            )
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "Digest mismatch for element identifier family_name with digest ID 10 in namespace org.iso.18013.5.1 - Expected 696e636f72726563742d646967657374 but calculated 40cb668b10272f8f5e6160d4e968d95d0c090f47c90306ebe934776ac076caba",
+            );
+          }
+        });
+      });
+
+      describe("Device key", () => {
+        it("should throw MDLValidationError when it has invalid keys", async () => {
+          const credential = new TestMDLBuilder()
+            .withDeviceKeyParameter(999, 1)
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "DeviceKey must contain exactly the keys [1, -1, -2, -3]",
+            );
+          }
+        });
+
+        it("should throw MDLValidationError when key type (1) is not EC2 (2)", async () => {
+          const credential = new TestMDLBuilder()
+            .withDeviceKeyParameter(1, 1)
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "DeviceKey key type (1) must be EC2 (Elliptic Curve) (2)",
+            );
+          }
+        });
+
+        it("should throw MDLValidationError when curve (-1) is not P-256 (1)", async () => {
+          const credential = new TestMDLBuilder()
+            .withDeviceKeyParameter(-1, 2)
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "DeviceKey curve (-1) must be P-256 (1)",
+            );
+          }
+        });
+
+        it("should throw MDLValidationError when x-coordinate (-2) is not a Uint8Array", async () => {
+          const credential = new TestMDLBuilder()
+            .withDeviceKeyParameter(-2, 123)
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "DeviceKey x-coordinate (-2) must be a Uint8Array",
+            );
+          }
+        });
+
+        it("should throw MDLValidationError when y-coordinate (-3) is not a Uint8Array", async () => {
+          const credential = new TestMDLBuilder()
+            .withDeviceKeyParameter(-3, "string" as unknown as Uint8Array)
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "DeviceKey y-coordinate (-3) must be a Uint8Array",
+            );
+          }
+        });
+
+        it("should throw MDLValidationError when it is not a valid public key", async () => {
+          const credential = new TestMDLBuilder()
+            .withDeviceKeyParameter(-2, new Uint8Array())
+            .withDeviceKeyParameter(-3, new Uint8Array())
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe("Invalid elliptic curve key");
+          }
+        });
+      });
+
+      describe("Validity info", () => {
+        it("should throw MDLValidationError when 'signed' is in the future", async () => {
+          const credential = new TestMDLBuilder()
+            .withValidityInfo({
+              signed: new Tag(0, "2025-09-10T15:40:00Z"),
+              validFrom: new Tag(0, "2025-09-10T15:40:00Z"),
+            })
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "One or more dates are invalid - 'signed' (2025-09-10T15:40:00Z) must be in the past,'validFrom' (2025-09-10T15:40:00Z) must be in the past",
+            );
+          }
+        });
+
+        it("should throw MDLValidationError when 'validFrom' is before 'signed'", async () => {
+          const credential = new TestMDLBuilder()
+            .withValidityInfo({
+              signed: new Tag(0, "2025-09-10T15:25:00Z"),
+              validFrom: new Tag(0, "2025-09-10T15:20:00Z"),
+            })
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "One or more dates are invalid - 'validFrom' (2026-09-10T15:20:00Z) must be equal or later than 'signed' (2025-09-10T15:25:00Z)",
+            );
+          }
+        });
+
+        it("should throw MDLValidationError when 'validUntil' is in the past", async () => {
+          const credential = new TestMDLBuilder()
+            .withValidityInfo({
+              validUntil: new Tag(0, "2025-09-09T15:30:00Z"),
+            })
+            .build();
+
+          expect.assertions(2);
+          try {
+            await isValidCredential(credential, rootCertificate);
+          } catch (error) {
+            expect(error).toBeInstanceOf(MDLValidationError);
+            expect((error as Error).message).toBe(
+              "One or more dates are invalid - 'validUntil' (2025-09-09T15:30:00Z) must be in the future",
+            );
+          }
+        });
       });
     });
 
-    describe("Value digests", () => {
-      it("should throw MDLValidationError when the payload's ValueDigests is missing a digest", async () => {
-        const credential = new TestMDLBuilder()
-          .withoutDigest("welsh_licence")
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "No digest found for digest ID 20 in MSO namespace org.iso.18013.5.1.GB: 30,40",
-          );
-        }
-      });
-
-      it("should throw MDLValidationError when digests don't match", async () => {
-        const credential = new TestMDLBuilder()
-          .withMismatchedDigest(
-            "family_name",
-            new Uint8Array(Buffer.from("incorrect-digest")),
-          )
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "Digest mismatch for element identifier family_name with digest ID 10 in namespace org.iso.18013.5.1 - Expected 696e636f72726563742d646967657374 but calculated 40cb668b10272f8f5e6160d4e968d95d0c090f47c90306ebe934776ac076caba",
-          );
-        }
-      });
+    it("should return true when credential is valid", async () => {
+      const credential = new TestMDLBuilder().build();
+      expect(await isValidCredential(credential, rootCertificate)).toBe(true);
     });
-
-    describe("Device key", () => {
-      it("should throw MDLValidationError when it has invalid keys", async () => {
-        const credential = new TestMDLBuilder()
-          .withDeviceKeyParameter(999, 1)
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "DeviceKey must contain exactly the keys [1, -1, -2, -3]",
-          );
-        }
-      });
-
-      it("should throw MDLValidationError when key type (1) is not EC2 (2)", async () => {
-        const credential = new TestMDLBuilder()
-          .withDeviceKeyParameter(1, 1)
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "DeviceKey key type (1) must be EC2 (Elliptic Curve) (2)",
-          );
-        }
-      });
-
-      it("should throw MDLValidationError when curve (-1) is not P-256 (1)", async () => {
-        const credential = new TestMDLBuilder()
-          .withDeviceKeyParameter(-1, 2)
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "DeviceKey curve (-1) must be P-256 (1)",
-          );
-        }
-      });
-
-      it("should throw MDLValidationError when x-coordinate (-2) is not a Uint8Array", async () => {
-        const credential = new TestMDLBuilder()
-          .withDeviceKeyParameter(-2, 123)
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "DeviceKey x-coordinate (-2) must be a Uint8Array",
-          );
-        }
-      });
-
-      it("should throw MDLValidationError when y-coordinate (-3) is not a Uint8Array", async () => {
-        const credential = new TestMDLBuilder()
-          .withDeviceKeyParameter(-3, "string" as unknown as Uint8Array)
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "DeviceKey y-coordinate (-3) must be a Uint8Array",
-          );
-        }
-      });
-
-      it("should throw MDLValidationError when it is not a valid public key", async () => {
-        const credential = new TestMDLBuilder()
-          .withDeviceKeyParameter(-2, new Uint8Array())
-          .withDeviceKeyParameter(-3, new Uint8Array())
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe("Invalid elliptic curve key");
-        }
-      });
-    });
-
-    describe("Validity info", () => {
-      it("should throw MDLValidationError when 'signed' is in the future", async () => {
-        const credential = new TestMDLBuilder()
-          .withValidityInfo({
-            signed: new Tag(0, "2025-09-10T15:40:00Z"),
-            validFrom: new Tag(0, "2025-09-10T15:40:00Z"),
-          })
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "One or more dates are invalid - 'signed' (2025-09-10T15:40:00Z) must be in the past,'validFrom' (2025-09-10T15:40:00Z) must be in the past",
-          );
-        }
-      });
-
-      it("should throw MDLValidationError when 'validFrom' is before 'signed'", async () => {
-        const credential = new TestMDLBuilder()
-          .withValidityInfo({
-            signed: new Tag(0, "2025-09-10T15:25:00Z"),
-            validFrom: new Tag(0, "2025-09-10T15:20:00Z"),
-          })
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "One or more dates are invalid - 'validFrom' (2026-09-10T15:20:00Z) must be equal or later than 'signed' (2025-09-10T15:25:00Z)",
-          );
-        }
-      });
-
-      it("should throw MDLValidationError when 'validUntil' is in the past", async () => {
-        const credential = new TestMDLBuilder()
-          .withValidityInfo({
-            validUntil: new Tag(0, "2025-09-09T15:30:00Z"),
-          })
-          .build();
-
-        expect.assertions(2);
-        try {
-          await isValidCredential(credential, rootCertificate);
-        } catch (error) {
-          expect(error).toBeInstanceOf(MDLValidationError);
-          expect((error as Error).message).toBe(
-            "One or more dates are invalid - 'validUntil' (2025-09-09T15:30:00Z) must be in the future",
-          );
-        }
-      });
-    });
-  });
-
-  it("should return true when credential is valid", async () => {
-    const credential = new TestMDLBuilder().build();
-    expect(await isValidCredential(credential, rootCertificate)).toBe(true);
   });
 });
