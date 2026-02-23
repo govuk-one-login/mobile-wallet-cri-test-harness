@@ -33,7 +33,7 @@ export class TestMDLBuilder {
   private readonly elementsWithoutTag24: Set<string>;
   private readonly elementsWithMismatchedDigests: Map<string, Uint8Array>;
   private readonly elementsWithoutDigests: Set<string>;
-  private untagMsoBytes = false;
+  private untaggedMsoBytes = false;
 
   constructor() {
     this.namespaces = new Map();
@@ -129,17 +129,18 @@ export class TestMDLBuilder {
       },
     };
 
-    const encodedMso = encode(mso);
-    const msoEncoded = this.untagMsoBytes
-      ? encodedMso
-      : encode(new Tag(TAGS.ENCODED_CBOR_DATA, encodedMso));
+    const msoBytes = encode(mso);
+    const tagged = this.untaggedMsoBytes
+      ? msoBytes
+      : new Tag(TAGS.ENCODED_CBOR_DATA, msoBytes);
+    const payload = encode(tagged)
 
     const protectedHeader = encode(this.protectedHeader);
     const toBeSigned = encode([
       "Signature1",
       protectedHeader,
       new Uint8Array(),
-      msoEncoded,
+      payload,
     ]);
 
     const signer = createSign("sha256");
@@ -159,7 +160,7 @@ export class TestMDLBuilder {
     const issuerAuth = [
       protectedHeader,
       this.unprotectedHeader,
-      msoEncoded,
+      payload,
       new Uint8Array(signature),
     ];
 
@@ -202,7 +203,7 @@ export class TestMDLBuilder {
   }
 
   withUntaggedMsoBytes(): this {
-    this.untagMsoBytes = true;
+    this.untaggedMsoBytes = true;
     return this;
   }
 
