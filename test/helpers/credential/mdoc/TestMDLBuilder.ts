@@ -27,7 +27,7 @@ export class TestMDLBuilder {
     validUntil: Tag | string;
   };
   private readonly deviceKey: Map<number, number | Uint8Array>;
-  private readonly protectedHeader: Map<number, number>;
+  private readonly protectedHeader: any;
   private readonly unprotectedHeader: Map<number, Uint8Array>;
 
   private readonly elementsWithoutTag24: Set<string>;
@@ -236,7 +236,7 @@ export class TestMDLBuilder {
     return this;
   }
 
-  withProtectedHeader(protectedHeader: Map<number, number>) {
+  withProtectedHeader(protectedHeader: any) {
     this.protectedHeader.clear();
     for (const [key, value] of protectedHeader) {
       this.protectedHeader.set(key, value);
