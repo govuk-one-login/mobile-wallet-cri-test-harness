@@ -151,7 +151,7 @@ async function validateUnprotectedHeader(
       throw error;
     }
     throw new MDLValidationError(
-      `Signature could not be verified - ${errorMessage(error)} `,
+      `Signature could not be verified - ${errorMessage(error)}`,
       "INVALID_UNPROTECTED_HEADER",
     );
   }

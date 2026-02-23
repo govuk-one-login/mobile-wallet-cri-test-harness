@@ -26,13 +26,14 @@ export class TestMDLBuilder {
     validFrom: Tag | string;
     validUntil: Tag | string;
   };
-  private readonly deviceKey: Map<number, number | Uint8Array>;
-  private readonly protectedHeader: Map<number, number>;
+  private readonly deviceKey: Map<number, any>;
+  private readonly protectedHeader: any;
   private readonly unprotectedHeader: Map<number, Uint8Array>;
 
   private readonly elementsWithoutTag24: Set<string>;
   private readonly elementsWithMismatchedDigests: Map<string, Uint8Array>;
   private readonly elementsWithoutDigests: Set<string>;
+  private untaggedMsoBytes = false;
 
   constructor() {
     this.namespaces = new Map();
@@ -128,14 +129,18 @@ export class TestMDLBuilder {
       },
     };
 
-    const msoEncoded = encode(new Tag(TAGS.ENCODED_CBOR_DATA, encode(mso)));
+    const msoBytes = encode(mso);
+    const tagged = this.untaggedMsoBytes
+      ? msoBytes
+      : new Tag(TAGS.ENCODED_CBOR_DATA, msoBytes);
+    const payload = encode(tagged);
 
     const protectedHeader = encode(this.protectedHeader);
     const toBeSigned = encode([
       "Signature1",
       protectedHeader,
       new Uint8Array(),
-      msoEncoded,
+      payload,
     ]);
 
     const signer = createSign("sha256");
@@ -155,7 +160,7 @@ export class TestMDLBuilder {
     const issuerAuth = [
       protectedHeader,
       this.unprotectedHeader,
-      msoEncoded,
+      payload,
       new Uint8Array(signature),
     ];
 
@@ -197,6 +202,11 @@ export class TestMDLBuilder {
     return this;
   }
 
+  withUntaggedMsoBytes(): this {
+    this.untaggedMsoBytes = true;
+    return this;
+  }
+
   withoutDigest(elementIdentifier: string) {
     this.elementsWithoutDigests.add(elementIdentifier);
     return this;
@@ -221,12 +231,12 @@ export class TestMDLBuilder {
     return this;
   }
 
-  withDeviceKeyParameter(key: number, value: number | Uint8Array) {
+  withDeviceKeyParameter(key: number, value: any) {
     this.deviceKey.set(key, value);
     return this;
   }
 
-  withProtectedHeader(protectedHeader: Map<number, number>) {
+  withProtectedHeader(protectedHeader: any) {
     this.protectedHeader.clear();
     for (const [key, value] of protectedHeader) {
       this.protectedHeader.set(key, value);
