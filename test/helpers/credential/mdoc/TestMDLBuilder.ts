@@ -26,7 +26,7 @@ export class TestMDLBuilder {
     validFrom: Tag | string;
     validUntil: Tag | string;
   };
-  private readonly deviceKey: Map<number, number | Uint8Array>;
+  private readonly deviceKey: Map<number, any>;
   private readonly protectedHeader: any;
   private readonly unprotectedHeader: Map<number, Uint8Array>;
 
@@ -231,7 +231,7 @@ export class TestMDLBuilder {
     return this;
   }
 
-  withDeviceKeyParameter(key: number, value: number | Uint8Array) {
+  withDeviceKeyParameter(key: number, value: any) {
     this.deviceKey.set(key, value);
     return this;
   }

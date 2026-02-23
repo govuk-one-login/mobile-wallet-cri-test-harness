@@ -1071,7 +1071,7 @@ h6XK6xERRLkY5jjINTt8TkU=
 
         it("should throw MDLValidationError when y-coordinate (-3) is not a Uint8Array", async () => {
           const credential = new TestMDLBuilder()
-            .withDeviceKeyParameter(-3, "string" as unknown as Uint8Array)
+            .withDeviceKeyParameter(-3, "string")
             .build();
 
           expect.assertions(2);
