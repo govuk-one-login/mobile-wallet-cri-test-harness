@@ -336,7 +336,7 @@ describe("isValidCredential", () => {
       );
     });
 
-    it("should handle undefined validator.errors", () => {
+    it("should throw MDLValidationError with empty error details when validator.errors is undefined", () => {
       const mockValidator = jest
         .fn()
         .mockReturnValue(false) as unknown as ValidateFunction;
@@ -889,7 +889,7 @@ h6XK6xERRLkY5jjINTt8TkU=
         );
       });
 
-      it("should handle undefined validator.errors", () => {
+      it("should throw MDLValidationError with empty error details when validator.errors is undefined", () => {
         const mockValidator = jest
           .fn()
           .mockReturnValue(false) as unknown as ValidateFunction;
