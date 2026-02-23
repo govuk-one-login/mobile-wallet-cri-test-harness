@@ -50,7 +50,7 @@ export async function validateIssuerAuth(
   verifySignature(certificate.publicKey, protectedHeader, payload, signature);
 }
 
-export function validateProtectedHeader(protectedHeader: Uint8Array): void {
+function validateProtectedHeader(protectedHeader: Uint8Array): void {
   const protectedHeaderDecoded = decode(protectedHeader);
   if (!(protectedHeaderDecoded instanceof Map)) {
     throw new MDLValidationError(
