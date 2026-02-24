@@ -24,8 +24,7 @@
           },
           "check-types": [
             "code style and linting",
-            "unit",
-            "unit test coverage"
+            "unit"
           ]
         },
         {
@@ -52,28 +51,6 @@
             "unit",
             "unit test coverage",
             "code quality"
-          ]
-        },
-        {
-          "phase": "pre-upload",
-          "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/nightly-build.yml",
-            "path": "jobs.sonarqube-scan"
-          },
-          "check-types": [
-            "code quality"
-          ]
-        },
-        {
-          "phase": "pre-upload",
-          "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/nightly-build.yml",
-            "path": "jobs.docker-image-scan"
-          },
-          "check-types": [
-            "vulnerability detection"
           ]
         }
       ]
