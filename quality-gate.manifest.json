@@ -37,7 +37,9 @@
           "check-types": [
             "unit",
             "unit test coverage",
-            "code quality"
+            "code quality",
+            "vulnerability detection",
+            "secret scanning"
           ]
         },
         {
@@ -50,7 +52,9 @@
           "check-types": [
             "unit",
             "unit test coverage",
-            "code quality"
+            "code quality",
+            "vulnerability detection",
+            "secret scanning"
           ]
         }
       ]
