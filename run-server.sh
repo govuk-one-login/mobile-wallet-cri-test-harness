@@ -1,3 +1,3 @@
 #!/bin/bash
 
-npm run start
+node ./dist/src/server.js

@@ -27,8 +27,11 @@
     "express": "^5.2.1",
     "jose": "^6.0.13"
   },
+  "overrides": {
+    "minimatch": "^10.2.1"
+  },
   "devDependencies": {
-    "@eslint/js": "9.39.2",
+    "@eslint/js": "^10.0.1",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
