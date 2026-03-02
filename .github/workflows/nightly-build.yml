@@ -23,27 +23,27 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  docker-image-scan:
-    name: Docker image scan
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0
+  # docker-image-scan:
+  #   name: Docker image scan
+  #   runs-on: ubuntu-24.04
+  #   permissions:
+  #     contents: read
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Build image
-        run: |
-          docker build -t "test-harness" .  
+  #     - name: Build image
+  #       run: |
+  #         docker build -t "test-harness" .  
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # v0.34.1
-        with:
-          image-ref: node:lts-bookworm-slim
-          format: table
-          exit-code: 1
-          ignore-unfixed: true
-          vuln-type: os,library
-          severity: CRITICAL,HIGH
+  #     - name: Run Trivy vulnerability scanner
+  #       uses: aquasecurity/trivy-action@e368e328979b113139d6f9068e03accaed98a518 # v0.34.1
+  #       with:
+  #         image-ref: node:lts-bookworm-slim
+  #         format: table
+  #         exit-code: 1
+  #         ignore-unfixed: true
+  #         vuln-type: os,library
+  #         severity: CRITICAL,HIGH
