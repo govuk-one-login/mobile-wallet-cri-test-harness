@@ -17,7 +17,7 @@
     "test:unit": "TZ=UTC jest node_modules/.bin/jest --testPathPatterns=test/helpers src/config --silent"
   },
   "dependencies": {
-    "@peculiar/x509": "^1.14.3",
+    "@peculiar/x509": "^2.0.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "axios": "^1.14.0",
