@@ -1,4 +1,5 @@
 export default {
+  setupFiles: ['reflect-metadata'],
   transform: {
     '^.+\\.(js)$': [
       'ts-jest',
