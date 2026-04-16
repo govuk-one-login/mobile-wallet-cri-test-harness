@@ -12,18 +12,18 @@ The test harness takes your credential offer as its input and validates it, then
 
 The test harness simulates valid and invalid calls to the:
 
-* issuer [metadata API](https://docs.wallet.service.gov.uk/issue-a-credential/metadata/) (`/.well-known/openid-credential-issuer`)
-* [credential API](https://docs.wallet.service.gov.uk/issue-a-credential/credential/) (path taken from issuer metadata API)
-* [JWKS API](https://docs.wallet.service.gov.uk/issue-a-credential/jwks/) (`/.well-known/jwks.json`)
-* [did:web API](https://docs.wallet.service.gov.uk/issue-a-credential/did/) (`/.well-known/did.json`)
-* IACAS API (`/.well-known/iacas`)
-* [notification API](https://docs.wallet.service.gov.uk/issue-a-credential/notification/) (path taken from issuer metadata API)
+- issuer [metadata API](https://docs.wallet.service.gov.uk/issue-a-credential/metadata/) (`/.well-known/openid-credential-issuer`)
+- [credential API](https://docs.wallet.service.gov.uk/issue-a-credential/credential/) (path taken from issuer metadata API)
+- [JWKS API](https://docs.wallet.service.gov.uk/issue-a-credential/jwks/) (`/.well-known/jwks.json`)
+- [did:web API](https://docs.wallet.service.gov.uk/issue-a-credential/did/) (`/.well-known/did.json`)
+- IACAS API (`/.well-known/iacas`)
+- [notification API](https://docs.wallet.service.gov.uk/issue-a-credential/notification/) (path taken from issuer metadata API)
 
 After simulating calls to these endpoints, the test harness validates the responses returned by checking that:
 
-* the status code is as expected
-* the response body is as expected, including checking mandatory fields and verifying cryptographic signatures
-* the headers are as expected
+- the status code is as expected
+- the response body is as expected, including checking mandatory fields and verifying cryptographic signatures
+- the headers are as expected
 
 These checks validate that the credential issuer is implemented correctly.
 
@@ -60,18 +60,19 @@ Run the test harness with your credential format and credential offer deep link:
 ```
 
 Replace:
-* `<CREDENTIAL_FORMAT>` with either `jwt` or `mdoc`
-* `<CREDENTIAL_OFFER_DEEP_LINK>` with your credential offer deep link
+
+- `<CREDENTIAL_FORMAT>` with either `jwt` or `mdoc`
+- `<CREDENTIAL_OFFER_DEEP_LINK>` with your credential offer deep link
 
 Use command-line flags to configure the following optional parameters:
 
-* `--cri-url`: URL of the credential issuer under test (default: `http://localhost:8080`)
-* `--wallet-subject-id`: the walletSubjectId your service is expecting (default: `urn:fdc:wallet.account.gov.uk:2024:DtPT8x-dp_73tnlY3KNTiCitziN9GEherD16bqxNt9i`)
-* `--client-id`: the GOV.UK One Login client ID of your service (default: `TEST_CLIENT_ID`)
-* `--has-notification-endpoint`: boolean indicating whether the CRI implements the notification endpoint (default: `true`)
-* `--container-name`: Docker container name (default: `test-harness`)
-* `--network-name`: Docker network name (default: `bridge`)
-* `--test-harness-url`: Test harness URL (auto-derived from `--network-name` and `--container-name` if not set)
+- `--cri-url`: URL of the credential issuer under test (default: `http://localhost:8080`)
+- `--wallet-subject-id`: the walletSubjectId your service is expecting (default: `urn:fdc:wallet.account.gov.uk:2024:DtPT8x-dp_73tnlY3KNTiCitziN9GEherD16bqxNt9i`)
+- `--client-id`: the GOV.UK One Login client ID of your service (default: `TEST_CLIENT_ID`)
+- `--has-notification-endpoint`: boolean indicating whether the CRI implements the notification endpoint (default: `true`)
+- `--container-name`: Docker container name (default: `test-harness`)
+- `--network-name`: Docker network name (default: `bridge`)
+- `--test-harness-url`: Test harness URL (auto-derived from `--network-name` and `--container-name` if not set)
 
 For example:
 
@@ -81,27 +82,27 @@ For example:
 
 The test script:
 
-* builds a Docker image (`test-harness`) containing all dependencies and test code
-* runs a Docker container, mounting an output directory for test results and passing required configuration via environment variables
+- builds a Docker image (`test-harness`) containing all dependencies and test code
+- runs a Docker container, mounting an output directory for test results and passing required configuration via environment variables
 
 ### Execute tests
 
 The container runs the `run-server-and-tests.sh` script, which:
 
-* starts the test server (`run-server.sh`)
-* waits 5 seconds for the server to start
-* executes the test suite (`run-tests.sh`) against the credential issuer
-* exits when the test suite finishes executing
-* saves test results in `./output/report.xml`
+- starts the test server (`run-server.sh`)
+- waits 5 seconds for the server to start
+- executes the test suite (`run-tests.sh`) against the credential issuer
+- exits when the test suite finishes executing
+- saves test results in `./output/report.xml`
 
 ## Disclaimers
 
-* This implementation supports the credential issuance journeys as specified in the [GOV.UK Wallet technical documentation](https://docs.wallet.service.gov.uk/).
-* This is not production code.
-* You should check that you are using the latest version of this implementation.
-* This implementation may change, add or remove features, which may make it incompatible with your code.
-* This implementation is limited in scope.
-* This implementation must not replace your own testing - you must perform sufficient testing to properly evaluate your application and its production readiness.
+- This implementation supports the credential issuance journeys as specified in the [GOV.UK Wallet technical documentation](https://docs.wallet.service.gov.uk/).
+- This is not production code.
+- You should check that you are using the latest version of this implementation.
+- This implementation may change, add or remove features, which may make it incompatible with your code.
+- This implementation is limited in scope.
+- This implementation must not replace your own testing - you must perform sufficient testing to properly evaluate your application and its production readiness.
 
 ## Contact us
 

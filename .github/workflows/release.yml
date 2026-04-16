@@ -32,15 +32,15 @@ jobs:
         with:
           command: bump
           args: --auto
-          git-user: 'github-actions[bot]'
-          git-user-email: 'github-actions[bot]@users.noreply.github.com'
+          git-user: "github-actions[bot]"
+          git-user-email: "github-actions[bot]@users.noreply.github.com"
 
       - name: Check if version was bumped
         id: created
         run: |
           prev=${{ steps.get_tag.outputs.version }}
           new=${{ steps.release.outputs.version }}
-          
+
           if [ "$prev" = "$new" ]; then
             echo "bump=false" >> "$GITHUB_OUTPUT"
           else
