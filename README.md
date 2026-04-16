@@ -35,6 +35,20 @@ The test harness does not test all possible unhappy paths.
 
 [Docker](https://docs.docker.com/get-started/get-docker/) must be installed on your machine.
 
+### Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to run checks before commits and pushes. Set it up with:
+
+```bash
+brew install pre-commit
+```
+
+```bash
+pre-commit install
+pre-commit install --hook-type commit-msg
+pre-commit install --hook-type pre-push
+```
+
 ## Run the test harness
 
 ### Configure credential issuer
@@ -107,3 +121,9 @@ The container runs the `run-server-and-tests.sh` script, which:
 ## Contact us
 
 If you have questions or suggestions, contact us on [govukwallet-queries@digital.cabinet-office.gov.uk](mailto:govukwallet-queries@digital.cabinet-office.gov.uk) or use #govuk-wallet in x-gov Slack.
+
+## Contributing
+
+Pre-commit hooks are used to maintain code quality and validate commit messages against the [Conventional Commits](https://github.com/conventional-changelog/commitlint) standard — non-conforming messages will be rejected.
+
+Ensure your branch is up to date and all hooks pass before opening a pull request. Avoid using the git `--no-verify` flag to skip these checks unless absolutely necessary.
