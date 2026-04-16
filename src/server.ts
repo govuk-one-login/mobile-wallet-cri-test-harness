@@ -41,5 +41,3 @@ export const server = app
   .on("error", (error: Error) => {
     console.log(error, "Unable to start server");
   });
-// comment to test pre-commit-hooks
-// add another comment for testing
