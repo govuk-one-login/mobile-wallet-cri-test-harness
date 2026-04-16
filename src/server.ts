@@ -41,4 +41,3 @@ export const server = app
   .on("error", (error: Error) => {
     console.log(error, "Unable to start server");
   });
-// blah
