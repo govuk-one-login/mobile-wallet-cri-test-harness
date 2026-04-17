@@ -38,6 +38,6 @@ repos:
       - id: jest-tests
         name: Jest - unit tests
         language: system
-        entry: bash -c 'npm run test'
+        entry: bash -c 'npm run test:unit'
         files: \.ts$
         stages: [pre-push]
