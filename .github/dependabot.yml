@@ -12,7 +12,7 @@ updates:
       - dependencies
     ignore:
       - dependency-name: "jose"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: chore
     groups:

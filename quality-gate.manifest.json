@@ -11,9 +11,7 @@
             "file": ".github/workflows/pull-request.yml",
             "path": "jobs.check-conventional-commits"
           },
-          "check-types": [
-            "code style and linting"
-          ]
+          "check-types": ["code style and linting"]
         },
         {
           "phase": "pre-merge",
@@ -22,10 +20,7 @@
             "file": ".github/workflows/pull-request.yml",
             "path": "jobs.build-lint-and-test"
           },
-          "check-types": [
-            "code style and linting",
-            "unit"
-          ]
+          "check-types": ["code style and linting", "unit"]
         },
         {
           "phase": "pre-merge",
