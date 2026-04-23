@@ -249,9 +249,6 @@ describe("credentialConfigurationsSupportedSchema", () => {
         );
       });
     });
-  });
-
-  describe("Optional Properties", () => {
     describe("credential_refresh_web_journey_url", () => {
       it("should return false if it is not a valid URI", () => {
         const data = {
