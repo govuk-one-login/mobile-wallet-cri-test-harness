@@ -313,6 +313,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
           cryptographic_binding_methods_supported: ["cose_key"],
           credential_signing_alg_values_supported: ["ES256"],
           credential_validity_period_max_days: 30,
+          credential_refresh_web_journey_url: "https://example.com/refresh",
           extra_property: "allowed",
         },
       };
@@ -335,6 +336,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -360,6 +362,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -387,6 +390,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -417,6 +421,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -447,6 +452,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -476,6 +482,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -505,6 +512,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -539,6 +547,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -569,6 +578,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -599,6 +609,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -632,6 +643,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -652,6 +664,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["something_else"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -685,6 +698,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -704,6 +718,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -726,6 +741,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -750,6 +766,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["something_else"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
         const isValid = validate(data);
@@ -775,6 +792,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -794,6 +812,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
           cryptographic_binding_methods_supported: ["cose_key"],
           credential_signing_alg_values_supported: ["ES256"],
           credential_validity_period_max_days: 30,
+          credential_refresh_web_journey_url: "https://example.com/refresh",
         },
         SocialSecurityCredential: {
           format: "jwt_vc_json",
@@ -808,6 +827,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
           cryptographic_binding_methods_supported: ["did:key"],
           credential_signing_alg_values_supported: ["ES256"],
           credential_validity_period_max_days: 30,
+          credential_refresh_web_journey_url: "https://example.com/refresh",
         },
       };
 
@@ -824,6 +844,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
           cryptographic_binding_methods_supported: ["cose_key"],
           credential_signing_alg_values_supported: ["ES256"],
           credential_validity_period_max_days: 30,
+          credential_refresh_web_journey_url: "https://example.com/refresh",
         },
         SocialSecurityCredential: {
           format: "jwt_vc_json",
@@ -838,6 +859,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
           cryptographic_binding_methods_supported: ["did:key"],
           credential_signing_alg_values_supported: ["ES256"],
           credential_validity_period_max_days: 30,
+          credential_refresh_web_journey_url: "https://example.com/refresh",
         },
       };
 
