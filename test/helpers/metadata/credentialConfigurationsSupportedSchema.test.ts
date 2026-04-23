@@ -14,6 +14,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -36,6 +37,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -61,6 +63,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: undefined,
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -84,6 +87,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: [],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -107,6 +111,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key", "did:key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -125,6 +130,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             credential_signing_alg_values_supported: undefined,
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -148,6 +154,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: [],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -171,6 +178,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["RS256"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -194,6 +202,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["ES256", "extra"],
             credential_validity_period_max_days: 30,
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -211,6 +220,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             doctype: "org.iso.18013.5.1.mDL",
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["ES256"],
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
@@ -234,6 +244,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
             cryptographic_binding_methods_supported: ["cose_key"],
             credential_signing_alg_values_supported: ["ES256"],
             credential_validity_period_max_days: "30",
+            credential_refresh_web_journey_url: "https://example.com/refresh",
           },
         };
 
