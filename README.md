@@ -123,6 +123,8 @@ Local tests:
 npm run test:unit
 ```
 
+Execute tests:
+
 The container runs the `run-server-and-tests.sh` script, which:
 
 - starts the test server (`run-server.sh`)
