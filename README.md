@@ -78,23 +78,13 @@ npm run lint:fix
 npm run format
 ```
 
-## Run
+### Run
 
-### Configure credential issuer
+Running locally also requires:
 
-You must set up your credential issuer so that it uses the test harness domain to fetch the public signing key that validates the credential access token.
-
-When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-a-credential/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
-
-### Get test harness files
-
-Clone the repo:
-
-```
-git clone git@github.com:govuk-one-login/mobile-wallet-cri-test-harness.git
-```
-
-### Run test script
+- [Document Builder](https://github.com/govuk-one-login/mobile-wallet-document-builder)
+- [Example CRI](https://github.com/govuk-one-login/mobile-wallet-example-credential-issuer/tree/main/example-credential-issuer)
+- [Status List Mock](https://github.com/govuk-one-login/mobile-wallet-status-list-mock)
 
 Run the test harness with your credential format and credential offer deep link:
 
