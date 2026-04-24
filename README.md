@@ -52,6 +52,7 @@ This service is built with TypeScript and Node.js/Express, and it is containeris
 
 - [Node.js](https://nodejs.org/en) — we recommend managing versions with [nvm](https://github.com/nvm-sh/nvm)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) — must be installed on your machine.
+- [pre-commit](https://pre-commit.com/)
 
 ## Local Setup
 
@@ -80,11 +81,7 @@ npm run format
 
 ### Run
 
-Running locally also requires:
-
-- [Document Builder](https://github.com/govuk-one-login/mobile-wallet-document-builder)
-- [Example CRI](https://github.com/govuk-one-login/mobile-wallet-example-credential-issuer/tree/main/example-credential-issuer)
-- [Status List Mock](https://github.com/govuk-one-login/mobile-wallet-status-list-mock)
+Running locally also requires Example Credential Issuer to test it.
 
 Run the test harness with your credential format and credential offer deep link:
 
