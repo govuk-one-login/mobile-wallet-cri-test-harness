@@ -115,7 +115,13 @@ The test script:
 - builds a Docker image (`test-harness`) containing all dependencies and test code
 - runs a Docker container, mounting an output directory for test results and passing required configuration via environment variables
 
-### Execute tests
+### Test
+
+Local tests:
+
+```bash
+npm run test:unit
+```
 
 The container runs the `run-server-and-tests.sh` script, which:
 
