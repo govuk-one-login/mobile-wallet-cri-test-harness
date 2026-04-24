@@ -46,9 +46,12 @@ If you have questions or suggestions, contact us on [govukwallet-queries@digital
 
 ## Tech Stack
 
-[Docker](https://docs.docker.com/get-started/get-docker/) must be installed on your machine.
+This service is built with TypeScript and Node.js/Express, and it is containerised with Docker.
 
 ### Prerequisites
+
+- [Node.js](https://nodejs.org/en) — we recommend managing versions with [nvm](https://github.com/nvm-sh/nvm)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — must be installed on your machine.
 
 ## Local Setup
 
