@@ -73,6 +73,11 @@ pre-commit install --hook-type pre-push
 
 ### Lint & Format
 
+```bash
+npm run lint:fix
+npm run format
+```
+
 ## Run
 
 ### Configure credential issuer
