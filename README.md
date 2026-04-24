@@ -31,9 +31,28 @@ When the test harness finishes testing, it produces a test report detailing the 
 
 The test harness does not test all possible unhappy paths.
 
-## Before you start
+## Disclaimers
+
+- This implementation supports the credential issuance journeys as specified in the [GOV.UK Wallet technical documentation](https://docs.wallet.service.gov.uk/).
+- This is not production code.
+- You should check that you are using the latest version of this implementation.
+- This implementation may change, add or remove features, which may make it incompatible with your code.
+- This implementation is limited in scope.
+- This implementation must not replace your own testing - you must perform sufficient testing to properly evaluate your application and its production readiness.
+
+## Contact us
+
+If you have questions or suggestions, contact us on [govukwallet-queries@digital.cabinet-office.gov.uk](mailto:govukwallet-queries@digital.cabinet-office.gov.uk) or use #govuk-wallet in x-gov Slack.
+
+## Tech Stack
 
 [Docker](https://docs.docker.com/get-started/get-docker/) must be installed on your machine.
+
+### Prerequisites
+
+## Local Setup
+
+### Install
 
 ### Pre-commit Hooks
 
@@ -49,7 +68,9 @@ pre-commit install --hook-type commit-msg
 pre-commit install --hook-type pre-push
 ```
 
-## Run the test harness
+### Lint & Format
+
+## Run
 
 ### Configure credential issuer
 
@@ -108,19 +129,6 @@ The container runs the `run-server-and-tests.sh` script, which:
 - executes the test suite (`run-tests.sh`) against the credential issuer
 - exits when the test suite finishes executing
 - saves test results in `./output/report.xml`
-
-## Disclaimers
-
-- This implementation supports the credential issuance journeys as specified in the [GOV.UK Wallet technical documentation](https://docs.wallet.service.gov.uk/).
-- This is not production code.
-- You should check that you are using the latest version of this implementation.
-- This implementation may change, add or remove features, which may make it incompatible with your code.
-- This implementation is limited in scope.
-- This implementation must not replace your own testing - you must perform sufficient testing to properly evaluate your application and its production readiness.
-
-## Contact us
-
-If you have questions or suggestions, contact us on [govukwallet-queries@digital.cabinet-office.gov.uk](mailto:govukwallet-queries@digital.cabinet-office.gov.uk) or use #govuk-wallet in x-gov Slack.
 
 ## Contributing
 
