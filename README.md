@@ -85,6 +85,12 @@ npm run format
 
 ### Run
 
+### Configure credential issuer
+
+You must set up your credential issuer so that it uses the test harness domain to fetch the public signing key that validates the credential access token.
+
+When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-a-credential/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
+
 Running locally also requires Example Credential Issuer to test it.
 
 Run the test harness with your credential format and credential offer deep link:
