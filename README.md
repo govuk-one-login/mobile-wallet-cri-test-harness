@@ -85,6 +85,14 @@ npm run format
 
 ### Run
 
+The container runs the `run-server-and-tests.sh` script, which:
+
+- starts the test server (`run-server.sh`)
+- waits 5 seconds for the server to start
+- executes the test suite (`run-tests.sh`) against the credential issuer
+- exits when the test suite finishes executing
+- saves test results in `./output/report.xml`
+
 ### Configure credential issuer
 
 You must set up your credential issuer so that it uses the test harness domain to fetch the public signing key that validates the credential access token.
@@ -127,21 +135,9 @@ The test script:
 
 ### Test
 
-Local tests:
-
 ```bash
 npm run test:unit
 ```
-
-Execute tests:
-
-The container runs the `run-server-and-tests.sh` script, which:
-
-- starts the test server (`run-server.sh`)
-- waits 5 seconds for the server to start
-- executes the test suite (`run-tests.sh`) against the credential issuer
-- exits when the test suite finishes executing
-- saves test results in `./output/report.xml`
 
 ## Contributing
 
