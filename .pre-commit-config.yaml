@@ -24,7 +24,7 @@ repos:
       - id: eslint-ts
         name: ESLint- Typescript lint
         language: system
-        entry: bash -c 'npm run lint:fix'
+        entry: bash -c 'npm run lint'
         files: \.(ts|md)$
         stages: [pre-commit]
 
