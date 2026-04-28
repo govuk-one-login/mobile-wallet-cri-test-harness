@@ -12,12 +12,12 @@ The test harness takes your credential offer as its input and validates it, then
 
 The test harness simulates valid and invalid calls to the:
 
-- issuer [metadata API](https://docs.wallet.service.gov.uk/issue-a-credential/metadata/) (`/.well-known/openid-credential-issuer`)
-- [credential API](https://docs.wallet.service.gov.uk/issue-a-credential/credential/) (path taken from issuer metadata API)
-- [JWKS API](https://docs.wallet.service.gov.uk/issue-a-credential/jwks/) (`/.well-known/jwks.json`)
-- [did:web API](https://docs.wallet.service.gov.uk/issue-a-credential/did/) (`/.well-known/did.json`)
+- issuer [metadata API](https://docs.wallet.service.gov.uk/issue-credentials/metadata/) (`/.well-known/openid-credential-issuer`)
+- [credential API](https://docs.wallet.service.gov.uk/issue-credentials/credential/) (path taken from issuer metadata API)
+- [JWKS API](https://docs.wallet.service.gov.uk/issue-credentials/jwks/) (`/.well-known/jwks.json`)
+- [did:web API](https://docs.wallet.service.gov.uk/issue-credentials/did/) (`/.well-known/did.json`)
 - IACAS API (`/.well-known/iacas`)
-- [notification API](https://docs.wallet.service.gov.uk/issue-a-credential/notification/) (path taken from issuer metadata API)
+- [notification API](https://docs.wallet.service.gov.uk/issue-credentials/notification/) (path taken from issuer metadata API)
 
 After simulating calls to these endpoints, the test harness validates the responses returned by checking that:
 
