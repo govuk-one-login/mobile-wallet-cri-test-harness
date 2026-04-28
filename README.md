@@ -97,7 +97,7 @@ The container runs the `run-server-and-tests.sh` script, which:
 
 You must set up your credential issuer so that it uses the test harness domain to fetch the public signing key that validates the credential access token.
 
-When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-a-credential/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
+When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-credentials/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
 
 Run the test harness with your credential format and credential offer deep link:
 
