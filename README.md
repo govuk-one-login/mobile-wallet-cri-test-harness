@@ -89,14 +89,6 @@ Before running the test harness, you must set up your credential issuer so that 
 uses the test harness domain to fetch the public signing key that validates the
 credential access token.
 
-The container runs the `run-server-and-tests.sh` script, which:
-
-- starts the test server (`run-server.sh`)
-- waits 5 seconds for the server to start
-- executes the test suite (`run-tests.sh`) against the credential issuer
-- exits when the test suite finishes executing
-- saves test results in `./output/report.xml`
-
 ### Configure credential issuer
 
 When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-credentials/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
@@ -131,7 +123,16 @@ For example:
 The test script:
 
 - builds a Docker image (`test-harness`) containing all dependencies and test code
-- runs a Docker container, mounting an output directory for test results and passing required configuration via environment variables
+- runs a Docker container, mounting an output directory for test results and passing
+  required configuration via environment variables
+
+The container runs the `run-server-and-tests.sh` script, which:
+
+- starts the test server (`run-server.sh`)
+- waits 5 seconds for the server to start
+- executes the test suite (`run-tests.sh`) against the credential issuer
+- exits when the test suite finishes executing
+- saves test results in `./output/report.xml`
 
 ### Test
 
