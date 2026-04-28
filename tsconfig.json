@@ -10,9 +10,6 @@
     "noUnusedParameters": true,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "ignoreDeprecations": "6.0",
     "types": ["jest"]
   },
   "exclude": ["node_modules"]
