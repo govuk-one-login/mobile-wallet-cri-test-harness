@@ -260,6 +260,7 @@ describe("credentialConfigurationsSupportedSchema", () => {
         );
       });
     });
+
     describe("credential_refresh_web_journey_url", () => {
       it("should return false if it is not a valid URI", () => {
         const data = {
@@ -300,6 +301,29 @@ describe("credentialConfigurationsSupportedSchema", () => {
         const isValid = validate(data);
 
         expect(isValid).toBe(true);
+      });
+
+      it("should return false if it is missing", () => {
+        const data = {
+          "org.iso.18013.5.1.mDL": {
+            format: "mso_mdoc",
+            doctype: "org.iso.18013.5.1.mDL",
+            cryptographic_binding_methods_supported: ["cose_key"],
+            credential_signing_alg_values_supported: ["ES256"],
+            credential_validity_period_max_days: 30,
+          },
+        };
+
+        const isValid = validate(data);
+
+        expect(isValid).toBe(false);
+        expect(validate.errors).toContainEqual(
+          expect.objectContaining({
+            instancePath: "/org.iso.18013.5.1.mDL",
+            message:
+              "must have required property 'credential_refresh_web_journey_url'",
+          }),
+        );
       });
     });
   });
