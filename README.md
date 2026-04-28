@@ -85,6 +85,10 @@ npm run format
 
 ### Run
 
+Before running the test harness, you must set up your credential issuer so that it
+uses the test harness domain to fetch the public signing key that validates the
+credential access token.
+
 The container runs the `run-server-and-tests.sh` script, which:
 
 - starts the test server (`run-server.sh`)
@@ -94,8 +98,6 @@ The container runs the `run-server-and-tests.sh` script, which:
 - saves test results in `./output/report.xml`
 
 ### Configure credential issuer
-
-You must set up your credential issuer so that it uses the test harness domain to fetch the public signing key that validates the credential access token.
 
 When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-credentials/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
 
