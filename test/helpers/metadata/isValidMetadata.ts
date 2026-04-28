@@ -20,7 +20,7 @@ export interface CredentialConfiguration {
   cryptographic_binding_methods_supported: string[];
   credential_signing_alg_values_supported: string[];
   credential_validity_period_max_days: number;
-  credential_refresh_web_journey_url?: string;
+  credential_refresh_web_journey_url: string;
   doctype?: string;
   credential_definition?: {
     type: string[];

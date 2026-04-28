@@ -34,6 +34,7 @@ export const credentialConfigurationsSupportedSchema = {
         "cryptographic_binding_methods_supported",
         "credential_signing_alg_values_supported",
         "credential_validity_period_max_days",
+        "credential_refresh_web_journey_url",
       ],
       if: {
         properties: { format: { const: "mso_mdoc" } },
