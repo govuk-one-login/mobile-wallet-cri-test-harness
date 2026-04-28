@@ -31,9 +31,36 @@ When the test harness finishes testing, it produces a test report detailing the 
 
 The test harness does not test all possible unhappy paths.
 
-## Before you start
+## Disclaimers
 
-[Docker](https://docs.docker.com/get-started/get-docker/) must be installed on your machine.
+- This implementation supports the credential issuance journeys as specified in the [GOV.UK Wallet technical documentation](https://docs.wallet.service.gov.uk/).
+- This is not production code.
+- You should check that you are using the latest version of this implementation.
+- This implementation may change, add or remove features, which may make it incompatible with your code.
+- This implementation is limited in scope.
+- This implementation must not replace your own testing - you must perform sufficient testing to properly evaluate your application and its production readiness.
+
+## Contact us
+
+If you have questions or suggestions, contact us on [govukwallet-queries@digital.cabinet-office.gov.uk](mailto:govukwallet-queries@digital.cabinet-office.gov.uk) or use #govuk-wallet in x-gov Slack.
+
+## Tech Stack
+
+This service is built with TypeScript and Node.js/Express, and it is containerised with Docker.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en) — we recommend managing versions with [nvm](https://github.com/nvm-sh/nvm)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — must be installed on your machine.
+- [pre-commit](https://pre-commit.com/)
+
+## Local Setup
+
+### Install
+
+```bash
+npm install
+```
 
 ### Pre-commit Hooks
 
@@ -49,23 +76,28 @@ pre-commit install --hook-type commit-msg
 pre-commit install --hook-type pre-push
 ```
 
-## Run the test harness
+### Lint & Format
+
+```bash
+npm run lint:fix
+npm run format
+```
+
+### Run
+
+The container runs the `run-server-and-tests.sh` script, which:
+
+- starts the test server (`run-server.sh`)
+- waits 5 seconds for the server to start
+- executes the test suite (`run-tests.sh`) against the credential issuer
+- exits when the test suite finishes executing
+- saves test results in `./output/report.xml`
 
 ### Configure credential issuer
 
 You must set up your credential issuer so that it uses the test harness domain to fetch the public signing key that validates the credential access token.
 
-When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-a-credential/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
-
-### Get test harness files
-
-Clone the repo:
-
-```
-git clone git@github.com:govuk-one-login/mobile-wallet-cri-test-harness.git
-```
-
-### Run test script
+When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-credentials/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
 
 Run the test harness with your credential format and credential offer deep link:
 
@@ -99,28 +131,11 @@ The test script:
 - builds a Docker image (`test-harness`) containing all dependencies and test code
 - runs a Docker container, mounting an output directory for test results and passing required configuration via environment variables
 
-### Execute tests
+### Test
 
-The container runs the `run-server-and-tests.sh` script, which:
-
-- starts the test server (`run-server.sh`)
-- waits 5 seconds for the server to start
-- executes the test suite (`run-tests.sh`) against the credential issuer
-- exits when the test suite finishes executing
-- saves test results in `./output/report.xml`
-
-## Disclaimers
-
-- This implementation supports the credential issuance journeys as specified in the [GOV.UK Wallet technical documentation](https://docs.wallet.service.gov.uk/).
-- This is not production code.
-- You should check that you are using the latest version of this implementation.
-- This implementation may change, add or remove features, which may make it incompatible with your code.
-- This implementation is limited in scope.
-- This implementation must not replace your own testing - you must perform sufficient testing to properly evaluate your application and its production readiness.
-
-## Contact us
-
-If you have questions or suggestions, contact us on [govukwallet-queries@digital.cabinet-office.gov.uk](mailto:govukwallet-queries@digital.cabinet-office.gov.uk) or use #govuk-wallet in x-gov Slack.
+```bash
+npm run test:unit
+```
 
 ## Contributing
 
