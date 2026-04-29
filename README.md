@@ -62,7 +62,7 @@ This service is built with TypeScript and Node.js/Express, and it is containeris
 npm install
 ```
 
-### Pre-commit Hooks
+### Pre-commit hooks
 
 This project uses [pre-commit](https://pre-commit.com/) to run checks before commits and pushes. Set it up with:
 
