@@ -44,7 +44,7 @@ The test harness does not test all possible unhappy paths.
 
 If you have questions or suggestions, contact us on [govukwallet-queries@digital.cabinet-office.gov.uk](mailto:govukwallet-queries@digital.cabinet-office.gov.uk) or use #govuk-wallet in x-gov Slack.
 
-## Tech Stack
+## Tech stack
 
 This service is built with TypeScript and Node.js/Express, and it is containerised with Docker.
 
