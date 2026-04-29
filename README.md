@@ -76,7 +76,7 @@ pre-commit install --hook-type commit-msg
 pre-commit install --hook-type pre-push
 ```
 
-### Lint & Format
+### Lint and Format
 
 ```bash
 npm run lint:fix
@@ -140,7 +140,7 @@ The container runs the `run-server-and-tests.sh` script, which:
 npm run test:unit
 ```
 
-## Contributing
+## Contribute
 
 We use pre-commit hooks to maintain code quality and validate commit messages against the [Conventional Commits](https://github.com/conventional-changelog/commitlint) standard. If your message does not conform to these standards, it will be rejected.
 
