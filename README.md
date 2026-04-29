@@ -54,7 +54,7 @@ This service is built with TypeScript and Node.js/Express, and it is containeris
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) — must be installed on your machine.
 - [pre-commit](https://pre-commit.com/)
 
-## Local Setup
+## Set up locally
 
 ### Install
 
