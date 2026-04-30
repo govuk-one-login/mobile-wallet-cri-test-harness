@@ -12,12 +12,12 @@ The test harness takes your credential offer as its input and validates it, then
 
 The test harness simulates valid and invalid calls to the:
 
-- issuer [metadata API](https://docs.wallet.service.gov.uk/issue-a-credential/metadata/) (`/.well-known/openid-credential-issuer`)
-- [credential API](https://docs.wallet.service.gov.uk/issue-a-credential/credential/) (path taken from issuer metadata API)
-- [JWKS API](https://docs.wallet.service.gov.uk/issue-a-credential/jwks/) (`/.well-known/jwks.json`)
-- [did:web API](https://docs.wallet.service.gov.uk/issue-a-credential/did/) (`/.well-known/did.json`)
+- issuer [metadata API](https://docs.wallet.service.gov.uk/issue-credentials/metadata/) (`/.well-known/openid-credential-issuer`)
+- [credential API](https://docs.wallet.service.gov.uk/issue-credentials/credential/) (path taken from issuer metadata API)
+- [JWKS API](https://docs.wallet.service.gov.uk/issue-credentials/jwks/) (`/.well-known/jwks.json`)
+- [did:web API](https://docs.wallet.service.gov.uk/issue-credentials/did/) (`/.well-known/did.json`)
 - IACAS API (`/.well-known/iacas`)
-- [notification API](https://docs.wallet.service.gov.uk/issue-a-credential/notification/) (path taken from issuer metadata API)
+- [notification API](https://docs.wallet.service.gov.uk/issue-credentials/notification/) (path taken from issuer metadata API)
 
 After simulating calls to these endpoints, the test harness validates the responses returned by checking that:
 
@@ -31,11 +31,38 @@ When the test harness finishes testing, it produces a test report detailing the 
 
 The test harness does not test all possible unhappy paths.
 
-## Before you start
+## Disclaimers
 
-[Docker](https://docs.docker.com/get-started/get-docker/) must be installed on your machine.
+- This implementation supports the credential issuance journeys as specified in the [GOV.UK Wallet technical documentation](https://docs.wallet.service.gov.uk/).
+- This is not production code.
+- You should check that you are using the latest version of this implementation.
+- This implementation may change, add or remove features, which may make it incompatible with your code.
+- This implementation is limited in scope.
+- This implementation must not replace your own testing - you must perform sufficient testing to properly evaluate your application and its production readiness.
 
-### Pre-commit Hooks
+## Contact us
+
+If you have questions or suggestions, contact us on [govukwallet-queries@digital.cabinet-office.gov.uk](mailto:govukwallet-queries@digital.cabinet-office.gov.uk) or use #govuk-wallet in x-gov Slack.
+
+## Tech stack
+
+This service is built with TypeScript and Node.js/Express, and it is containerised with Docker.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en) — we recommend managing versions with [nvm](https://github.com/nvm-sh/nvm)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — must be installed on your machine.
+- [pre-commit](https://pre-commit.com/)
+
+## Set up locally
+
+### Install
+
+```bash
+npm install
+```
+
+### Pre-commit hooks
 
 This project uses [pre-commit](https://pre-commit.com/) to run checks before commits and pushes. Set it up with:
 
@@ -49,23 +76,22 @@ pre-commit install --hook-type commit-msg
 pre-commit install --hook-type pre-push
 ```
 
-## Run the test harness
+### Lint and Format
+
+```bash
+npm run lint:fix
+npm run format
+```
+
+### Run
+
+Before running the test harness, you must set up your credential issuer so that it
+uses the test harness domain to fetch the public signing key that validates the
+credential access token.
 
 ### Configure credential issuer
 
-You must set up your credential issuer so that it uses the test harness domain to fetch the public signing key that validates the credential access token.
-
-When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-a-credential/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
-
-### Get test harness files
-
-Clone the repo:
-
-```
-git clone git@github.com:govuk-one-login/mobile-wallet-cri-test-harness.git
-```
-
-### Run test script
+When configuring your pre-authorised code’s [JWT payload](https://docs.wallet.service.gov.uk/issue-credentials/credential-offer/#jwt-payload), make sure the `aud` claim is set to the test harness domain (not the GOV.UK One Login authorisation server).
 
 Run the test harness with your credential format and credential offer deep link:
 
@@ -97,9 +123,8 @@ For example:
 The test script:
 
 - builds a Docker image (`test-harness`) containing all dependencies and test code
-- runs a Docker container, mounting an output directory for test results and passing required configuration via environment variables
-
-### Execute tests
+- runs a Docker container, mounting an output directory for test results and passing
+  required configuration via environment variables
 
 The container runs the `run-server-and-tests.sh` script, which:
 
@@ -109,21 +134,14 @@ The container runs the `run-server-and-tests.sh` script, which:
 - exits when the test suite finishes executing
 - saves test results in `./output/report.xml`
 
-## Disclaimers
+### Test
 
-- This implementation supports the credential issuance journeys as specified in the [GOV.UK Wallet technical documentation](https://docs.wallet.service.gov.uk/).
-- This is not production code.
-- You should check that you are using the latest version of this implementation.
-- This implementation may change, add or remove features, which may make it incompatible with your code.
-- This implementation is limited in scope.
-- This implementation must not replace your own testing - you must perform sufficient testing to properly evaluate your application and its production readiness.
+```bash
+npm run test:unit
+```
 
-## Contact us
+## Contribute
 
-If you have questions or suggestions, contact us on [govukwallet-queries@digital.cabinet-office.gov.uk](mailto:govukwallet-queries@digital.cabinet-office.gov.uk) or use #govuk-wallet in x-gov Slack.
-
-## Contributing
-
-Pre-commit hooks are used to maintain code quality and validate commit messages against the [Conventional Commits](https://github.com/conventional-changelog/commitlint) standard — non-conforming messages will be rejected.
+We use pre-commit hooks to maintain code quality and validate commit messages against the [Conventional Commits](https://github.com/conventional-changelog/commitlint) standard. If your message does not conform to these standards, it will be rejected.
 
 Ensure your branch is up to date and all hooks pass before opening a pull request. Avoid using the git `--no-verify` flag to skip these checks unless absolutely necessary.
