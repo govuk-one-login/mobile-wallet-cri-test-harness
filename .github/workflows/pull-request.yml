@@ -2,10 +2,11 @@ name: Pull Request Checks
 
 on:
   pull_request:
-    - opened
-    - reopened
-    - ready_for_review
-    - synchronize
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
   workflow_dispatch:
     inputs:
       gitRef:
