@@ -41,7 +41,7 @@ jobs:
     name: Run SonarQube Scan
     uses: ./.github/workflows/sonarqube.yml
     permissions:
-      content: read
+      contents: read
     with:
       gitRef: ${{ inputs.gitRef || github.event.pull_request.head.sha }}
     secrets:
