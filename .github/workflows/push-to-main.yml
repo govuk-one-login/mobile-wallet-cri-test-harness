@@ -4,9 +4,15 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   run-sonarqube-scan:
     name: Run SonarQube Scan
     uses: ./.github/workflows/sonarqube.yml
+    permissions:
+      contents: read
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
