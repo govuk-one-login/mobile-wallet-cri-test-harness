@@ -1,9 +1,8 @@
-name: Nightly Quality Analysis & Docker Image Vulnerability Scan
-
+name: Push to main
 on:
-  schedule:
-    - cron: "0 0 * * 1-5"
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   run-sonarqube-scan:

@@ -25,6 +25,12 @@ jobs:
           command: check
           args: --from-latest-tag
 
+  run-sonarqube-scan:
+    name: Run SonarQube Scan
+    uses: ./.github/workflows/sonarqube.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   build-lint-and-test:
     name: Build, lint and test
     runs-on: ubuntu-24.04
@@ -42,11 +48,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Build source code
-        run: npm run build
-
       - name: Run the linter
         run: npm run lint
 
-      - name: Run unit tests
-        run: npm run test:unit
+      - name: Build source code
+        run: npm run build
