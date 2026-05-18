@@ -1,5 +1,14 @@
 # GOV.UK Wallet credential issuer test harness
 
+> **⚠️ This repository has been moved**
+>
+> This project is now part of a monorepo and can be found at:
+> https://github.com/govuk-one-login/mobile-wallet-example-credential-issuer
+>
+> This repository was archived in May 2026.
+>
+> No further updates, bug fixes, or security patches will be provided for this repository.
+
 ## Overview
 
 The GOV.UK Wallet test harness lets you validate your credential issuance implementation without using the GOV.UK One Login app.
