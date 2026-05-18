@@ -6,6 +6,8 @@
 > https://github.com/govuk-one-login/mobile-wallet-example-credential-issuer
 >
 > This repository was archived in May 2026.
+>
+> No further updates, bug fixes, or security patches will be provided for this repository.
 
 ## Overview
 
